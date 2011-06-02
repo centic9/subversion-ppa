@@ -1,0 +1,17 @@
+Fix a ruby test failure.
+From upstream r40088; will probably be in 1.6.7.
+
+--- a/subversion/bindings/swig/ruby/test/test_core.rb
++++ b/subversion/bindings/swig/ruby/test/test_core.rb
+@@ -628,9 +628,8 @@
+     assert_raises(Svn::Error::BadFilename) do
+       Svn::Core::MimeType.detect(nonexistent_html_file)
+     end
+-    assert_raises(Svn::Error::BadFilename) do
+-      Svn::Core::MimeType.detect(nonexistent_html_file, type_map)
+-    end
++    assert_equal("text/html",
++                 Svn::Core::MimeType.detect(nonexistent_html_file, type_map))
+ 
+     empty_html_file = File.join(@tmp_path, "empty.html")
+     FileUtils.touch(empty_html_file)
