@@ -5,7 +5,7 @@ Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
 XSBC-Original-Maintainer: Peter Samuelson <peter@p12n.org>
 Uploaders: Troy Heber <troyh@debian.org>,
            Guilherme de S. Pastore <gpastore@debian.org>
-Build-Depends: debhelper, libneon27-gnutls-dev, zlib1g-dev,
+Build-Depends: debhelper, libneon27-gnutls-dev, libserf-0-0, zlib1g-dev,
                libapr1-dev, libaprutil1-dev, libdb4.8-dev,
                libsasl2-dev, apache2-threaded-dev,
                libsqlite3-dev (>= 3.4), libgnome-keyring-dev, libdbus-1-dev, kdelibs5-dev,
