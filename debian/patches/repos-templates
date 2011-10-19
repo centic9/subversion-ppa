@@ -11,8 +11,8 @@
    "# For more examples and pre-written hooks, see those in"                NL \
 -  "# the Subversion repository at"                                         NL \
 +  "# /usr/share/subversion/hook-scripts, and in the repository at"         NL \
-   "# http://svn.collab.net/repos/svn/trunk/tools/hook-scripts/ and"        NL \
-   "# http://svn.collab.net/repos/svn/trunk/contrib/hook-scripts/"          NL
+   "# http://svn.apache.org/repos/asf/subversion/trunk/tools/hook-scripts/ and"        NL \
+   "# http://svn.apache.org/repos/asf/subversion/trunk/contrib/hook-scripts/"          NL
  
 @@ -345,8 +345,11 @@
  "REPOS=\"$1\""                                                               NL

@@ -1,32 +1,32 @@
 build-fixes
 entropy
 last-changed-date-charset
-no-extra-libs
+#no-extra-libs
 no-extra-libs-2
 repos-templates
 rpath
 ruby-no-strict-aliasing
-ruby-test-svnserve-race
-ruby-typemap-digest
-ruby-test-core
-ruby-test-info
+#ruby-test-svnserve-race
+#ruby-typemap-digest
+#ruby-test-core
+#ruby-test-info
 ssh-no-controlmaster
 svnshell
 apr-abi
 fix-bdb-version-detection
-svn2cl-debian
+# contrib is gone: svn2cl-debian
 python-builds
 examples-compile-instructions
-svn-clean-ignore
-commit-email
-no-dbus-spam
-svn2cl-upstream
-kwallet-wid
-16x-po
-CVE-2010-3315.patch
+# contrib is gone: svn-clean-ignore
+# contrib is gone: commit-email
+# applied upstream: no-dbus-spam
+# contrib is gone: svn2cl-upstream
+# applied upstream: kwallet-wid
+# ignore nls for now: 16x-po
+# applied upstream: CVE-2010-3315.patch
 CVE-2010-4539.patch
-CVE-2010-4644.patch
-CVE-2011-0715.patch
-CVE-2011-1752.patch
+# applied upstream: CVE-2010-4644.patch
+# applied upstream: CVE-2011-0715.patch
+# applied upstream: CVE-2011-1752.patch
 CVE-2011-1783.patch
 CVE-2011-1921.patch
