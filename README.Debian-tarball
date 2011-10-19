@@ -1,0 +1,15 @@
+This tarball is the same as official subversion-1.6.6.tar.gz,
+except that several unlicensed or unclearly-licensed files were
+removed:
+
+  contrib/cgi/mirror_dir_through_svn.*
+  contrib/client-side/diff3wrap.bat
+  contrib/client-side/diffwrap.bat
+  contrib/client-side/svn-log.pl
+  contrib/client-side/svn_all_diffs.pl
+  contrib/client-side/vim
+  contrib/hook-scripts/detect-merge-conflicts.sh
+  contrib/server-side/backup-recipe.sh
+  contrib/server-side/load_repo_with_mergesensitive_copy.sh
+
+Peter Samuelson, 17 Oct 2009
