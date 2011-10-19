@@ -11,8 +11,10 @@
  
 -LINK = $(LIBTOOL) $(LTFLAGS) --mode=link $(CC) $(LT_LDFLAGS) $(CFLAGS) $(LDFLAGS) -rpath $(libdir)
 +LINK = $(LIBTOOL) $(LTFLAGS) --mode=link $(CC) $(LT_LDFLAGS) $(CFLAGS) $(LDFLAGS)
+ LINK_LIB = $(LINK) $(LT_SO_VERSION)
  LINK_CXX = $(LIBTOOL) $(LTCXXFLAGS) --mode=link $(CXX) $(LT_LDFLAGS) $(CXXFLAGS) $(LDFLAGS) -rpath $(libdir)
 +LINK_LIB = $(LINK) -rpath $(libdir)
+ LINK_CXX_LIB = $(LINK_CXX) $(LT_SO_VERSION)
  
  # special link rule for mod_dav_svn
  LINK_APACHE_MOD = $(LIBTOOL) $(LTFLAGS) --mode=link $(CC) $(LT_LDFLAGS) $(CFLAGS) $(LDFLAGS) -rpath $(APACHE_LIBEXECDIR) -avoid-version -module $(APACHE_LDFLAGS)
@@ -33,8 +35,8 @@
  lang = python
  path = subversion/bindings/swig/python/libsvn_swig_py
  libs = libsvn_client libsvn_wc libsvn_ra libsvn_delta libsvn_subr apriconv apr
--link-cmd = $(LINK) $(SWIG_PY_LIBS)
-+link-cmd = $(LINK_LIB) $(SWIG_PY_LIBS)
+-link-cmd = $(LINK)
++link-cmd = $(LINK_LIB)
  install = swig-py-lib
  # need special build rule to include -DSWIGPYTHON
  compile-cmd = $(COMPILE_SWIG_PY)
@@ -66,16 +68,3 @@
  
      self.manpages = options.get('manpages', '')
      self.testing = options.get('testing')
---- a/build/generator/gen_make.py
-+++ b/build/generator/gen_make.py
-@@ -389,8 +389,8 @@
-           name = base.replace('mod_', '')
-           self.ofile.write('\tcd %s ; '
-                            '$(MKDIR) "$(APACHE_LIBEXECDIR)" ; '
--                           '$(INSTALL_MOD_SHARED) -n %s %s\n'
--                           % (dirname, name, fname))
-+                           '$(INSTALL_LIB) %s $(APACHE_LIBEXECDIR)\n'
-+                           % (dirname, fname))
-         self.ofile.write('\n')
- 
-       elif area != 'test' and area != 'bdb-test':
