@@ -1,6 +1,8 @@
---- a/build/generator/swig/checkout_swig_header.py
-+++ b/build/generator/swig/checkout_swig_header.py
-@@ -20,15 +20,14 @@
+Index: subversion-1.7.0/build/generator/swig/checkout_swig_header.py
+===================================================================
+--- subversion-1.7.0.orig/build/generator/swig/checkout_swig_header.py	2011-10-20 20:45:57.000000000 +0200
++++ subversion-1.7.0/build/generator/swig/checkout_swig_header.py	2011-10-20 21:55:44.000000000 +0200
+@@ -40,15 +40,14 @@
  
    def write_makefile_rules(self, makefile):
      """Write makefile rules to checkout files"""
@@ -20,9 +22,11 @@
                       '\t$(CHECKOUT_SWIG) %s\n\n' % path)
      makefile.write('SWIG_CHECKOUT_FILES = %s\n\n\n'
                     % " ".join(checkout_locations))
---- a/Makefile.in
-+++ b/Makefile.in
-@@ -249,14 +249,14 @@
+Index: subversion-1.7.0/Makefile.in
+===================================================================
+--- subversion-1.7.0.orig/Makefile.in	2011-10-20 20:47:30.000000000 +0200
++++ subversion-1.7.0/Makefile.in	2011-10-20 21:55:44.000000000 +0200
+@@ -290,14 +290,14 @@
  
  # The path to generated and complementary source files for the SWIG
  # bindings.
@@ -42,7 +46,7 @@
  
  ### Automate JAR creation using Makefile generator's javahl-java.jar
  ### property.  Enhance generator to support JAR installation.
-@@ -705,8 +705,7 @@
+@@ -770,8 +770,7 @@
  	fi
  	for d in $(SWIG_PL_DIR)/libsvn_swig_perl; \
  	do \
@@ -52,7 +56,7 @@
  	done
  	if [ -f "$(SWIG_PL_DIR)/native/Makefile" ]; then \
  	  cd $(SWIG_PL_DIR)/native; $(MAKE) clean; \
-@@ -739,7 +738,7 @@
+@@ -804,7 +803,7 @@
  	fi
  	for d in $(SWIG_PY_DIR) $(SWIG_PY_DIR)/libsvn_swig_py; \
  	do \
@@ -61,7 +65,7 @@
  	done
  	find $(SWIG_PY_SRC_DIR) $(SWIG_PY_DIR) -name "*.pyc" -exec rm {} ';'
  
-@@ -763,8 +762,7 @@
+@@ -828,8 +827,7 @@
  	fi
  	for d in $(SWIG_RB_DIR) $(SWIG_RB_DIR)/libsvn_swig_ruby; \
  	do \
@@ -71,8 +75,10 @@
  	done
  
  extraclean-swig-rb: clean-swig-rb
---- a/build/generator/gen_base.py
-+++ b/build/generator/gen_base.py
+Index: subversion-1.7.0/build/generator/gen_base.py
+===================================================================
+--- subversion-1.7.0.orig/build/generator/gen_base.py	2011-10-20 20:45:56.000000000 +0200
++++ subversion-1.7.0/build/generator/gen_base.py	2011-10-20 21:55:44.000000000 +0200
 @@ -333,7 +333,8 @@
  
  class SWIGSource(SourceFile):
@@ -83,9 +89,11 @@
  
  
  lang_abbrev = {
---- a/build/generator/swig/header_wrappers.py
-+++ b/build/generator/swig/header_wrappers.py
-@@ -32,7 +32,7 @@
+Index: subversion-1.7.0/build/generator/swig/header_wrappers.py
+===================================================================
+--- subversion-1.7.0.orig/build/generator/swig/header_wrappers.py	2011-10-20 20:45:57.000000000 +0200
++++ subversion-1.7.0/build/generator/swig/header_wrappers.py	2011-10-20 21:55:44.000000000 +0200
+@@ -52,7 +52,7 @@
      """Write makefile rules for generating SWIG wrappers for Subversion
      header files."""
      wrapper_fnames = []
@@ -94,10 +102,12 @@
      makefile.write('GEN_SWIG_WRAPPER = cd $(top_srcdir) && $(PYTHON)' +
                     ' %s build.conf $(SWIG)\n\n'  % python_script)
      for fname in self.includes:
---- a/configure.ac
-+++ b/configure.ac
-@@ -1004,6 +1004,11 @@
- AC_SUBST(SVN_CONFIG_SCRIPT_FILES)
+Index: subversion-1.7.0/configure.ac
+===================================================================
+--- subversion-1.7.0.orig/configure.ac	2011-10-20 20:47:30.000000000 +0200
++++ subversion-1.7.0/configure.ac	2011-10-20 21:55:44.000000000 +0200
+@@ -1355,6 +1355,11 @@
+ rm -f .swig_checked
  
  AC_OUTPUT
 +if test "$abs_srcdir" != "$abs_builddir"
@@ -108,9 +118,11 @@
  
  # ==== Print final messages to user ==========================================
  
---- a/build.conf
-+++ b/build.conf
-@@ -648,13 +648,14 @@
+Index: subversion-1.7.0/build.conf
+===================================================================
+--- subversion-1.7.0.orig/build.conf	2011-10-20 20:47:30.000000000 +0200
++++ subversion-1.7.0/build.conf	2011-10-20 21:55:44.000000000 +0200
+@@ -694,13 +694,14 @@
  # ----------------------------------------------------------------------------
  # Tests for libsvn_subr
  
