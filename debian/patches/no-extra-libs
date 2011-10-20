@@ -11,7 +11,7 @@
 @DPATCH@
 --- a/build/ac-macros/apr.m4
 +++ b/build/ac-macros/apr.m4
-@@ -93,16 +93,10 @@
+@@ -93,15 +93,15 @@
      AC_MSG_ERROR([apr-config --prefix failed])
    fi
  
@@ -29,8 +29,6 @@
      fi
    fi
    SVN_APR_LIBS="`SVN_REMOVE_STANDARD_LIB_DIRS($SVN_APR_LIBS)`"
- 
-   SVN_APR_SHLIB_PATH_VAR="`$apr_config --shlib-path-var`"
 --- a/build/ac-macros/aprutil.m4
 +++ b/build/ac-macros/aprutil.m4
 @@ -77,14 +77,8 @@
