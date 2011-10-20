@@ -1,7 +1,7 @@
-Index: git/build.conf
+Index: subversion-1.7.0/build.conf
 ===================================================================
---- git.orig/build.conf	2011-10-19 23:03:12.000000000 +0200
-+++ git/build.conf	2011-10-19 23:03:23.000000000 +0200
+--- subversion-1.7.0.orig/build.conf	2011-10-20 21:55:56.000000000 +0200
++++ subversion-1.7.0/build.conf	2011-10-20 21:56:01.000000000 +0200
 @@ -196,7 +196,7 @@
  description = Subversion Client Library
  type = lib
