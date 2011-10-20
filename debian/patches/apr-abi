@@ -7,10 +7,11 @@
 ## DP: Patch has been submitted upstream.
 
 @DPATCH@
---- a/Makefile.in
-+++ b/Makefile.in
-@@ -185,8 +186,8 @@
- COMPILE_JAVAHL_JAVAH = $(JAVAH)
+Index: subversion-1.7.0/Makefile.in
+===================================================================
+--- subversion-1.7.0.orig/Makefile.in	2011-10-20 21:55:51.000000000 +0200
++++ subversion-1.7.0/Makefile.in	2011-10-20 21:55:54.000000000 +0200
+@@ -205,8 +205,8 @@
  
  LINK = $(LIBTOOL) $(LTFLAGS) --mode=link $(CC) $(LT_LDFLAGS) $(CFLAGS) $(LDFLAGS)
  LINK_LIB = $(LINK) $(LT_SO_VERSION)
@@ -21,10 +22,11 @@
  LINK_CXX_LIB = $(LINK_CXX) $(LT_SO_VERSION)
  
  # special link rule for mod_dav_svn
- LINK_APACHE_MOD = $(LIBTOOL) $(LTFLAGS) --mode=link $(CC) $(LT_LDFLAGS) $(CFLAGS) $(LDFLAGS) -rpath $(APACHE_LIBEXECDIR) -avoid-version -module $(APACHE_LDFLAGS)
---- a/build/ac-macros/apr.m4
-+++ b/build/ac-macros/apr.m4
-@@ -85,11 +85,31 @@
+Index: subversion-1.7.0/build/ac-macros/apr.m4
+===================================================================
+--- subversion-1.7.0.orig/build/ac-macros/apr.m4	2011-10-20 20:45:56.000000000 +0200
++++ subversion-1.7.0/build/ac-macros/apr.m4	2011-10-20 21:55:54.000000000 +0200
+@@ -111,11 +111,31 @@
      AC_MSG_ERROR([apr-config --shlib-path-var failed])
    fi
  
@@ -56,9 +58,11 @@
  ])
  
  dnl SVN_DOWNLOAD_APR()
---- a/subversion/libsvn_fs/fs-loader.c
-+++ b/subversion/libsvn_fs/fs-loader.c
-@@ -92,7 +92,7 @@
+Index: subversion-1.7.0/subversion/libsvn_fs/fs-loader.c
+===================================================================
+--- subversion-1.7.0.orig/subversion/libsvn_fs/fs-loader.c	2011-10-20 20:47:31.000000000 +0200
++++ subversion-1.7.0/subversion/libsvn_fs/fs-loader.c	2011-10-20 21:55:54.000000000 +0200
+@@ -100,7 +100,7 @@
      const char *funcname;
      apr_status_t status;
  
@@ -67,9 +71,11 @@
                             name, SVN_VER_MAJOR);
      funcname = apr_psprintf(pool, "svn_fs_%s__init", name);
  
---- a/subversion/libsvn_ra/ra_loader.c
-+++ b/subversion/libsvn_ra/ra_loader.c
-@@ -154,7 +154,7 @@
+Index: subversion-1.7.0/subversion/libsvn_ra/ra_loader.c
+===================================================================
+--- subversion-1.7.0.orig/subversion/libsvn_ra/ra_loader.c	2011-10-20 20:47:31.000000000 +0200
++++ subversion-1.7.0/subversion/libsvn_ra/ra_loader.c	2011-10-20 21:55:54.000000000 +0200
+@@ -159,7 +159,7 @@
      const char *compat_funcname;
      apr_status_t status;
  
@@ -78,9 +84,11 @@
                             ra_name, SVN_VER_MAJOR);
      funcname = apr_psprintf(pool, "svn_ra_%s__init", ra_name);
      compat_funcname = apr_psprintf(pool, "svn_ra_%s_init", ra_name);
---- a/subversion/libsvn_subr/auth.c
-+++ b/subversion/libsvn_subr/auth.c
-@@ -393,7 +393,7 @@
+Index: subversion-1.7.0/subversion/libsvn_subr/auth.c
+===================================================================
+--- subversion-1.7.0.orig/subversion/libsvn_subr/auth.c	2011-10-20 20:47:32.000000000 +0200
++++ subversion-1.7.0/subversion/libsvn_subr/auth.c	2011-10-20 21:55:54.000000000 +0200
+@@ -399,7 +399,7 @@
        const char *library_label, *library_name;
        const char *provider_function_name, *version_function_name;
        library_name = apr_psprintf(pool,
