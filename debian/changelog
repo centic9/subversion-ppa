@@ -1,3 +1,12 @@
+subversion (1.7.0-0ubuntu0~ppa3) lucid; urgency=low
+
+  * Remove subversion-tools as the contrib-folder is gone in 1.7.0.
+  * Remove other contrib-items as the whole contrib-dir is gone.
+  * Add dependency on libserf1, somehow the ppa build reports this
+    as missing, not sure why?
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Thu, 20 Oct 2011 22:19:02 +0200
+
 subversion (1.7.0-0ubuntu0~ppa2) lucid; urgency=low
 
   * Switch to format 3-quilt to use orig.tar.bz2.
