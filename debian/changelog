@@ -1,3 +1,10 @@
+subversion (1.7.0-0ubuntu0~ppa4) lucid; urgency=low
+
+  * Adjust libserf1.
+  * Remove more files which are not part of Subversion any more.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Fri, 21 Oct 2011 19:44:52 +0200
+
 subversion (1.7.0-0ubuntu0~ppa3) lucid; urgency=low
 
   * Remove subversion-tools as the contrib-folder is gone in 1.7.0.
