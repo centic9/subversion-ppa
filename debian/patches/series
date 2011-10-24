@@ -30,4 +30,4 @@ CVE-2010-4539.patch
 # applied upstream: CVE-2011-1752.patch
 CVE-2011-1783.patch
 CVE-2011-1921.patch
-libsvn_ra_needs_aprutil
+needs_aprutil
