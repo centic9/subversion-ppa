@@ -8,9 +8,11 @@
 ## DP: compiling aprutil in-tree.  But I'm not certain.
 
 @DPATCH@
---- a/build/ac-macros/berkeley-db.m4
-+++ b/build/ac-macros/berkeley-db.m4
-@@ -164,7 +164,7 @@
+Index: subversion-1.7.0/build/ac-macros/berkeley-db.m4
+===================================================================
+--- subversion-1.7.0.orig/build/ac-macros/berkeley-db.m4	2011-10-20 20:45:56.000000000 +0200
++++ subversion-1.7.0/build/ac-macros/berkeley-db.m4	2011-10-20 21:55:55.000000000 +0200
+@@ -183,7 +183,7 @@
      SVN_DB_LIBS=["${SVN_DB_LIBS-`$apu_config --libs | $SED -e 's/.*\(-ldb[^[:space:]]*\).*/\1/' | $EGREP -- '-ldb[^[:space:]]*'`}"]
  
      CPPFLAGS="$SVN_DB_INCLUDES $SVN_APRUTIL_INCLUDES $CPPFLAGS" 

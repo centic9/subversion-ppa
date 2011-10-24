@@ -5,9 +5,11 @@
 ## DP: Contains r20992 from upstream trunk, which may be in 1.4.1.
 
 @DPATCH@
---- a/tools/examples/svnshell.py
-+++ b/tools/examples/svnshell.py
-@@ -49,14 +49,8 @@
+Index: subversion-1.7.0/tools/examples/svnshell.py
+===================================================================
+--- subversion-1.7.0.orig/tools/examples/svnshell.py	2011-10-20 20:47:32.000000000 +0200
++++ subversion-1.7.0/tools/examples/svnshell.py	2011-10-20 21:55:53.000000000 +0200
+@@ -56,14 +56,8 @@
    def postcmd(self, stop, line):
      self._setup_prompt()
  

@@ -6,9 +6,11 @@
 ## DP: See #290774.
 
 @DPATCH@
---- a/subversion/libsvn_subr/subst.c
-+++ b/subversion/libsvn_subr/subst.c
-@@ -193,8 +193,12 @@
+Index: subversion-1.7.0/subversion/libsvn_subr/subst.c
+===================================================================
+--- subversion-1.7.0.orig/subversion/libsvn_subr/subst.c	2011-10-20 20:47:32.000000000 +0200
++++ subversion-1.7.0/subversion/libsvn_subr/subst.c	2011-10-20 21:55:47.000000000 +0200
+@@ -200,8 +200,12 @@
            break;
          case 'D': /* long format of date of this revision */
            if (date)
