@@ -81,6 +81,7 @@ confflags := \
 		--with-apr=/usr \
 		--with-apr-util=/usr \
 		--with-neon=/usr \
+		--with-serf=/usr \
 		--with-berkeley-db=:::db \
 		--with-sasl=/usr \
 		--with-editor=/usr/bin/editor \
