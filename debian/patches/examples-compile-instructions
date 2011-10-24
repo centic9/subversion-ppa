@@ -1,8 +1,7 @@
-#! /bin/sh /usr/share/dpatch/dpatch-run
-## examples_compile_instructions by <peter@p12n.org>
-##
-## DP: Fix build instructions for /usr/share/doc/libsvn-doc/examples/*.c.
-
+From: Peter Samuelson <peter@p12n.org>
+Date: Sun, 29 Oct 2006 09:18:00 -0600
+Subject: Fix build instructions for libsvn-doc/examples/*.c
+ 
 @DPATCH@
 Index: subversion-1.7.0/tools/examples/getlocks_test.c
 ===================================================================

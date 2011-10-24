@@ -1,8 +1,77 @@
-#! /bin/sh /usr/share/dpatch/dpatch-run
-##
-## rpath by <dwhedon@debian.org>
+From: David Kimdon <dwhedon@debian.org>
+Date: Mon, 26 Apr 2004 13:13:06 -0500
+Subject: Remove rpath from shared libraries
 
-@DPATCH@
+Prevent the linker from adding an rpath to shared libraries.
+
+* Makefile.in (LINK): Remove -rpath.
+  (LINK_LIB): New variable.  This is what we use to link libraries.
+  'libtool' keys off the '-rpath' argument to know that it should create a
+  shared library.  Removing the rpath parameter from the library link will
+  cause libtool to produce a convenience library (a static archive) and no
+  shared libs, that is not what we want.  For libraries in /usr/lib,
+  libtool knows not to actually put the rpath into the binary.
+* build/generator/gen_base.py (TargetLinked): Use the '$(LINK_LIB)'
+  command by default.
+  ($(SWIG_PL_DIR)/native/Makefile): After creating the perl makefiles
+  remove runtime linker path.
+  (TargetExe): Executables should be linked with '$(LINK)' command so
+  no rpath is put into the binary.
+* build.conf (libsvn_swig_py): This should be linked with LINK_LIB.
+* build/generator/gen_make.py (Generator): Fix the swig and apache
+  module link rule to explicitly link to the necessary subversion
+  shared libraries.
+
+OK, so, this isn't really done but I finally concluded that this part
+of rpath.patch works.  It doesn't suppress the rpath for the two apache
+modules, but it does for everything else.  As far as I can tell it
+didn't actually break anything.
+
+I'll try to port the python code for the apache modules but even if I
+don't get it done, we've got fewer lintian warnings than 1.2.0-1 did.
+
+(And really, lintian shouldn't care if an apache module has an rpath
+embedded in it.  It's not a shared library, it's just a module that
+uses shared library *format*.  Same as it shouldn't care about the
+SONAME in the module.)
+
+[dk, 2004-05-02: Pass the desired libraries and search paths
+ explicitly to the linker when linking apache modules.]
+
+[dk, 2004-12-10: Fix apache module link.  This way, we don't have
+ rpath in apache modules either.]
+
+[dk, 2004-12-10: Remove rpath from the swig libraries, too.]
+
+[dk, 2004-12-11: Remove rpath from perl binding libraries.]
+
+[peter@p12n.org, 2005-12-03: Simplify by using "sed -i".]
+
+[peter@p12n.org, 2006-01-03: Invoke Makefile.PL with
+ "INSTALLDIRS=vendor".  By doing this we no longer have to invoke
+ Makefile.PL directly in debian/rules, which allows a bit of other
+ cleanup.]
+
+[peter@p12n.org, 2006-03-28: Finally strip out rpaths from apache2
+ modules.  The trick is just to let libtool install the modules,
+ rather than having apxs2 do it (as upstream has) or copying via
+ debhelper (as we were doing).  libtool strips out the rpath by first
+ relinking the module.]
+
+[peter@p12n.org, 2006-05-06: Simplify the sed expression that comments
+ out LD_RUN_PATH settings.]
+
+[peter@p12n.org, 2008-06-20: Fix install-swig-rb target.  libtool
+ troubles, y'know.]
+
+[peter@p12n.org, 2009-10-22: Fix the LINK_CXX target, now that we're
+ finally using it.  Technically there is a distinction between linking
+ a C++ library and a C++ binary, but we don't have any C++ binaries,
+ so LINK_CXX means the library.]
+
+[peter@p12n.org, 2010-11-08: Adjust to upstream's new template-based
+ Makefile generator.]
+ 
 Index: subversion-1.7.0/Makefile.in
 ===================================================================
 --- subversion-1.7.0.orig/Makefile.in	2011-10-20 21:55:44.000000000 +0200

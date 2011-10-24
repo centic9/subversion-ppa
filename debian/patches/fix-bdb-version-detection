@@ -1,11 +1,20 @@
-#! /bin/sh /usr/share/dpatch/dpatch-run
-## fix-bdb-version-detection.dpatch by <peter@p12n.org>
-##
-## DP: Do not rely on apu-config to print "-ldb4.3" or whatever - see #378105.
-## DP: Instead, include -laprutil-1 in the compile line.
-## DP:
-## DP: I don't think this can be sent upstream, as it won't work when
-## DP: compiling aprutil in-tree.  But I'm not certain.
+From: Peter Samuelson <peter@p12n.org>
+Date: Thu, 13 Jul 2006 09:40:45 -0500
+Subject: berkeley-db.m4: Avoid bdb version detection; just link to libaprutil instead
+
+In #378105 I reported that 'apu-config --libs' prints a list of
+dependent libraries, where it should print nothing at all, since you
+should not explicitly link to dependent libraries in Debian.  Tollef
+said he'd fix it.
+
+However, BDB version detection relies on this behavior, as it runs
+'apu-config --libs', pulls out the -ldb* word, and compiles a test
+program with this.  By adding 'apu-config --link-ld', which will be
+-laprutil-1, that will pull in libdb4.x regardless of whether
+'apu-config --libs' prints it explicitly.
+
+I don't think this can be sent upstream, as it won't work when
+compiling aprutil in-tree.  But I'm not certain.
 
 @DPATCH@
 Index: subversion-1.7.0/build/ac-macros/berkeley-db.m4
