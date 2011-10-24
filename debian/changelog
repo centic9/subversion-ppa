@@ -1,3 +1,9 @@
+subversion (1.7.1-0ubuntu0~ppa2) lucid; urgency=low
+
+  * Apply some minor patches from Bug 621692.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Mon, 24 Oct 2011 23:53:42 +0200
+
 subversion (1.7.1-0ubuntu0~ppa1) lucid; urgency=low
 
   * Bump to Subversion 1.7.1
