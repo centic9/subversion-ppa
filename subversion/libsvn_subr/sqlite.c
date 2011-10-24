@@ -770,12 +770,6 @@ init_sqlite(void *baton, apr_pool_t *pool)
 
 #endif /* APR_HAS_THRADS */
 
-  /* SQLite 3.5 allows sharing cache instances, even in a multithreaded
-     environment. This allows sharing cached data when we open a database
-     more than once (Very common in the current pre-single-database state) */
-  SQLITE_ERR_MSG(sqlite3_enable_shared_cache(TRUE),
-                 _("Could not initialize SQLite shared cache"));
-
   return SVN_NO_ERROR;
 }
 

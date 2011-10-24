@@ -123,10 +123,8 @@
 #define STMT_SELECT_NODE_CHILDREN_WALKER_INFO 12
 #define STMT_12 \
   "SELECT local_relpath, op_depth, presence, kind " \
-  "FROM nodes " \
+  "FROM nodes_current " \
   "WHERE wc_id = ?1 AND parent_relpath = ?2 " \
-  "GROUP BY local_relpath " \
-  "ORDER BY op_depth DESC " \
   ""
 
 #define STMT_SELECT_ACTUAL_CHILDREN_INFO 13
