@@ -9,7 +9,7 @@ ruby-no-strict-aliasing
 # ignore ruby for now: ruby-test-svnserve-race
 # ignore ruby for now: ruby-typemap-digest
 # ignore ruby for now: ruby-test-core
-# ignore ruby for now: ruby-test-info
+# removed in Bug 621692: ruby-test-info
 ssh-no-controlmaster
 svnshell
 apr-abi
