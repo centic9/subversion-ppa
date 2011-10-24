@@ -1614,6 +1614,12 @@ def basic_add_parents(sbox):
                                         None,
                                         wc_dir)
 
+  svntest.actions.run_and_verify_svn(None, None, [],
+                                     'rm', X_path, '--keep-local')
+
+  svntest.actions.run_and_verify_svn(None, None, [],
+                                     'add', '--parents', zeta_path)
+
 #----------------------------------------------------------------------
 def uri_syntax(sbox):
   'make sure URI syntaxes are parsed correctly'
@@ -2623,7 +2629,7 @@ def basic_relocate(sbox):
   repo_dir = sbox.repo_dir
   repo_url = sbox.repo_url
   other_repo_dir, other_repo_url = sbox.add_repo_path('other')
-  shutil.copytree(repo_dir, other_repo_dir)
+  svntest.main.copy_repos(repo_dir, other_repo_dir, 1, 0)
 
   def _verify_url(wc_path, url):
     name = os.path.basename(wc_path)
