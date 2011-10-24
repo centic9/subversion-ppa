@@ -61,7 +61,7 @@ PYDEFAULT := $(shell pyversions -vd)
 
 allpy = \
 	set -e; for v in $(PYVERSIONS); do \
-		$(RM) $(PY_DIR); \
+		$(RM) -r $(PY_DIR); \
 		ln -fs python$$v $(PY_DIR); \
 		pylib=$$(python$$v -c 'from distutils import sysconfig; print sysconfig.get_python_lib()'); \
 		$1; \
@@ -69,7 +69,7 @@ allpy = \
 
 allpydbg = \
 	set -e; for v in $(PYVERSIONS); do \
-		$(RM) $(PY_DIR); \
+		$(RM) -r $(PY_DIR); \
 		ln -fs python$$v-dbg $(PY_DIR); \
 		pylib=$$(python$$v -c 'from distutils import sysconfig; print sysconfig.get_python_lib()'); \
 		$1; \
@@ -424,7 +424,7 @@ binary-arch: debian/stamp-install-arch
 	# dh_makeshlibs (1) creates shlibs/symbols files and (2) generates
 	# calls to 'ldconfig' in postinst/postrm.  We want (1) only for
 	# libsvn1, but (2) for the swig packages too.
-	dh_makeshlibs -s -Xjava -X_auth_ -X_ra_neon -X_ra_serf -X_ra_local -X_fs_
+	dh_makeshlibs -s -Xjava -X_auth_ -X_ra_neon -X_ra_serf -X_ra_local
 	$(RM) debian/libsvn-*/DEBIAN/shlibs debian/python-subversion/DEBIAN/shlibs
 	$(RM) debian/libsvn-*/DEBIAN/symbols debian/python-subversion/DEBIAN/symbols
 	sed -i '/svn_.*__/d' debian/libsvn1/DEBIAN/symbols
