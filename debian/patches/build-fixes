@@ -38,9 +38,10 @@ Index: subversion-1.7.0/Makefile.in
 +SWIG_RB_DIR = $(top_builddir)/subversion/bindings/swig/ruby
  
  # The path to the source files for the SWIG bindings
- SWIG_PL_SRC_DIR = $(abs_srcdir)/subversion/bindings/swig/perl
+-SWIG_PL_SRC_DIR = $(abs_srcdir)/subversion/bindings/swig/perl
 -SWIG_PY_SRC_DIR = $(abs_srcdir)/subversion/bindings/swig/python
 -SWIG_RB_SRC_DIR = $(abs_srcdir)/subversion/bindings/swig/ruby
++SWIG_PL_SRC_DIR = $(top_srcdir)/subversion/bindings/swig/perl
 +SWIG_PY_SRC_DIR = $(top_srcdir)/subversion/bindings/swig/python
 +SWIG_RB_SRC_DIR = $(top_srcdir)/subversion/bindings/swig/ruby
  
