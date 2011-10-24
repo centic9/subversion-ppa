@@ -1,12 +1,12 @@
-#! /bin/sh /usr/share/dpatch/dpatch-run
-##
-## entropy by <troyh@debian.org>
-##
-## DP: Changing the default behavior to not use apr_generate_random_bytes(), Debian use
-## DP: the system APR which is configured to use /dev/random. In cases where the
-## DP: entropy pool is drained svn commands can block waiting. Moving to the fallback
-## DP: of using time. (Closes: #285708, #298822) 
++From: Troy Heber <troyh@debian.org>
+Date: Tue, 08 Nov 2005 15:09:57 -0600
+Subject: Avoid draining entropy pool
 
+Changing the default behavior to not use apr_generate_random_bytes(), Debian use
+the system APR which is configured to use /dev/random. In cases where the
+entropy pool is drained svn commands can block waiting. Moving to the fallback
+of using time. (Closes: #285708, #298822)
+ 
 @DPATCH@
 Index: subversion-1.7.0/subversion/libsvn_ra_svn/cram.c
 ===================================================================

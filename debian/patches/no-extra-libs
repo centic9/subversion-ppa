@@ -1,14 +1,24 @@
-#! /bin/sh /usr/share/dpatch/dpatch-run
-##
-## no-extra-libs by <peter@p12n.org>
-##
-## DP: Work around "libtool disease" in '{apr,aprutil,neon}-config --libs',
-## DP: where they think our runtime linker is too stupid to handle recursive
-## DP: library dependencies.
-## DP:
-## DP: See Debian bug #338302.
+From: Peter Samuelson <peter@p12n.org>
+Date: Wed, 09 Nov 2005 06:03:45 -0600
+Subject: Work around "libtool disease" in '{apr,aprutil,neon}-config --libs'
 
-@DPATCH@
+... where they think our runtime linker is too stupid to handle recursive
+library dependencies.  See Debian bug #338302.
+
+With this patch, subversion will no longer depend on: libssl0.9.8,
+libldap2, libexpat2, libxml2, zlib1g.  I'm hoping this fixes #336373
+because of the libssl confusion - waiting to hear back from the
+submitter.
+
+[gpastore@debian.org, 2005-12-26: update for svn 1.3.x]
+
+[ps, 2006-09-08: Use {apr,apu}-config --link-ld and "pkg-config --libs
+ neon" instead of straight library names.]
+
+[ps, 2008-06-07: Use pkg-config rather than apr-config and apu-config,
+ just on general principle.  Note this hard-codes apr/apr-util 1.x,
+ not 0.9.]
+
 --- a/build/ac-macros/apr.m4
 +++ b/build/ac-macros/apr.m4
 @@ -93,15 +93,15 @@

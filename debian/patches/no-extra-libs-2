@@ -1,11 +1,19 @@
-#! /bin/sh /usr/share/dpatch/dpatch-run
-##
-## no-extra-libs-2 by <peter@p12n.org>
-##
-## DP: Eliminate several unneeded inter-library linkages.
-## DP: This saves us one package dependency (subversion -> libneon).
+From: Peter Samuelson <peter@p12n.org>
+Date: Thu, 05 Jan 2006 10:30:35 -0600
+Subject: Eliminate several unneeded inter-library linkages
 
-@DPATCH@
+More link pruning, which eliminates one package dependency (subversion
+-> libneon).  I'll probably submit at least the build.conf portion of
+this upstream.
+
+[ps, 2006-09-09: Remove a couple more instances of neon (nobody but
+ libsvn_ra_dav should link neon directly).  Also hack the apriconv
+ library declaration not to pull in aprutil.  (It might be correct on
+ Windows, I don't know, but we don't need apriconv _at all_, so we
+ don't want it to pull in aprutil for us.)]
+
+[ps, 2010-11-08: refresh]
+
 Index: subversion-1.7.0/build.conf
 ===================================================================
 --- subversion-1.7.0.orig/build.conf	2011-10-20 21:55:44.000000000 +0200
