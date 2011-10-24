@@ -1,6 +1,20 @@
-A hack to get around differences between Sun javah and gcj javah - in
-Sun javah, nested class .h filenames have _ as a separator instead of
-$, and the symbols inside use _ as a separator instead of _00024.
+From: Peter Samuelson <peter@p12n.org>
+Date: Mon, 30 Jun 2008 00:25:34 -0500
+Subject: Work around differences between Sun javah and gcj javah
+
+Fix the java build, at long last.
+
+A hack to get around differences between Sun javah and gcj javah - in Sun
+javah, symbols in a nested class use _ as a separator instead of _00024.
+
+[ps, 2010-01-21: Update for gcj 4.4.
+ Patch is from Nobuhiro Iwamatsu in bug #561516, simplified.]
+
+[ps, 2010-01-27: Improve the sed expression to avoid one little false
+ positive (some changelist constant is 200024L).]
+
+[ps, 2010-11-08: Refresh to apply to trunk r1032687 (new makefile
+ generation system).]
 
 --- a/build/generator/gen_make.py
 +++ b/build/generator/gen_make.py

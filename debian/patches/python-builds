@@ -1,12 +1,22 @@
-#! /bin/sh /usr/share/dpatch/dpatch-run
-##
-## python-builds by <doko@debian.org>
-##
-## DP: Prepare upstream build system for building multiple python versions.
-## DP: Mostly, rename libsvn_swig_py to libsvn_swig_py2.x.
-## DP: Submitted upstream: http://svn.haxx.se/dev/archive-2008-05/0361.shtml
+From: Matthias Klose <doko@debian.org>
+Date: Mon, 14 Apr 2008 12:18:04 -0500 (actually earlier)
+Subject: Allow bindings built for multiple versions of Python to coexist
 
-@DPATCH@
+> The major motivation for this is that the built bindings are specific
+> to the used minor version of Python.
+
+Speaking of which, libsvn_swig_py is specific to the minor version, and
+at least in Debian/Ubuntu, we install that to the system lib dir. Thus
+Matthias Klose wrote the following patch. It adds the variables PYVER
+and PYTHON_INCLUDES to the Makefile so they can be specified from the
+command line without rerunning configure.
+
+Mostly, rename libsvn_swig_py to libsvn_swig_py2.x.
+
+[peter@p12n.org, 2008-05-29: port to svn 1.5.x]
+
+Submitted upstream: http://svn.haxx.se/dev/archive-2008-05/0361.shtml
+
 Index: subversion-1.7.0/Makefile.in
 ===================================================================
 --- subversion-1.7.0.orig/Makefile.in	2011-10-20 21:55:54.000000000 +0200
