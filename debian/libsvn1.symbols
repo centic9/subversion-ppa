@@ -767,6 +767,7 @@ libsvn_fs_fs-1.so.0 libsvn1 #MINVER#
  svn_fs_fs__lock@Base 1.7.0-0ubuntu0~ppa4
  svn_fs_fs__next_key@Base 1.7.0-0ubuntu0~ppa4
  svn_fs_fs__node_created_rev@Base 1.7.0-0ubuntu0~ppa4
+ svn_fs_fs__node_id@Base 1.7.1-0ubuntu0~ppa2
  svn_fs_fs__noderev_deserialize@Base 1.7.0-0ubuntu0~ppa4
  svn_fs_fs__noderev_same_rep_key@Base 1.7.0-0ubuntu0~ppa4
  svn_fs_fs__noderev_serialize@Base 1.7.0-0ubuntu0~ppa4
@@ -881,7 +882,7 @@ libsvn_ra-1.so.0 libsvn1 #MINVER#
  svn_ra_replay_range@Base 1.7.0-0ubuntu0~ppa4
  svn_ra_rev_prop@Base 1.7.0-0ubuntu0~ppa4
  svn_ra_rev_proplist@Base 1.7.0-0ubuntu0~ppa4
- svn_ra_serf_init@Base 1.7.0-0ubuntu0~ppa4
+#MISSING: 1.7.1-0ubuntu0~ppa2# svn_ra_serf_init@Base 1.7.0-0ubuntu0~ppa4
  svn_ra_stat@Base 1.7.0-0ubuntu0~ppa4
  svn_ra_unlock@Base 1.7.0-0ubuntu0~ppa4
  svn_ra_version@Base 1.7.0-0ubuntu0~ppa4
@@ -1592,6 +1593,7 @@ libsvn_subr-1.so.0 libsvn1 #MINVER#
  svn_skel__unparse@Base 1.7.0-0ubuntu0~ppa4
  svn_skel__unparse_proplist@Base 1.7.0-0ubuntu0~ppa4
  svn_sleep_for_timestamps@Base 1.7.0-0ubuntu0~ppa4
+ svn_sort__array_delete@Base 1.7.1-0ubuntu0~ppa2
  svn_sort__array_insert@Base 1.7.0-0ubuntu0~ppa4
  svn_sort__bsearch_lower_bound@Base 1.7.0-0ubuntu0~ppa4
  svn_sort__hash@Base 1.7.0-0ubuntu0~ppa4
