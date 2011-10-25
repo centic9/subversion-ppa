@@ -1,3 +1,9 @@
+subversion (1.7.1-0ubuntu0~ppa4) lucid; urgency=low
+
+  * Add patch to set version-info to 1 to get *so.1*
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Tue, 25 Oct 2011 14:43:27 +0200
+
 subversion (1.7.1-0ubuntu0~ppa3) lucid; urgency=low
 
   * Update symbols file once more for 1.7.1

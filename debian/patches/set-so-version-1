@@ -1,0 +1,17 @@
+Index: git/configure.ac
+===================================================================
+--- git.orig/configure.ac	2011-10-25 14:35:27.000000000 +0200
++++ git/configure.ac	2011-10-25 14:39:03.000000000 +0200
+@@ -107,7 +107,11 @@
+   AC_SUBST(SVN_APRUTIL_LIBS)
+   AC_SUBST(SVN_APRUTIL_PREFIX)
+ else
+-  SVN_LT_SOVERSION="-version-info 0"
++ if test `expr $apr_version : 0` -ne 0; then
++   SVN_LT_SOVERSION="-version-info 0"
++ else
++   SVN_LT_SOVERSION="-version-info 1"
++ fi
+   APU_VER_REGEXES=["0\.9\.[7-9] 0\.9\.1[0-9] 1\."]
+   SVN_LIB_APRUTIL($APU_VER_REGEXES)
+ fi
