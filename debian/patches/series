@@ -31,3 +31,4 @@ CVE-2010-4539.patch
 CVE-2011-1783.patch
 CVE-2011-1921.patch
 needs_aprutil
+set-so-version-1
