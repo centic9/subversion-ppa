@@ -890,7 +890,6 @@ libsvn_ra-1.so.1 libsvn1 #MINVER#
  svn_ra_replay_range@Base 1.5
  svn_ra_rev_prop@Base 1.4
  svn_ra_rev_proplist@Base 1.4
- svn_ra_serf_init@Base 1.7
  svn_ra_stat@Base 1.4
  svn_ra_unlock@Base 1.4
  svn_ra_version@Base 1.4
