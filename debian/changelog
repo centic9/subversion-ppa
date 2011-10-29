@@ -1,3 +1,9 @@
+subversion (1.7.1-0ubuntu0~ppa7) lucid; urgency=low
+
+  * Trigger rebuild to automatically populate all Versions via a script.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Sat, 29 Oct 2011 11:01:36 +0200
+
 subversion (1.7.1-0ubuntu0~ppa6) lucid; urgency=low
 
   * Remove svn_ra_serf_init from libsvn1.symbols, file svn_ra.i states this is
