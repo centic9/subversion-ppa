@@ -1,3 +1,9 @@
+subversion (1.7.1-0ubuntu0~ppa8) lucid; urgency=low
+
+  * Oneiric and Precise builds require libs for svn-make-config.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Sun, 30 Oct 2011 09:50:43 +0100
+
 subversion (1.7.1-0ubuntu0~ppa7) lucid; urgency=low
 
   * Trigger rebuild to automatically populate all Versions via a script.
