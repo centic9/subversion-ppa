@@ -1,3 +1,9 @@
+subversion (1.7.1-0ubuntu0~ppa9) lucid; urgency=low
+
+  * Rebuild for all versions to update invalid dependency on libserf1.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Wed, 02 Nov 2011 21:55:49 +0100
+
 subversion (1.7.1-0ubuntu0~ppa8) lucid; urgency=low
 
   * Oneiric and Precise builds require libs for svn-make-config.
