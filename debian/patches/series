@@ -14,13 +14,13 @@ ssh-no-controlmaster
 svnshell
 apr-abi
 fix-bdb-version-detection
-# contrib is gone: svn2cl-debian
+svn2cl-debian
 python-builds
 examples-compile-instructions
-# contrib is gone: svn-clean-ignore
-# contrib is gone: commit-email
+svn-clean-ignore
+commit-email
 # applied upstream: no-dbus-spam
-# contrib is gone: svn2cl-upstream
+# applied upstream: svn2cl-upstream
 # applied upstream: kwallet-wid
 # ignore nls for now: 16x-po
 # applied upstream: CVE-2010-3315.patch
@@ -32,3 +32,4 @@ CVE-2011-1783.patch
 CVE-2011-1921.patch
 needs_aprutil
 set-so-version-1
+contrib-build
