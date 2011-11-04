@@ -102,36 +102,6 @@ Description: Python bindings for Subversion (debug extension)
  .
  This package contains the extension built for the python debug interpreter.
 
-Package: subversion-tools
-Priority: extra
-Architecture: all
-Depends: subversion (>= 1.5)
-Recommends: python-subversion (>= 1.5), libsvn-perl (>= 1.5),
-            libconfig-inifiles-perl, liburi-perl,
-            exim4 | mail-transport-agent, xsltproc, rsync
-Suggests: libsvn-ruby1.8
-Description: Assorted tools related to Subversion
- This package includes miscellaneous tools for use with Subversion
- clients and servers:
-  * svn-backup-dumps: Incremental dumpfile-based backup script
-  * svn-bisect: Bisect revisions to find a regression
-  * svn-clean: Remove unversioned files from a working copy
-  * svn-fast-backup: rsync-based backup script for FSFS repositories
-  * svn-hot-backup: Backup script, primarily for BDB repositories
-  * svn_apply_autoprops: Apply property settings from
-    .subversion/config file to an existing repository
-  * svn_load_dirs: Sophisticated replacement for 'svn import'
-  * svn2cl: Generate GNU-style changelog from repository history
-  * svnmerge: Maintain merge history between two related branches
-    (mostly obsolete as of Subversion 1.5)
-  * svnwrap: Set umask to 002 before calling svn or svnserve
-  * several example hook scripts: commit-access-control, commit-email,
-    log-police, mailer, svnperms, verify-po
- .
- NOTE that some of these scripts are unsupported by upstream, and may
- change radically or disappear in future releases.  The Recommended
- packages are each required by at least one of these scripts.
-
 Package: libsvn-java
 Section: java
 Architecture: any

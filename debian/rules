@@ -305,28 +305,8 @@ debian/stamp-install-indep: debian/stamp-build-indep debian/stamp-install-common
 	mkdir debian/libsvn-doc/usr/share/doc/libsvn1/examples
 	ln -s ../libsvn1/examples debian/libsvn-doc/usr/share/doc/libsvn-doc/
 
-	# Install files for 'subversion-tools' package.
-	install $(DEB_BUILDDIR)/tools/backup/hot-backup.py \
-		debian/subversion-tools/usr/bin/svn-hot-backup
-
-	rm debian/subversion-tools/usr/share/subversion/hook-scripts/*.in
-	rm -r debian/subversion-tools/usr/share/subversion/hook-scripts/mailer/tests
-ifndef DEB_OPT_WITH_RUBY
-	rm debian/subversion-tools/usr/share/subversion/hook-scripts/*.rb
-endif
-
-	# Fix some scripts not to use #!/usr/bin/env.
-	$(call fix_shebangs_in, debian/*/usr/bin \
-		debian/subversion-tools/usr/share/subversion/hook-scripts)
-	cd debian/subversion-tools/usr/share/subversion/hook-scripts; \
-		chmod 0755 commit-email.pl commit-access-control.pl \
-			   mailer/mailer.py verify-po.py svnperms.py;
-
 	# Remove suffixes from binaries in /usr/bin
 	prename 's/\.(sh|pl|rb|py)$$//' debian/*/usr/bin/*
-
-	pod2man -c 'User Commands' -r "" contrib/client-side/svn-clean \
-		$(DEB_BUILDDIR)/contrib/client-side/svn-clean.1
 
 	touch $@
 
