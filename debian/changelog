@@ -1,6 +1,5 @@
 subversion (1.7.1-0ubuntu0~ppa10) lucid; urgency=low
 
-  * Try to include contrib-code again
   * Fix path for perl related files to try to include them again.
 
  -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Thu, 03 Nov 2011 23:34:47 +0100
