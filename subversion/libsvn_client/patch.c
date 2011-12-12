@@ -789,12 +789,19 @@ write_file(void *baton, const char *buf, apr_size_t len,
  * with the fewest path components, the shortest basename, and the shortest
  * total file name length (in that order). In case of a tie, return the new
  * filename. This heuristic is also used by Larry Wall's UNIX patch (except
- * that it prompts for a filename in case of a tie). */
+ * that it prompts for a filename in case of a tie).
+ * Additionally, for compatibility with git, if one of the filenames
+ * is "/dev/null", use the other filename. */
 static const char *
 choose_target_filename(const svn_patch_t *patch)
 {
   apr_size_t old;
   apr_size_t new;
+
+  if (strcmp(patch->old_filename, "/dev/null") == 0)
+    return patch->new_filename;
+  if (strcmp(patch->new_filename, "/dev/null") == 0)
+    return patch->old_filename;
 
   old = svn_path_component_count(patch->old_filename);
   new = svn_path_component_count(patch->new_filename);
@@ -2701,6 +2708,7 @@ delete_empty_dirs(apr_array_header_t *targets_info, svn_client_ctx_t *ctx,
         SVN_ERR(ctx->cancel_func(ctx->cancel_baton));
 
       target_info = APR_ARRAY_IDX(targets_info, i, patch_target_info_t *);
+
       parent = svn_dirent_dirname(target_info->local_abspath, iterpool);
 
       if (apr_hash_get(non_empty_dirs, parent, APR_HASH_KEY_STRING))
@@ -2886,11 +2894,12 @@ apply_patches(void *baton,
               target_info->local_abspath = apr_pstrdup(scratch_pool,
                                                        target->local_abspath);
               target_info->deleted = target->deleted;
-              APR_ARRAY_PUSH(targets_info,
-                             patch_target_info_t *) = target_info;
 
               if (! target->skipped)
                 {
+                  APR_ARRAY_PUSH(targets_info,
+                                 patch_target_info_t *) = target_info;
+
                   if (target->has_text_changes
                       || target->added
                       || target->deleted)
