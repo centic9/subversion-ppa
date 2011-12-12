@@ -48,7 +48,7 @@
   "  lock_token  TEXT NOT NULL, " \
   "  lock_owner  TEXT, " \
   "  lock_comment  TEXT, " \
-  "  lock_date  INTEGER,    " \
+  "  lock_date  INTEGER, " \
   "  PRIMARY KEY (repos_id, repos_relpath) " \
   "  ); " \
   "CREATE TABLE WORK_QUEUE ( " \
@@ -85,10 +85,10 @@
   "  checksum  TEXT REFERENCES PRISTINE (checksum), " \
   "  symlink_target  TEXT, " \
   "  changed_revision  INTEGER, " \
-  "  changed_date      INTEGER,   " \
+  "  changed_date      INTEGER, " \
   "  changed_author    TEXT, " \
   "  translated_size  INTEGER, " \
-  "  last_mod_time  INTEGER,   " \
+  "  last_mod_time  INTEGER, " \
   "  dav_cache  BLOB, " \
   "  file_external  TEXT, " \
   "  PRIMARY KEY (wc_id, local_relpath, op_depth) " \
@@ -186,7 +186,7 @@
   "       presence, depth, NULL , NULL , kind, " \
   "       changed_rev, changed_date, changed_author, " \
   "       checksum, properties, translated_size, last_mod_time, " \
-  "       NULL , symlink_target, NULL  " \
+  "       NULL , symlink_target, NULL " \
   "FROM WORKING_NODE; " \
   "DROP TABLE BASE_NODE; " \
   "DROP TABLE WORKING_NODE; " \

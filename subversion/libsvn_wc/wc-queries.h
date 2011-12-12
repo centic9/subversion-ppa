@@ -543,7 +543,7 @@
   "FROM nodes_current " \
   "WHERE wc_id = ?1 " \
   "       AND (?2 = '' " \
-  "            OR local_relpath = ?2  " \
+  "            OR local_relpath = ?2 " \
   "            OR ((local_relpath) > (?2) || '/' AND (local_relpath) < (?2) || '0') ) " \
   ""
 
@@ -584,7 +584,7 @@
   "    ON A.wc_id = N.wc_id AND A.local_relpath = N.local_relpath " \
   " WHERE N.wc_id = ?1 " \
   "       AND (?2 = '' " \
-  "            OR N.local_relpath = ?2  " \
+  "            OR N.local_relpath = ?2 " \
   "            OR ((N.local_relpath) > (?2) || '/' AND (N.local_relpath) < (?2) || '0') ) " \
   "       AND A.changelist = ?3 " \
   ""
@@ -718,7 +718,7 @@
   "       OR ((local_relpath) > (?2) || '/' AND (local_relpath) < (?2) || '0') ) " \
   "  AND (changelist IS NULL " \
   "       OR NOT EXISTS (SELECT 1 FROM nodes_current c " \
-  "                      WHERE c.wc_id = ?1  " \
+  "                      WHERE c.wc_id = ?1 " \
   "                        AND c.local_relpath = actual_node.local_relpath " \
   "                        AND c.kind = 'file')) " \
   ""
@@ -1166,7 +1166,7 @@
 #define STMT_131 \
   "SELECT local_relpath, def_local_relpath " \
   "FROM externals " \
-  "WHERE wc_id = ?1  " \
+  "WHERE wc_id = ?1 " \
   "  AND (?2 = '' " \
   "       OR def_local_relpath = ?2 " \
   "       OR ((def_local_relpath) > (?2) || '/' AND (def_local_relpath) < (?2) || '0') ) " \
@@ -1283,7 +1283,7 @@
 
 #define STMT_CACHE_ACTUAL_PROPS 146
 #define STMT_146 \
-  "UPDATE temp__node_props_cache  " \
+  "UPDATE temp__node_props_cache " \
   "   SET properties= " \
   "        IFNULL((SELECT properties FROM actual_node a " \
   "                 WHERE a.wc_id = ?1 " \
@@ -1303,7 +1303,7 @@
 #define STMT_CACHE_NODE_PRISTINE_PROPS 148
 #define STMT_148 \
   "INSERT INTO temp__node_props_cache(local_relpath, kind, properties) " \
-  " SELECT local_relpath, kind,  " \
+  " SELECT local_relpath, kind, " \
   "        IFNULL((SELECT properties FROM nodes nn " \
   "                 WHERE n.presence = 'base-deleted' " \
   "                   AND nn.wc_id = n.wc_id " \
@@ -1333,12 +1333,12 @@
   "DROP TABLE IF EXISTS revert_list; " \
   "CREATE TEMPORARY TABLE revert_list ( " \
   "   local_relpath TEXT NOT NULL, " \
-  "   actual INTEGER NOT NULL,          " \
+  "   actual INTEGER NOT NULL, " \
   "   conflict_old TEXT, " \
   "   conflict_new TEXT, " \
   "   conflict_working TEXT, " \
   "   prop_reject TEXT, " \
-  "   notify INTEGER,          " \
+  "   notify INTEGER, " \
   "   op_depth INTEGER, " \
   "   repos_id INTEGER, " \
   "   kind TEXT, " \
@@ -1451,7 +1451,7 @@
   "  AND op_depth >= ?3 " \
   "  AND presence NOT IN ('base-deleted', 'not-present', 'excluded', 'absent') " \
   "  AND op_depth = (SELECT MAX(op_depth) FROM nodes s " \
-  "                  WHERE s.wc_id = n.wc_id  " \
+  "                  WHERE s.wc_id = n.wc_id " \
   "                    AND s.local_relpath = n.local_relpath) " \
   ""
 
@@ -1521,7 +1521,7 @@
   "FROM nodes AS o " \
   "LEFT JOIN nodes AS s " \
   "ON o.wc_id = s.wc_id " \
-  "   AND ((s.local_relpath) > (?2) || '/' AND (s.local_relpath) < (?2) || '0')  " \
+  "   AND ((s.local_relpath) > (?2) || '/' AND (s.local_relpath) < (?2) || '0') " \
   "   AND s.op_depth = 0 " \
   "   AND s.repos_id = o.repos_id " \
   "   AND s.file_external IS NULL " \
@@ -1536,7 +1536,7 @@
   "FROM nodes AS o " \
   "LEFT JOIN nodes AS s " \
   "ON o.wc_id = s.wc_id " \
-  "   AND ((s.local_relpath) > (?2) || '/' AND (s.local_relpath) < (?2) || '0')  " \
+  "   AND ((s.local_relpath) > (?2) || '/' AND (s.local_relpath) < (?2) || '0') " \
   "   AND s.op_depth = 0 " \
   "   AND s.repos_id = o.repos_id " \
   "   AND s.file_external IS NULL " \
@@ -1641,7 +1641,7 @@
   "  lock_token  TEXT NOT NULL, " \
   "  lock_owner  TEXT, " \
   "  lock_comment  TEXT, " \
-  "  lock_date  INTEGER,    " \
+  "  lock_date  INTEGER, " \
   "  PRIMARY KEY (repos_id, repos_relpath) " \
   "  ); " \
   "CREATE TABLE WORK_QUEUE ( " \
@@ -1678,10 +1678,10 @@
   "  checksum  TEXT REFERENCES PRISTINE (checksum), " \
   "  symlink_target  TEXT, " \
   "  changed_revision  INTEGER, " \
-  "  changed_date      INTEGER,   " \
+  "  changed_date      INTEGER, " \
   "  changed_author    TEXT, " \
   "  translated_size  INTEGER, " \
-  "  last_mod_time  INTEGER,   " \
+  "  last_mod_time  INTEGER, " \
   "  dav_cache  BLOB, " \
   "  file_external  TEXT, " \
   "  PRIMARY KEY (wc_id, local_relpath, op_depth) " \
@@ -1779,7 +1779,7 @@
   "       presence, depth, NULL , NULL , kind, " \
   "       changed_rev, changed_date, changed_author, " \
   "       checksum, properties, translated_size, last_mod_time, " \
-  "       NULL , symlink_target, NULL  " \
+  "       NULL , symlink_target, NULL " \
   "FROM WORKING_NODE; " \
   "DROP TABLE BASE_NODE; " \
   "DROP TABLE WORKING_NODE; " \
