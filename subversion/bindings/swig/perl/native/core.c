@@ -42146,12 +42146,12 @@ XS(SWIG_init) {
   } while(0) /*@SWIG@*/;
   /*@SWIG:/x1/home/hwright/dev/svn-trunk/tools/dist/prefix/share/swig/2.0.4/perl5/perltypemaps.swg,65,%set_constant@*/ do {
     SV *sv = get_sv((char*) SWIG_prefix "SVN_VER_PATCH", TRUE | 0x2 | GV_ADDMULTI);
-    sv_setsv(sv, SWIG_From_int  SWIG_PERL_CALL_ARGS_1((int)(2)));
+    sv_setsv(sv, SWIG_From_int  SWIG_PERL_CALL_ARGS_1((int)(3)));
     SvREADONLY_on(sv);
   } while(0) /*@SWIG@*/;
   /*@SWIG:/x1/home/hwright/dev/svn-trunk/tools/dist/prefix/share/swig/2.0.4/perl5/perltypemaps.swg,65,%set_constant@*/ do {
     SV *sv = get_sv((char*) SWIG_prefix "SVN_VER_MICRO", TRUE | 0x2 | GV_ADDMULTI);
-    sv_setsv(sv, SWIG_From_int  SWIG_PERL_CALL_ARGS_1((int)(2)));
+    sv_setsv(sv, SWIG_From_int  SWIG_PERL_CALL_ARGS_1((int)(3)));
     SvREADONLY_on(sv);
   } while(0) /*@SWIG@*/;
   /*@SWIG:/x1/home/hwright/dev/svn-trunk/tools/dist/prefix/share/swig/2.0.4/perl5/perltypemaps.swg,65,%set_constant@*/ do {
@@ -42161,7 +42161,7 @@ XS(SWIG_init) {
   } while(0) /*@SWIG@*/;
   /*@SWIG:/x1/home/hwright/dev/svn-trunk/tools/dist/prefix/share/swig/2.0.4/perl5/perltypemaps.swg,65,%set_constant@*/ do {
     SV *sv = get_sv((char*) SWIG_prefix "SVN_VER_TAG", TRUE | 0x2 | GV_ADDMULTI);
-    sv_setsv(sv, SWIG_FromCharPtr(" (r1207936)"));
+    sv_setsv(sv, SWIG_FromCharPtr(" (r1242825)"));
     SvREADONLY_on(sv);
   } while(0) /*@SWIG@*/;
   /*@SWIG:/x1/home/hwright/dev/svn-trunk/tools/dist/prefix/share/swig/2.0.4/perl5/perltypemaps.swg,65,%set_constant@*/ do {
@@ -42171,22 +42171,22 @@ XS(SWIG_init) {
   } while(0) /*@SWIG@*/;
   /*@SWIG:/x1/home/hwright/dev/svn-trunk/tools/dist/prefix/share/swig/2.0.4/perl5/perltypemaps.swg,65,%set_constant@*/ do {
     SV *sv = get_sv((char*) SWIG_prefix "SVN_VER_REVISION", TRUE | 0x2 | GV_ADDMULTI);
-    sv_setsv(sv, SWIG_From_int  SWIG_PERL_CALL_ARGS_1((int)(0)));
+    sv_setsv(sv, SWIG_From_int  SWIG_PERL_CALL_ARGS_1((int)(1242825)));
     SvREADONLY_on(sv);
   } while(0) /*@SWIG@*/;
   /*@SWIG:/x1/home/hwright/dev/svn-trunk/tools/dist/prefix/share/swig/2.0.4/perl5/perltypemaps.swg,65,%set_constant@*/ do {
     SV *sv = get_sv((char*) SWIG_prefix "SVN_VER_NUM", TRUE | 0x2 | GV_ADDMULTI);
-    sv_setsv(sv, SWIG_FromCharPtr("1.7.2"));
+    sv_setsv(sv, SWIG_FromCharPtr("1.7.3"));
     SvREADONLY_on(sv);
   } while(0) /*@SWIG@*/;
   /*@SWIG:/x1/home/hwright/dev/svn-trunk/tools/dist/prefix/share/swig/2.0.4/perl5/perltypemaps.swg,65,%set_constant@*/ do {
     SV *sv = get_sv((char*) SWIG_prefix "SVN_VER_NUMBER", TRUE | 0x2 | GV_ADDMULTI);
-    sv_setsv(sv, SWIG_FromCharPtr("1.7.2"));
+    sv_setsv(sv, SWIG_FromCharPtr("1.7.3"));
     SvREADONLY_on(sv);
   } while(0) /*@SWIG@*/;
   /*@SWIG:/x1/home/hwright/dev/svn-trunk/tools/dist/prefix/share/swig/2.0.4/perl5/perltypemaps.swg,65,%set_constant@*/ do {
     SV *sv = get_sv((char*) SWIG_prefix "SVN_VERSION", TRUE | 0x2 | GV_ADDMULTI);
-    sv_setsv(sv, SWIG_FromCharPtr("1.7.2 (r1207936)"));
+    sv_setsv(sv, SWIG_FromCharPtr("1.7.3 (r1242825)"));
     SvREADONLY_on(sv);
   } while(0) /*@SWIG@*/;
   /*@SWIG:/x1/home/hwright/dev/svn-trunk/tools/dist/prefix/share/swig/2.0.4/perl5/perltypemaps.swg,65,%set_constant@*/ do {
