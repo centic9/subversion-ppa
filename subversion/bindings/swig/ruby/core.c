@@ -14583,13 +14583,7 @@ _wrap_svn_auth_get_platform_specific_client_providers(int argc, VALUE *argv, VAL
     vresult = Qnil;
   }
   {
-    /* FIXME: Missing argout typemap: svn_auth_get_platform_specific_client_providers arg 1 (apr_array_header_t **) */
-    
-    
-    
-    
-    SWIG_exception(SWIG_ValueError, "svn_auth_get_platform_specific_client_providers is not implemented yet");
-    
+    vresult = SWIG_Ruby_AppendOutput(vresult, svn_swig_rb_apr_array_to_array_auth_provider_object(*arg1));
   }
   {
     VALUE target;
@@ -37526,15 +37520,15 @@ SWIGEXPORT void Init_core(void) {
   rb_define_module_function(mCore, "svn_pool_create", _wrap_svn_pool_create, -1);
   rb_define_const(mCore, "SVN_VER_MAJOR", SWIG_From_int((int)(1)));
   rb_define_const(mCore, "SVN_VER_MINOR", SWIG_From_int((int)(7)));
-  rb_define_const(mCore, "SVN_VER_PATCH", SWIG_From_int((int)(2)));
-  rb_define_const(mCore, "SVN_VER_MICRO", SWIG_From_int((int)(2)));
+  rb_define_const(mCore, "SVN_VER_PATCH", SWIG_From_int((int)(3)));
+  rb_define_const(mCore, "SVN_VER_MICRO", SWIG_From_int((int)(3)));
   rb_define_const(mCore, "SVN_VER_LIBRARY", SWIG_From_int((int)(1)));
-  rb_define_const(mCore, "SVN_VER_TAG", SWIG_FromCharPtr(" (r1207936)"));
+  rb_define_const(mCore, "SVN_VER_TAG", SWIG_FromCharPtr(" (r1242825)"));
   rb_define_const(mCore, "SVN_VER_NUMTAG", SWIG_FromCharPtr(""));
-  rb_define_const(mCore, "SVN_VER_REVISION", SWIG_From_int((int)(0)));
-  rb_define_const(mCore, "SVN_VER_NUM", SWIG_FromCharPtr("1.7.2"));
-  rb_define_const(mCore, "SVN_VER_NUMBER", SWIG_FromCharPtr("1.7.2"));
-  rb_define_const(mCore, "SVN_VERSION", SWIG_FromCharPtr("1.7.2 (r1207936)"));
+  rb_define_const(mCore, "SVN_VER_REVISION", SWIG_From_int((int)(1242825)));
+  rb_define_const(mCore, "SVN_VER_NUM", SWIG_FromCharPtr("1.7.3"));
+  rb_define_const(mCore, "SVN_VER_NUMBER", SWIG_FromCharPtr("1.7.3"));
+  rb_define_const(mCore, "SVN_VERSION", SWIG_FromCharPtr("1.7.3 (r1242825)"));
   
   SwigClassSvn_version_t.klass = rb_define_class_under(mCore, "Svn_version_t", rb_cObject);
   SWIG_TypeClientData(SWIGTYPE_p_svn_version_t, (void *) &SwigClassSvn_version_t);

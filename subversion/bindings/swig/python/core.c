@@ -14722,13 +14722,14 @@ SWIGINTERN PyObject *_wrap_svn_auth_get_platform_specific_client_providers(PyObj
     resultobj = Py_None;
   }
   {
-    /* FIXME: Missing argout typemap: svn_auth_get_platform_specific_client_providers arg 1 (apr_array_header_t **) */
+    resultobj = SWIG_Python_AppendOutput(resultobj, svn_swig_py_pointerlist_to_list(*arg1, SWIGTYPE_p_svn_auth_provider_object_t,
+        _global_py_pool))
     
     
-    
-    
-    SWIG_exception(SWIG_ValueError, "svn_auth_get_platform_specific_client_providers is not implemented yet");
-    
+    ;
+    if (PyErr_Occurred()) {
+      SWIG_fail;
+    }
   }
   {
     Py_XDECREF(_global_py_pool);
@@ -21496,7 +21497,7 @@ SWIGINTERN PyObject *_wrap_svn_rangelist_diff(PyObject *SWIGUNUSEDPARM(self), Py
     resultobj = Py_None;
   }
   {
-    resultobj = SWIG_Python_AppendOutput(resultobj, svn_swig_py_rangelist_to_list(*arg1, SWIGTYPE_p_svn_merge_range_t,
+    resultobj = SWIG_Python_AppendOutput(resultobj, svn_swig_py_pointerlist_to_list(*arg1, SWIGTYPE_p_svn_merge_range_t,
         _global_py_pool))
     
     
@@ -21506,7 +21507,7 @@ SWIGINTERN PyObject *_wrap_svn_rangelist_diff(PyObject *SWIGUNUSEDPARM(self), Py
     }
   }
   {
-    resultobj = SWIG_Python_AppendOutput(resultobj, svn_swig_py_rangelist_to_list(*arg2, SWIGTYPE_p_svn_merge_range_t,
+    resultobj = SWIG_Python_AppendOutput(resultobj, svn_swig_py_pointerlist_to_list(*arg2, SWIGTYPE_p_svn_merge_range_t,
         _global_py_pool))
     
     
@@ -21603,7 +21604,7 @@ SWIGINTERN PyObject *_wrap_svn_rangelist_remove(PyObject *SWIGUNUSEDPARM(self), 
     resultobj = Py_None;
   }
   {
-    resultobj = SWIG_Python_AppendOutput(resultobj, svn_swig_py_rangelist_to_list(*arg1, SWIGTYPE_p_svn_merge_range_t,
+    resultobj = SWIG_Python_AppendOutput(resultobj, svn_swig_py_pointerlist_to_list(*arg1, SWIGTYPE_p_svn_merge_range_t,
         _global_py_pool))
     
     
@@ -21892,7 +21893,7 @@ SWIGINTERN PyObject *_wrap_svn_rangelist_intersect(PyObject *SWIGUNUSEDPARM(self
     resultobj = Py_None;
   }
   {
-    resultobj = SWIG_Python_AppendOutput(resultobj, svn_swig_py_rangelist_to_list(*arg1, SWIGTYPE_p_svn_merge_range_t,
+    resultobj = SWIG_Python_AppendOutput(resultobj, svn_swig_py_pointerlist_to_list(*arg1, SWIGTYPE_p_svn_merge_range_t,
         _global_py_pool))
     
     
@@ -22087,7 +22088,7 @@ SWIGINTERN PyObject *_wrap_svn_rangelist_inheritable2(PyObject *SWIGUNUSEDPARM(s
     resultobj = Py_None;
   }
   {
-    resultobj = SWIG_Python_AppendOutput(resultobj, svn_swig_py_rangelist_to_list(*arg1, SWIGTYPE_p_svn_merge_range_t,
+    resultobj = SWIG_Python_AppendOutput(resultobj, svn_swig_py_pointerlist_to_list(*arg1, SWIGTYPE_p_svn_merge_range_t,
         _global_py_pool))
     
     
@@ -22186,7 +22187,7 @@ SWIGINTERN PyObject *_wrap_svn_rangelist_inheritable(PyObject *SWIGUNUSEDPARM(se
     resultobj = Py_None;
   }
   {
-    resultobj = SWIG_Python_AppendOutput(resultobj, svn_swig_py_rangelist_to_list(*arg1, SWIGTYPE_p_svn_merge_range_t,
+    resultobj = SWIG_Python_AppendOutput(resultobj, svn_swig_py_pointerlist_to_list(*arg1, SWIGTYPE_p_svn_merge_range_t,
         _global_py_pool))
     
     
@@ -28419,7 +28420,7 @@ SWIGINTERN PyObject *_wrap_svn_swig_rangelist_merge(PyObject *SWIGUNUSEDPARM(sel
     resultobj = Py_None;
   }
   {
-    resultobj = SWIG_Python_AppendOutput(resultobj, svn_swig_py_rangelist_to_list(*arg1, SWIGTYPE_p_svn_merge_range_t,
+    resultobj = SWIG_Python_AppendOutput(resultobj, svn_swig_py_pointerlist_to_list(*arg1, SWIGTYPE_p_svn_merge_range_t,
         _global_py_pool))
     
     
@@ -28496,7 +28497,7 @@ SWIGINTERN PyObject *_wrap_svn_swig_rangelist_reverse(PyObject *SWIGUNUSEDPARM(s
     resultobj = Py_None;
   }
   {
-    resultobj = SWIG_Python_AppendOutput(resultobj, svn_swig_py_rangelist_to_list(*arg1, SWIGTYPE_p_svn_merge_range_t,
+    resultobj = SWIG_Python_AppendOutput(resultobj, svn_swig_py_pointerlist_to_list(*arg1, SWIGTYPE_p_svn_merge_range_t,
         _global_py_pool))
     
     
@@ -30982,15 +30983,15 @@ SWIG_init(void) {
   SWIG_Python_SetConstant(d, "SVN_ALLOCATOR_RECOMMENDED_MAX_FREE",SWIG_From_long((long)((4096*1024))));
   SWIG_Python_SetConstant(d, "SVN_VER_MAJOR",SWIG_From_long((long)(1)));
   SWIG_Python_SetConstant(d, "SVN_VER_MINOR",SWIG_From_long((long)(7)));
-  SWIG_Python_SetConstant(d, "SVN_VER_PATCH",SWIG_From_long((long)(2)));
-  SWIG_Python_SetConstant(d, "SVN_VER_MICRO",SWIG_From_long((long)(2)));
+  SWIG_Python_SetConstant(d, "SVN_VER_PATCH",SWIG_From_long((long)(3)));
+  SWIG_Python_SetConstant(d, "SVN_VER_MICRO",SWIG_From_long((long)(3)));
   SWIG_Python_SetConstant(d, "SVN_VER_LIBRARY",SWIG_From_long((long)(1)));
-  SWIG_Python_SetConstant(d, "SVN_VER_TAG",SWIG_FromCharPtr(" (r1207936)"));
+  SWIG_Python_SetConstant(d, "SVN_VER_TAG",SWIG_FromCharPtr(" (r1242825)"));
   SWIG_Python_SetConstant(d, "SVN_VER_NUMTAG",SWIG_FromCharPtr(""));
-  SWIG_Python_SetConstant(d, "SVN_VER_REVISION",SWIG_From_long((long)(0)));
-  SWIG_Python_SetConstant(d, "SVN_VER_NUM",SWIG_FromCharPtr("1.7.2"));
-  SWIG_Python_SetConstant(d, "SVN_VER_NUMBER",SWIG_FromCharPtr("1.7.2"));
-  SWIG_Python_SetConstant(d, "SVN_VERSION",SWIG_FromCharPtr("1.7.2 (r1207936)"));
+  SWIG_Python_SetConstant(d, "SVN_VER_REVISION",SWIG_From_long((long)(1242825)));
+  SWIG_Python_SetConstant(d, "SVN_VER_NUM",SWIG_FromCharPtr("1.7.3"));
+  SWIG_Python_SetConstant(d, "SVN_VER_NUMBER",SWIG_FromCharPtr("1.7.3"));
+  SWIG_Python_SetConstant(d, "SVN_VERSION",SWIG_FromCharPtr("1.7.3 (r1242825)"));
   SWIG_Python_SetConstant(d, "svn_prop_entry_kind",SWIG_From_long((long)(svn_prop_entry_kind)));
   SWIG_Python_SetConstant(d, "svn_prop_wc_kind",SWIG_From_long((long)(svn_prop_wc_kind)));
   SWIG_Python_SetConstant(d, "svn_prop_regular_kind",SWIG_From_long((long)(svn_prop_regular_kind)));

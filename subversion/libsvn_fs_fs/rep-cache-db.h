@@ -27,10 +27,17 @@
   "VALUES (?1, ?2, ?3, ?4, ?5) " \
   ""
 
+#define STMT_DEL_REPS_YOUNGER_THAN_REV 3
+#define STMT_3 \
+  "DELETE FROM rep_cache " \
+  "WHERE revision > ?1 " \
+  ""
+
 #define REP_CACHE_DB_SQL_DECLARE_STATEMENTS(varname) \
   static const char * const varname[] = { \
     STMT_0, \
     STMT_1, \
     STMT_2, \
+    STMT_3, \
     NULL \
   }
