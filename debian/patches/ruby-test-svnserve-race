@@ -1,16 +1,31 @@
-#! /bin/sh /usr/share/dpatch/dpatch-run
-##
-## ruby-test-svnserve-race by <peter@p12n.org>
-##
-## DP: Hack to try to avoid the race in the ruby testsuite harness between
-## DP: starting up a svnserve process and trying to connect to it.  If the
-## DP: client tries to connect too soon, before svnserve has initialised
-## DP: itself, the test in progress gets a 'connection refused' and fails.
-## DP:
-## DP: This race causes random test failures on slow platforms - observed on
-## DP: an arm with 32 MB of RAM, and m68k buildds of unknown specs.
+From: Roman Zippel <zippel@linux-m68k.org>
+Date: Mon, 28 Aug 2006 02:32:59 +0200
+Subject: ruby tests: Avoid race between starting svnserve and connecting to it
 
-@DPATCH@
+The tbm NSLU2 patch.  If the client tries to connect too soon, before
+svnserve has initialised itself, the test in progress gets a
+'connection refused' and fails.
+
+This one's only needed on really slow machines.  It prevents random
+ruby testsuite failures - observed on an arm with 32 MB of RAM and
+m68k buildds of unknown specs.
+
+[A predecessor to this patch just used "sleep 1".  rooneg upstream
+ didn't like it because it was a kludge and it added 60 seconds to the
+ build time.  But oh well, it was easy to write and easy to maintain.
+
+ Later the patch was adjusted to use sleep 3 instead of sleep 1, as a
+ quick fix for build failures on the even-slower m68k autobuilders.
+
+ Roman's implementation of the ruby-test-svnserve-race patch (based
+ on an earlier patch from nori) is actually reliable.  In this
+ version, instead of just sleeping, we contact the running svnserve
+ process in a loop to see if it has started listening.
+
+ Thanks to Kobayashi Noritada, Wouter Verhelst and Roman Zippel.]
+
+Fixes: http://bugs.debian.org/378837
+
 --- a/subversion/bindings/swig/ruby/test/util.rb
 +++ b/subversion/bindings/swig/ruby/test/util.rb
 @@ -1,5 +1,6 @@

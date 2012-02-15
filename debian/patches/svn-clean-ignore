@@ -8,8 +8,10 @@
 ## DP: Submitted upstream: http://svn.haxx.se/dev/archive-2008-05/0236.shtml
 
 @DPATCH@
---- a/contrib/client-side/svn-clean
-+++ b/contrib/client-side/svn-clean
+Index: git/contrib/client-side/svn-clean
+===================================================================
+--- git.orig/contrib/client-side/svn-clean	2011-11-03 23:46:37.000000000 +0100
++++ git/contrib/client-side/svn-clean	2011-11-03 23:46:40.000000000 +0100
 @@ -52,11 +52,20 @@
  # Precompile regexes.
  $_ = qr/$_/ foreach @exclude;
@@ -29,9 +31,9 @@
 +        }
 +    }
      # Call handler function with status info for each file.
-     $ctx->status( $path, undef, \&clean, !$nonrecursive, 1, 0, 1 );
- }
-@@ -64,8 +73,22 @@
+     $ctx->status( $_, undef, \&clean, !$nonrecursive, 1, 0, 1 )
+       for @paths;
+@@ -65,8 +74,22 @@
      warn "Warning: Not using SVN Perl modules, this might be slow.\n"
        unless $quiet;
  
@@ -56,7 +58,7 @@
      if ($nonrecursive) {
          push @command, '-N';
      }
-@@ -84,6 +107,7 @@
+@@ -85,6 +108,7 @@
    LINE: while (<SVN>) {
          if (/^([\?ID])/) {
              my $file = (split)[-1];
@@ -64,7 +66,7 @@
              foreach my $ex (@exclude) {
                  if ( $file =~ $ex ) {
                      print "excluded $file\n" unless $quiet or $print;
-@@ -109,6 +133,7 @@
+@@ -110,6 +134,7 @@
  # Main file-wiping function.
  sub clean {
      my ( $path, $status ) = @_;
@@ -72,7 +74,7 @@
  
      # Use relative path for pretty-printing.
      if ( $path =~ s/^\Q$CWD\E\/?//o ) {
-@@ -165,7 +190,9 @@
+@@ -166,7 +191,9 @@
  B<svn-clean> will scan the given files and directories recursively and find
  unversioned files and directories (files and directories that are not present in
  the Subversion repository). After the scan is done, these files and directories

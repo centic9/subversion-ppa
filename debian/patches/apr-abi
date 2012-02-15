@@ -1,36 +1,62 @@
-#! /bin/sh /usr/share/dpatch/dpatch-run
-## apr-abi.dpatch by <peter@p12n.org>
-##
-## DP: Use libtool -version-info to express library SONAMEs, and make it
-## DP: sensitive to libapr ABI w/r/t 64-bit file offsets.
-## DP: 
-## DP: Patch has been submitted upstream.
+From: Peter Samuelson <peter@p12n.org>
+Date: Sat, 11 Mar 2006 23:42:32 -0600
+Subject: Make SONAME handling explicit and sensitive to apr version
 
-@DPATCH@
---- a/Makefile.in
-+++ b/Makefile.in
-@@ -106,6 +106,7 @@
- LTFLAGS = --tag=CC --silent
- LTCXXFLAGS = --tag=CXX --silent
- LT_LDFLAGS = @LT_LDFLAGS@
-+LT_SOVERSION = @SVN_LT_SOVERSION@
- LT_NO_UNDEFINED = @LT_NO_UNDEFINED@
- LT_CXX_LIBADD = @LT_CXX_LIBADD@
- 
-@@ -185,8 +186,8 @@
- COMPILE_JAVAHL_JAVAH = $(JAVAH)
+libapr1 enabled large file support.  That means that on 32-bit
+platforms the widths of fundamental types like apr_off_t changed, so
+adopting it breaks the libsvn ABI. (Bug#266170)
+
+Therefore we must bump soname.  The upstream consensus seems to be
+that where this ABI bump shows up as a problem, users can link to
+libapr0 or rebuild all reverse-dependencies --- ok, this can be a
+Debian-specific patch.
+
+[ps, 2006-01-08: On 64-bit platforms, APR_HAS_LARGE_FILES is not set.
+ From an upstream perspective, I wanted to set the subversion ABI number
+ based on this characteristic.  However, from a Debian perspective it
+ was incorrect as we want to use SOVERSION 1 unconditionally with libapr1
+ for simplicity.  Closes: #391744]
+
+[ps, 2008-06-19: The soname should only be passed into library link
+ lines, not binary link lines.  Fixing that gets rid of an annoying
+ warning.]
+
+[ps, 2009-03-27: libsvn-fs and libsvn-ra must look for the correct
+ library filenames to dynamically load.  This never mattered until now
+ because we weren't building svn_ra and svn_fs modules in a
+ runtime-loadable fashion, but nowadays we build the gnome-keyring
+ library that way.
+
+ I'd prefer to move all these non-public libraries, including the
+ swig stubs, to /usr/lib/svn.  They don't need to be in /usr/lib.]
+
+[ps, 2009-10-22: Fix the LINK_CXX target, too, now that we're
+ finally using it.  Technically there is a distinction between linking a
+ C++ library and a C++ binary, but we don't have any C++ binaries, so
+ LINK_CXX means the library.]
+
+Submitted at http://svn.haxx.se/dev/archive-2006-03/0522.shtml
+
+Index: subversion-1.7.0/Makefile.in
+===================================================================
+--- subversion-1.7.0.orig/Makefile.in	2011-10-20 21:55:51.000000000 +0200
++++ subversion-1.7.0/Makefile.in	2011-10-20 21:55:54.000000000 +0200
+@@ -205,8 +205,8 @@
  
  LINK = $(LIBTOOL) $(LTFLAGS) --mode=link $(CC) $(LT_LDFLAGS) $(CFLAGS) $(LDFLAGS)
+ LINK_LIB = $(LINK) $(LT_SO_VERSION)
 -LINK_CXX = $(LIBTOOL) $(LTCXXFLAGS) --mode=link $(CXX) $(LT_LDFLAGS) $(CXXFLAGS) $(LDFLAGS) -rpath $(libdir)
 -LINK_LIB = $(LINK) -rpath $(libdir)
 +LINK_CXX = $(LIBTOOL) $(LTCXXFLAGS) --mode=link $(CXX) $(LT_LDFLAGS) $(CXXFLAGS) $(LDFLAGS) -rpath $(libdir) $(LT_SOVERSION)
-+LINK_LIB = $(LINK) -rpath $(libdir) $(LT_SOVERSION)
++LINK_LIB = $(LINK) -rpath $(libdir) $(LT_SO_VERSION)
+ LINK_CXX_LIB = $(LINK_CXX) $(LT_SO_VERSION)
  
  # special link rule for mod_dav_svn
- LINK_APACHE_MOD = $(LIBTOOL) $(LTFLAGS) --mode=link $(CC) $(LT_LDFLAGS) $(CFLAGS) $(LDFLAGS) -rpath $(APACHE_LIBEXECDIR) -avoid-version -module $(APACHE_LDFLAGS)
---- a/build/ac-macros/apr.m4
-+++ b/build/ac-macros/apr.m4
-@@ -85,11 +85,31 @@
+Index: subversion-1.7.0/build/ac-macros/apr.m4
+===================================================================
+--- subversion-1.7.0.orig/build/ac-macros/apr.m4	2011-10-20 20:45:56.000000000 +0200
++++ subversion-1.7.0/build/ac-macros/apr.m4	2011-10-20 21:55:54.000000000 +0200
+@@ -111,11 +111,31 @@
      AC_MSG_ERROR([apr-config --shlib-path-var failed])
    fi
  
@@ -54,17 +80,19 @@
 +  dnl SVN_LT_SOVERSION="-version-info $apr_lfs_abi"
 +
    AC_SUBST(SVN_APR_PREFIX)
+   AC_SUBST(SVN_APR_CONFIG, ["$apr_config"])
    AC_SUBST(SVN_APR_INCLUDES)
    AC_SUBST(SVN_APR_LIBS)
-   AC_SUBST(SVN_APR_EXPORT_LIBS)
    AC_SUBST(SVN_APR_SHLIB_PATH_VAR)
 +  AC_SUBST(SVN_LT_SOVERSION)
  ])
  
  dnl SVN_DOWNLOAD_APR()
---- a/subversion/libsvn_fs/fs-loader.c
-+++ b/subversion/libsvn_fs/fs-loader.c
-@@ -92,7 +92,7 @@
+Index: subversion-1.7.0/subversion/libsvn_fs/fs-loader.c
+===================================================================
+--- subversion-1.7.0.orig/subversion/libsvn_fs/fs-loader.c	2011-10-20 20:47:31.000000000 +0200
++++ subversion-1.7.0/subversion/libsvn_fs/fs-loader.c	2011-10-20 21:55:54.000000000 +0200
+@@ -100,7 +100,7 @@
      const char *funcname;
      apr_status_t status;
  
@@ -73,9 +101,11 @@
                             name, SVN_VER_MAJOR);
      funcname = apr_psprintf(pool, "svn_fs_%s__init", name);
  
---- a/subversion/libsvn_ra/ra_loader.c
-+++ b/subversion/libsvn_ra/ra_loader.c
-@@ -154,7 +154,7 @@
+Index: subversion-1.7.0/subversion/libsvn_ra/ra_loader.c
+===================================================================
+--- subversion-1.7.0.orig/subversion/libsvn_ra/ra_loader.c	2011-10-20 20:47:31.000000000 +0200
++++ subversion-1.7.0/subversion/libsvn_ra/ra_loader.c	2011-10-20 21:55:54.000000000 +0200
+@@ -159,7 +159,7 @@
      const char *compat_funcname;
      apr_status_t status;
  
@@ -84,9 +114,11 @@
                             ra_name, SVN_VER_MAJOR);
      funcname = apr_psprintf(pool, "svn_ra_%s__init", ra_name);
      compat_funcname = apr_psprintf(pool, "svn_ra_%s_init", ra_name);
---- a/subversion/libsvn_subr/auth.c
-+++ b/subversion/libsvn_subr/auth.c
-@@ -393,7 +393,7 @@
+Index: subversion-1.7.0/subversion/libsvn_subr/auth.c
+===================================================================
+--- subversion-1.7.0.orig/subversion/libsvn_subr/auth.c	2011-10-20 20:47:32.000000000 +0200
++++ subversion-1.7.0/subversion/libsvn_subr/auth.c	2011-10-20 21:55:54.000000000 +0200
+@@ -399,7 +399,7 @@
        const char *library_label, *library_name;
        const char *provider_function_name, *version_function_name;
        library_name = apr_psprintf(pool,
