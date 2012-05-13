@@ -1,14 +1,36 @@
-Fix / work around the bug where 'ssh -o ControlMaster=auto'
-interacts badly with the svn+ssh tunnel scheme.  As I note in
-the bug log for #413102, I don't really think the problem is
-either svn's or openssh's fault, but the obvious way to avoid
+From: Peter Samuelson <peter@p12n.org>
+Date: Sat, 03 May 2008 01:18:09 -0500
+Subject: Avoid accidentally becoming an ssh ControlMaster
+
+If you set ControlMaster via your ssh config:
+.ssh/config:
+Host *
+    ControlMaster auto
+    Controlpath ~/.ssh/master-%r@%h:%p
+
+you will get 'svn: Can't write to connection: Broken pipe'
+when doing svn log but svn up and other subversion commands will work fine.
+This only happens with svn+ssh.
+
+As I note in the bug log for #413102, I don't really think the problem
+is either svn's or openssh's fault, but the obvious way to avoid
 it is to avoid accidentally becoming a ControlMaster.  In this
 mode we will still use ssh connection sharing, but only if a
 ControlMaster is already present.
 
---- a/subversion/libsvn_subr/config_file.c
-+++ b/subversion/libsvn_subr/config_file.c
-@@ -1009,7 +1009,7 @@
+[ps, 2009-08-20: Replace previous patch with the much simpler approach
+ upstream demonstrates with 'ssh -q'.
+
+ I was pretty embarrassed to see this on the dev list, given what I had
+ done instead.]
+
+Fixes: http://bugs.debian.org/413102
+
+Index: subversion-1.7.0/subversion/libsvn_subr/config_file.c
+===================================================================
+--- subversion-1.7.0.orig/subversion/libsvn_subr/config_file.c	2011-10-20 20:47:32.000000000 +0200
++++ subversion-1.7.0/subversion/libsvn_subr/config_file.c	2011-10-20 21:55:52.000000000 +0200
+@@ -1027,7 +1027,7 @@
          "### passed to the tunnel agent as <user>@<hostname>.)  If the"      NL
          "### built-in ssh scheme were not predefined, it could be defined"   NL
          "### as:"                                                            NL
@@ -17,9 +39,11 @@ ControlMaster is already present.
          "### If you wanted to define a new 'rsh' scheme, to be used with"    NL
          "### 'svn+rsh:' URLs, you could do so as follows:"                   NL
          "# rsh = rsh"                                                        NL
---- a/subversion/libsvn_ra_svn/client.c
-+++ b/subversion/libsvn_ra_svn/client.c
-@@ -381,7 +381,7 @@
+Index: subversion-1.7.0/subversion/libsvn_ra_svn/client.c
+===================================================================
+--- subversion-1.7.0.orig/subversion/libsvn_ra_svn/client.c	2011-10-20 20:47:31.000000000 +0200
++++ subversion-1.7.0/subversion/libsvn_ra_svn/client.c	2011-10-20 21:55:52.000000000 +0200
+@@ -391,7 +391,7 @@
         * versions have it too. If the user is using some other ssh
         * implementation that doesn't accept it, they can override it
         * in the [tunnels] section of the config. */

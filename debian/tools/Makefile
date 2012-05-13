@@ -10,7 +10,7 @@ default-config: clean svn-make-config
 	./svn-make-config
 
 svn-make-config: svn-make-config.o
-	libtool --mode=link gcc svn-make-config.o $(DEB_BUILDDIR)/subversion/libsvn_client/libsvn_client-1.la -o svn-make-config
+	libtool --mode=link gcc svn-make-config.o $(DEB_BUILDDIR)/subversion/libsvn_client/libsvn_client-1.la $(DEB_BUILDDIR)/subversion/libsvn_subr/libsvn_subr-1.la -o svn-make-config -lapr-1
 
 clean:
 	$(RM) svn-make-config svn-make-config.o

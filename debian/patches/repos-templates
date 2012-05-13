@@ -1,20 +1,36 @@
-#! /bin/sh /usr/share/dpatch/dpatch-run
-##
-## repos-templates by <dwhedon@debian.org>
+From: David Kimdon <dwhedon@debian.org>
+Date: Tue, 10 Feb 2004 15:58:12 -0600
+Subject: Make default hook templates convenient to use
 
-@DPATCH@
---- a/subversion/libsvn_repos/repos.c
-+++ b/subversion/libsvn_repos/repos.c
-@@ -266,7 +266,7 @@
+Newly created repositories have a post-commit.tmpl that calls
+commit-email.pl and then log-commit.py. It does not first set a path,
+so unless someone edits the hook, commit-email.pl cannot be found at
+all.  Likewise for other scripts the hook calls.
+
+[peter@p12n.org, 2005-12-03: Now hooks live in /usr/share/subversion,
+ not /usr/lib/subversion.]
+
+[peter@p12n.org, 2009-03-20: Change /usr/share/subversion/hook-scripts/
+ to $REPOS/hooks/ everywhere in the hook script .tmpl example files.  I
+ want to encourage repository administrators to copy the hooks, not just
+ use them in place.  Makes it easier to upgrade without breaking stuff.]
+
+Fixes: http://bugs.debian.org/210901
+ 
+Index: subversion-1.7.0/subversion/libsvn_repos/repos.c
+===================================================================
+--- subversion-1.7.0.orig/subversion/libsvn_repos/repos.c	2011-10-20 20:47:32.000000000 +0200
++++ subversion-1.7.0/subversion/libsvn_repos/repos.c	2011-10-20 21:55:48.000000000 +0200
+@@ -275,7 +275,7 @@
  
  #define PREWRITTEN_HOOKS_TEXT                                                 \
    "# For more examples and pre-written hooks, see those in"                NL \
 -  "# the Subversion repository at"                                         NL \
 +  "# /usr/share/subversion/hook-scripts, and in the repository at"         NL \
-   "# http://svn.collab.net/repos/svn/trunk/tools/hook-scripts/ and"        NL \
-   "# http://svn.collab.net/repos/svn/trunk/contrib/hook-scripts/"          NL
+   "# http://svn.apache.org/repos/asf/subversion/trunk/tools/hook-scripts/ and"        NL \
+   "# http://svn.apache.org/repos/asf/subversion/trunk/contrib/hook-scripts/"          NL
  
-@@ -345,8 +345,11 @@
+@@ -354,8 +354,11 @@
  "REPOS=\"$1\""                                                               NL
  "USER=\"$2\""                                                                NL
  ""                                                                           NL
@@ -28,7 +44,7 @@
  ""                                                                           NL
  "# All checks passed, so allow the commit."                                  NL
  "exit 0"                                                                     NL;
-@@ -433,10 +436,13 @@
+@@ -442,10 +445,13 @@
  "$SVNLOOK log -t \"$TXN\" \"$REPOS\" | \\"                                   NL
  "   grep \"[a-zA-Z0-9]\" > /dev/null || exit 1"                              NL
  ""                                                                           NL
@@ -44,7 +60,7 @@
  ""                                                                           NL
  "# All checks passed, so allow the commit."                                  NL
  "exit 0"                                                                     NL;
-@@ -743,7 +749,7 @@
+@@ -756,7 +762,7 @@
  "REPOS=\"$1\""                                                               NL
  "REV=\"$2\""                                                                 NL
                                                                               NL
@@ -53,7 +69,7 @@
  
  #undef SCRIPT_NAME
  
-@@ -804,7 +810,8 @@
+@@ -817,7 +823,8 @@
  "USER=\"$2\""                                                                NL
  ""                                                                           NL
  "# Send email to interested parties, let them know a lock was created:"      NL
@@ -63,7 +79,7 @@
  
  #undef SCRIPT_NAME
  
-@@ -863,7 +870,8 @@
+@@ -876,7 +883,8 @@
  "USER=\"$2\""                                                                NL
  ""                                                                           NL
  "# Send email to interested parties, let them know a lock was removed:"      NL
@@ -73,7 +89,7 @@
  
  #undef SCRIPT_NAME
  
-@@ -928,8 +936,8 @@
+@@ -941,8 +949,8 @@
  "PROPNAME=\"$4\""                                                            NL
  "ACTION=\"$5\""                                                              NL
  ""                                                                           NL

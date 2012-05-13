@@ -1,3 +1,109 @@
+subversion (1.7.3-0ubuntu0~ppa1) lucid; urgency=low
+
+  * Update to latest upstream version.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Wed, 15 Feb 2012 21:17:18 +0100
+
+subversion (1.7.2-0ubuntu0~ppa1) lucid; urgency=low
+
+  * Update to latest upstream version.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Mon, 12 Dec 2011 08:47:46 +0100
+
+subversion (1.7.1-0ubuntu0~ppa10) lucid; urgency=low
+
+  * Fix path for perl related files to try to include them again.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Thu, 03 Nov 2011 23:34:47 +0100
+
+subversion (1.7.1-0ubuntu0~ppa9) lucid; urgency=low
+
+  * Rebuild for all versions to update invalid dependency on libserf1.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Wed, 02 Nov 2011 21:55:49 +0100
+
+subversion (1.7.1-0ubuntu0~ppa8) lucid; urgency=low
+
+  * Oneiric and Precise builds require libs for svn-make-config.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Sun, 30 Oct 2011 09:50:43 +0100
+
+subversion (1.7.1-0ubuntu0~ppa7) lucid; urgency=low
+
+  * Trigger rebuild to automatically populate all Versions via a script.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Sat, 29 Oct 2011 11:01:36 +0200
+
+subversion (1.7.1-0ubuntu0~ppa6) lucid; urgency=low
+
+  * Remove svn_ra_serf_init from libsvn1.symbols, file svn_ra.i states this is
+    not a public interface and it caused trouble if libserf-1.* is not available
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Fri, 28 Oct 2011 21:05:04 +0200
+
+subversion (1.7.1-0ubuntu0~ppa5) lucid; urgency=low
+
+  * Update symbols-file to try to fix strange dependency on libserf-private.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Wed, 26 Oct 2011 11:14:33 +0200
+
+subversion (1.7.1-0ubuntu0~ppa4) lucid; urgency=low
+
+  * Add patch to set version-info to 1 to get *so.1*
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Tue, 25 Oct 2011 14:43:27 +0200
+
+subversion (1.7.1-0ubuntu0~ppa3) lucid; urgency=low
+
+  * Update symbols file once more for 1.7.1
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Tue, 25 Oct 2011 07:36:13 +0200
+
+subversion (1.7.1-0ubuntu0~ppa2) lucid; urgency=low
+
+  * Apply some minor patches from Bug 621692.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Mon, 24 Oct 2011 23:53:42 +0200
+
+subversion (1.7.1-0ubuntu0~ppa1) lucid; urgency=low
+
+  * Bump to Subversion 1.7.1
+  * Add --with-serf=...
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Mon, 24 Oct 2011 21:16:34 +0200
+
+subversion (1.7.0-0ubuntu0~ppa4) lucid; urgency=low
+
+  * Remove more files which are not part of Subversion any more.
+  * libs are named .so.0 instead .so.1 now?
+  * update debian/libsvn1.symbols
+  * some _fs_ libs seem to require symbols now, do not exclude it from
+    makeshlibs
+  * some rm is not trying to delete a directory, add "-r".
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Fri, 21 Oct 2011 19:44:52 +0200
+
+subversion (1.7.0-0ubuntu0~ppa3) lucid; urgency=low
+
+  * Remove subversion-tools as the contrib-folder is gone in 1.7.0.
+  * Remove other contrib-items as the whole contrib-dir is gone.
+  * Add dependency on libserf1, somehow the ppa build reports this
+    as missing, not sure why?
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Thu, 20 Oct 2011 22:19:02 +0200
+
+subversion (1.7.0-0ubuntu0~ppa2) lucid; urgency=low
+
+  * Switch to format 3-quilt to use orig.tar.bz2.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Thu, 20 Oct 2011 21:56:49 +0200
+
+subversion (1.7.0-0ubuntu0~ppa1) lucid; urgency=low
+
+  * Update to latest version from subversion.apache.org.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Wed, 19 Oct 2011 00:14:10 +0200
+
 subversion (1.6.6dfsg-2ubuntu1.3) lucid-security; urgency=low
 
   * SECURITY UPDATE: denial of service via baselined WebDAV resource
