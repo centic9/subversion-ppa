@@ -2634,26 +2634,56 @@ notification_receiver(void *baton, const svn_wc_notify_t *notify,
 
       if (notify->action == svn_wc_notify_update_add)
         {
-          svn_boolean_t is_root_of_added_subtree = FALSE;
-          const char *added_path = apr_pstrdup(notify_b->pool, notify->path);
-          const char *added_path_parent = NULL;
+          svn_boolean_t root_of_added_subtree = TRUE;
 
           /* Stash the root path of any added subtrees. */
           if (notify_b->added_abspaths == NULL)
             {
+              /* The first added path is always a root. */
               notify_b->added_abspaths = apr_hash_make(notify_b->pool);
-              is_root_of_added_subtree = TRUE;
             }
           else
             {
-              added_path_parent = svn_dirent_dirname(added_path, pool);
-              if (!apr_hash_get(notify_b->added_abspaths, added_path_parent,
-                                APR_HASH_KEY_STRING))
-                is_root_of_added_subtree = TRUE;
+              const char *added_path_parent =
+                svn_dirent_dirname(notify->path, pool);
+              apr_pool_t *subpool = svn_pool_create(pool);
+
+              /* Is NOTIFY->PATH the root of an added subtree? */
+              while (strcmp(notify_b->merge_b->target_abspath,
+                            added_path_parent))
+                {
+                  if (apr_hash_get(notify_b->added_abspaths,
+                                   added_path_parent,
+                                   APR_HASH_KEY_STRING))
+                    {
+                      root_of_added_subtree = FALSE;
+                      break;
+                    }
+
+                  added_path_parent = svn_dirent_dirname(
+                    added_path_parent, subpool);
+                }
+
+              svn_pool_destroy(subpool);
             }
-          if (is_root_of_added_subtree)
-            apr_hash_set(notify_b->added_abspaths, added_path,
-                         APR_HASH_KEY_STRING, added_path);
+
+          if (root_of_added_subtree)
+            {
+              const char *added_root_path = apr_pstrdup(notify_b->pool,
+                                                        notify->path);
+              apr_hash_set(notify_b->added_abspaths, added_root_path,
+                           APR_HASH_KEY_STRING, added_root_path);
+            }
+        }
+
+      if (notify->action == svn_wc_notify_update_delete
+          && notify_b->added_abspaths)
+        {
+          /* Issue #4166: If a previous merge added NOTIFY_ABSPATH, but we
+             are now deleting it, then remove it from the list of added
+             paths. */
+          apr_hash_set(notify_b->added_abspaths, notify->path,
+                       APR_HASH_KEY_STRING, NULL);
         }
     }
 
@@ -6082,8 +6112,8 @@ static int
 compare_merge_source_ts(const void *a,
                         const void *b)
 {
-  svn_revnum_t a_rev = ((const merge_source_t *)a)->rev1;
-  svn_revnum_t b_rev = ((const merge_source_t *)b)->rev1;
+  svn_revnum_t a_rev = (*(const merge_source_t *const *)a)->rev1;
+  svn_revnum_t b_rev = (*(const merge_source_t *const *)b)->rev1;
   if (a_rev == b_rev)
     return 0;
   return a_rev < b_rev ? 1 : -1;
