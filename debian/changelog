@@ -1,8 +1,8 @@
-subversion (1.7.4-0ubuntu0~ppa1) lucid; urgency=low
+subversion (1.7.4-0ubuntu0~ppa1) precise; urgency=low
 
   * Update to latest upstream version.
 
- -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Thu, 15 Mar 2012 19:46:20 +0100
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Sun, 13 May 2012 20:14:28 +0200
 
 subversion (1.7.3-0ubuntu0~ppa1) lucid; urgency=low
 
