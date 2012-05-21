@@ -1,4 +1,10 @@
-subversion (1.7.5-0ubuntu0~ppa1) quantal; urgency=low
+subversion (1.7.5-0ubuntu0~ppa2) precise; urgency=low
+
+  * Fix target version to precise
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Mon, 21 May 2012 20:32:27 +0200
+
+subversion (1.7.5-0ubuntu0~ppa1) precise; urgency=low
 
   * Update to latest upstream version.
 
