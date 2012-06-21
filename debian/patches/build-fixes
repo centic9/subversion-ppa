@@ -1,7 +1,12 @@
-Index: subversion-1.7.0/build/generator/swig/checkout_swig_header.py
-===================================================================
---- subversion-1.7.0.orig/build/generator/swig/checkout_swig_header.py	2011-10-20 20:45:57.000000000 +0200
-+++ subversion-1.7.0/build/generator/swig/checkout_swig_header.py	2011-10-20 21:55:44.000000000 +0200
+Fix some build problems:
+
+- SWIG out-of-tree stuff
+- Disable auth-test.c, which tries to test things like gnome-keyring.
+  Unlikely to work in a build chroot.
+- Add aprutil as a direct dependency for libsvn_client and libsvn_ra.
+
+--- a/build/generator/swig/checkout_swig_header.py
++++ b/build/generator/swig/checkout_swig_header.py
 @@ -40,15 +40,14 @@
  
    def write_makefile_rules(self, makefile):
@@ -22,10 +27,8 @@ Index: subversion-1.7.0/build/generator/swig/checkout_swig_header.py
                       '\t$(CHECKOUT_SWIG) %s\n\n' % path)
      makefile.write('SWIG_CHECKOUT_FILES = %s\n\n\n'
                     % " ".join(checkout_locations))
-Index: subversion-1.7.0/Makefile.in
-===================================================================
---- subversion-1.7.0.orig/Makefile.in	2011-10-20 20:47:30.000000000 +0200
-+++ subversion-1.7.0/Makefile.in	2011-10-20 21:55:44.000000000 +0200
+--- a/Makefile.in
++++ b/Makefile.in
 @@ -290,14 +290,14 @@
  
  # The path to generated and complementary source files for the SWIG
@@ -38,10 +41,9 @@ Index: subversion-1.7.0/Makefile.in
 +SWIG_RB_DIR = $(top_builddir)/subversion/bindings/swig/ruby
  
  # The path to the source files for the SWIG bindings
--SWIG_PL_SRC_DIR = $(abs_srcdir)/subversion/bindings/swig/perl
+ SWIG_PL_SRC_DIR = $(abs_srcdir)/subversion/bindings/swig/perl
 -SWIG_PY_SRC_DIR = $(abs_srcdir)/subversion/bindings/swig/python
 -SWIG_RB_SRC_DIR = $(abs_srcdir)/subversion/bindings/swig/ruby
-+SWIG_PL_SRC_DIR = $(top_srcdir)/subversion/bindings/swig/perl
 +SWIG_PY_SRC_DIR = $(top_srcdir)/subversion/bindings/swig/python
 +SWIG_RB_SRC_DIR = $(top_srcdir)/subversion/bindings/swig/ruby
  
@@ -76,10 +78,8 @@ Index: subversion-1.7.0/Makefile.in
  	done
  
  extraclean-swig-rb: clean-swig-rb
-Index: subversion-1.7.0/build/generator/gen_base.py
-===================================================================
---- subversion-1.7.0.orig/build/generator/gen_base.py	2011-10-20 20:45:56.000000000 +0200
-+++ subversion-1.7.0/build/generator/gen_base.py	2011-10-20 21:55:44.000000000 +0200
+--- a/build/generator/gen_base.py
++++ b/build/generator/gen_base.py
 @@ -333,7 +333,8 @@
  
  class SWIGSource(SourceFile):
@@ -90,10 +90,8 @@ Index: subversion-1.7.0/build/generator/gen_base.py
  
  
  lang_abbrev = {
-Index: subversion-1.7.0/build/generator/swig/header_wrappers.py
-===================================================================
---- subversion-1.7.0.orig/build/generator/swig/header_wrappers.py	2011-10-20 20:45:57.000000000 +0200
-+++ subversion-1.7.0/build/generator/swig/header_wrappers.py	2011-10-20 21:55:44.000000000 +0200
+--- a/build/generator/swig/header_wrappers.py
++++ b/build/generator/swig/header_wrappers.py
 @@ -52,7 +52,7 @@
      """Write makefile rules for generating SWIG wrappers for Subversion
      header files."""
@@ -103,11 +101,17 @@ Index: subversion-1.7.0/build/generator/swig/header_wrappers.py
      makefile.write('GEN_SWIG_WRAPPER = cd $(top_srcdir) && $(PYTHON)' +
                     ' %s build.conf $(SWIG)\n\n'  % python_script)
      for fname in self.includes:
-Index: subversion-1.7.0/configure.ac
-===================================================================
---- subversion-1.7.0.orig/configure.ac	2011-10-20 20:47:30.000000000 +0200
-+++ subversion-1.7.0/configure.ac	2011-10-20 21:55:44.000000000 +0200
-@@ -1355,6 +1355,11 @@
+--- a/configure.ac
++++ b/configure.ac
+@@ -668,6 +668,7 @@
+ fi
+ 
+ AH_BOTTOM(
++#undef /* */ _
+ #define N_(x) x
+ #define U_(x) x
+ #ifdef ENABLE_NLS
+@@ -1355,6 +1356,11 @@
  rm -f .swig_checked
  
  AC_OUTPUT
@@ -119,11 +123,27 @@ Index: subversion-1.7.0/configure.ac
  
  # ==== Print final messages to user ==========================================
  
-Index: subversion-1.7.0/build.conf
-===================================================================
---- subversion-1.7.0.orig/build.conf	2011-10-20 20:47:30.000000000 +0200
-+++ subversion-1.7.0/build.conf	2011-10-20 21:55:44.000000000 +0200
-@@ -694,13 +694,14 @@
+--- a/build.conf
++++ b/build.conf
+@@ -196,7 +196,7 @@
+ description = Subversion Client Library
+ type = lib
+ path = subversion/libsvn_client
+-libs = libsvn_wc libsvn_ra libsvn_delta libsvn_diff libsvn_subr apriconv apr
++libs = libsvn_wc libsvn_ra libsvn_delta libsvn_diff libsvn_subr aprutil apriconv apr
+ install = lib
+ msvc-export = svn_client.h private/svn_client_private.h
+ 
+@@ -259,7 +259,7 @@
+ description = Subversion Repository Access Library
+ type = lib
+ path = subversion/libsvn_ra
+-libs = libsvn_delta libsvn_subr ra-libs apriconv apr
++libs = libsvn_delta libsvn_subr ra-libs aprutil apriconv apr
+ # conditionally add more dependencies
+ add-deps = $(SVN_RA_LIB_DEPS)
+ add-install-deps = $(SVN_RA_LIB_INSTALL_DEPS)
+@@ -703,13 +703,14 @@
  # ----------------------------------------------------------------------------
  # Tests for libsvn_subr
  
@@ -145,3 +165,33 @@ Index: subversion-1.7.0/build.conf
  
  [cache-test]
  description = Test in-memory cache
+--- a/subversion/libsvn_ra_serf/update.c
++++ b/subversion/libsvn_ra_serf/update.c
+@@ -2528,12 +2528,6 @@
+          then go process the pending content.  */
+       if (!parser_ctx->paused && parser_ctx->pending != NULL)
+         SVN_ERR(svn_ra_serf__process_pending(parser_ctx, iterpool_inner));
+-
+-      /* Debugging purposes only! */
+-      for (i = 0; i < sess->num_conns; i++)
+-        {
+-         serf_debug__closed_conn(sess->conns[i]->bkt_alloc);
+-        }
+     }
+ 
+   /* Ensure that we opened and closed our root dir and that we closed
+--- a/subversion/libsvn_ra_serf/util.c
++++ b/subversion/libsvn_ra_serf/util.c
+@@ -716,12 +716,6 @@
+ 
+           return svn_error_wrap_apr(status, _("Error running context"));
+         }
+-
+-      /* Debugging purposes only! */
+-      for (i = 0; i < sess->num_conns; i++)
+-        {
+-          serf_debug__closed_conn(sess->conns[i]->bkt_alloc);
+-        }
+     }
+   svn_pool_destroy(iterpool);
+ 

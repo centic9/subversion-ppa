@@ -1377,7 +1377,8 @@ svn_diff_parse_next_patch(svn_patch_t **patch,
       /* Run the state machine. */
       for (i = 0; i < (sizeof(transitions) / sizeof(transitions[0])); i++)
         {
-          if (starts_with(line->data, transitions[i].expected_input)
+          if (line->len > strlen(transitions[i].expected_input)
+              && starts_with(line->data, transitions[i].expected_input)
               && state == transitions[i].required_state)
             {
               SVN_ERR(transitions[i].fn(&state, line->data, *patch,
@@ -1394,24 +1395,19 @@ svn_diff_parse_next_patch(svn_patch_t **patch,
         }
       else if (state == state_git_tree_seen && line_after_tree_header_read)
         {
-          /* git patches can contain an index line after the file mode line */
-          if (!starts_with(line->data, "index "))
-          {
-            /* We have a valid diff header for a patch with only tree changes.
-             * Rewind to the start of the line just read, so subsequent calls
-             * to this function don't end up skipping the line -- it may
-             * contain a patch. */
-            SVN_ERR(svn_io_file_seek(patch_file->apr_file, APR_SET, &last_line,
-                    scratch_pool));
-            break;
-          }
+          /* We have a valid diff header for a patch with only tree changes.
+           * Rewind to the start of the line just read, so subsequent calls
+           * to this function don't end up skipping the line -- it may
+           * contain a patch. */
+          SVN_ERR(svn_io_file_seek(patch_file->apr_file, APR_SET, &last_line,
+                                   scratch_pool));
+          break;
         }
       else if (state == state_git_tree_seen)
         {
           line_after_tree_header_read = TRUE;
         }
-      else if (! valid_header_line && state != state_start
-               && !starts_with(line->data, "index "))
+      else if (! valid_header_line && state != state_start)
         {
           /* We've encountered an invalid diff header.
            *

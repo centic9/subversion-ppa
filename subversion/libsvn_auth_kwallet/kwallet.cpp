@@ -181,9 +181,8 @@ kwallet_terminate(void *data)
 
 /* Implementation of svn_auth__password_get_t that retrieves
    the password from KWallet. */
-static svn_error_t *
-kwallet_password_get(svn_boolean_t *done,
-                     const char **password,
+static svn_boolean_t
+kwallet_password_get(const char **password,
                      apr_hash_t *creds,
                      const char *realmstring,
                      const char *username,
@@ -191,22 +190,14 @@ kwallet_password_get(svn_boolean_t *done,
                      svn_boolean_t non_interactive,
                      apr_pool_t *pool)
 {
-  QString wallet_name = get_wallet_name(parameters);
-
-  *done = FALSE;
+  if (non_interactive)
+    {
+      return FALSE;
+    }
 
   if (! dbus_bus_get(DBUS_BUS_SESSION, NULL))
     {
-      return SVN_NO_ERROR;
-    }
-
-  if (non_interactive)
-    {
-      if (!KWallet::Wallet::isOpen(wallet_name))
-        return SVN_NO_ERROR;
-
-      /* There is a race here: the wallet was open just now, but will
-         it still be open when we come to use it below? */
+      return FALSE;
     }
 
   QCoreApplication *app;
@@ -225,6 +216,8 @@ kwallet_password_get(svn_boolean_t *done,
                      ki18n("Version control system"),
                      KCmdLineArgs::CmdLineArgKDE);
   KComponentData component_data(KCmdLineArgs::aboutData());
+  svn_boolean_t ret = FALSE;
+  QString wallet_name = get_wallet_name(parameters);
   QString folder = QString::fromUtf8("Subversion");
   QString key =
     QString::fromUtf8(username) + "@" + QString::fromUtf8(realmstring);
@@ -245,7 +238,7 @@ kwallet_password_get(svn_boolean_t *done,
                   *password = apr_pstrmemdup(pool,
                                              q_password.toUtf8().data(),
                                              q_password.size());
-                  *done = TRUE;
+                  ret = TRUE;
                 }
             }
         }
@@ -253,14 +246,13 @@ kwallet_password_get(svn_boolean_t *done,
 
   apr_pool_cleanup_register(pool, parameters, kwallet_terminate, NULL);
 
-  return SVN_NO_ERROR;
+  return ret;
 }
 
 /* Implementation of svn_auth__password_set_t that stores
    the password in KWallet. */
-static svn_error_t *
-kwallet_password_set(svn_boolean_t *done,
-                     apr_hash_t *creds,
+static svn_boolean_t
+kwallet_password_set(apr_hash_t *creds,
                      const char *realmstring,
                      const char *username,
                      const char *password,
@@ -268,22 +260,14 @@ kwallet_password_set(svn_boolean_t *done,
                      svn_boolean_t non_interactive,
                      apr_pool_t *pool)
 {
-  QString wallet_name = get_wallet_name(parameters);
-
-  *done = FALSE;
+  if (non_interactive)
+    {
+      return FALSE;
+    }
 
   if (! dbus_bus_get(DBUS_BUS_SESSION, NULL))
     {
-      return SVN_NO_ERROR;
-    }
-
-  if (non_interactive)
-    {
-      if (!KWallet::Wallet::isOpen(wallet_name))
-        return SVN_NO_ERROR;
-
-      /* There is a race here: the wallet was open just now, but will
-         it still be open when we come to use it below? */
+      return FALSE;
     }
 
   QCoreApplication *app;
@@ -302,7 +286,9 @@ kwallet_password_set(svn_boolean_t *done,
                      ki18n("Version control system"),
                      KCmdLineArgs::CmdLineArgKDE);
   KComponentData component_data(KCmdLineArgs::aboutData());
+  svn_boolean_t ret = FALSE;
   QString q_password = QString::fromUtf8(password);
+  QString wallet_name = get_wallet_name(parameters);
   QString folder = QString::fromUtf8("Subversion");
   KWallet::Wallet *wallet = get_wallet(wallet_name, parameters);
   if (wallet)
@@ -321,14 +307,14 @@ kwallet_password_set(svn_boolean_t *done,
             + QString::fromUtf8(realmstring);
           if (wallet->writePassword(key, q_password) == 0)
             {
-              *done = TRUE;
+              ret = TRUE;
             }
         }
     }
 
   apr_pool_cleanup_register(pool, parameters, kwallet_terminate, NULL);
 
-  return SVN_NO_ERROR;
+  return ret;
 }
 
 /* Get cached encrypted credentials from the simple provider's cache. */

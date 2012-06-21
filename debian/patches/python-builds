@@ -1,26 +1,11 @@
-From: Matthias Klose <doko@debian.org>
-Date: Mon, 14 Apr 2008 12:18:04 -0500 (actually earlier)
-Subject: Allow bindings built for multiple versions of Python to coexist
-
-> The major motivation for this is that the built bindings are specific
-> to the used minor version of Python.
-
-Speaking of which, libsvn_swig_py is specific to the minor version, and
-at least in Debian/Ubuntu, we install that to the system lib dir. Thus
-Matthias Klose wrote the following patch. It adds the variables PYVER
-and PYTHON_INCLUDES to the Makefile so they can be specified from the
-command line without rerunning configure.
-
-Mostly, rename libsvn_swig_py to libsvn_swig_py2.x.
-
-[peter@p12n.org, 2008-05-29: port to svn 1.5.x]
+Build for multiple python versions.  Patch from Matthias Klose
+<doko@debian.org> via Ubuntu.  Mostly, rename libsvn_swig_py to
+libsvn_swig_py2.x.
 
 Submitted upstream: http://svn.haxx.se/dev/archive-2008-05/0361.shtml
 
-Index: subversion-1.7.0/Makefile.in
-===================================================================
---- subversion-1.7.0.orig/Makefile.in	2011-10-20 21:55:54.000000000 +0200
-+++ subversion-1.7.0/Makefile.in	2011-10-20 21:55:56.000000000 +0200
+--- a/Makefile.in
++++ b/Makefile.in
 @@ -132,6 +132,7 @@
  APACHE_LDFLAGS = @APACHE_LDFLAGS@
  
@@ -29,10 +14,8 @@ Index: subversion-1.7.0/Makefile.in
  SWIG_PY_INCLUDES = @SWIG_PY_INCLUDES@ -I$(SWIG_SRC_DIR)/python/libsvn_swig_py
  SWIG_PY_COMPILE = @SWIG_PY_COMPILE@
  SWIG_PY_LINK = @SWIG_PY_LINK@
-Index: subversion-1.7.0/build/ac-macros/swig.m4
-===================================================================
---- subversion-1.7.0.orig/build/ac-macros/swig.m4	2011-10-20 20:45:56.000000000 +0200
-+++ subversion-1.7.0/build/ac-macros/swig.m4	2011-10-20 21:55:56.000000000 +0200
+--- a/build/ac-macros/swig.m4
++++ b/build/ac-macros/swig.m4
 @@ -109,7 +109,8 @@
      AC_CACHE_CHECK([for Python includes], [ac_cv_python_includes],[
        ac_cv_python_includes="`$PYTHON ${abs_srcdir}/build/get-py-info.py --includes`"
@@ -51,11 +34,9 @@ Index: subversion-1.7.0/build/ac-macros/swig.m4
    AC_SUBST(SWIG_PY_INCLUDES)
    AC_SUBST(SWIG_PY_COMPILE)
    AC_SUBST(SWIG_PY_LINK)
-Index: subversion-1.7.0/build.conf
-===================================================================
---- subversion-1.7.0.orig/build.conf	2011-10-20 21:55:49.000000000 +0200
-+++ subversion-1.7.0/build.conf	2011-10-20 21:55:56.000000000 +0200
-@@ -404,7 +404,7 @@
+--- a/build.conf
++++ b/build.conf
+@@ -413,7 +413,7 @@
  type = swig
  path = subversion/bindings/swig
  sources = core.i
@@ -64,7 +45,7 @@ Index: subversion-1.7.0/build.conf
         libsvn_diff libsvn_subr apr
  description = Subversion core library bindings
  include-runtime = yes
-@@ -413,7 +413,7 @@
+@@ -422,7 +422,7 @@
  type = swig
  path = subversion/bindings/swig
  sources = svn_client.i
@@ -73,7 +54,7 @@ Index: subversion-1.7.0/build.conf
         libsvn_client libsvn_subr apr
  nonlibs = swig_core
  description = Subversion client library bindings
-@@ -422,7 +422,7 @@
+@@ -431,7 +431,7 @@
  type = swig
  path = subversion/bindings/swig
  sources = svn_delta.i
@@ -82,7 +63,7 @@ Index: subversion-1.7.0/build.conf
         libsvn_delta libsvn_subr apr
  nonlibs = swig_core
  description = Subversion delta library bindings
-@@ -431,7 +431,7 @@
+@@ -440,7 +440,7 @@
  type = swig
  path = subversion/bindings/swig
  sources = svn_diff.i
@@ -91,7 +72,7 @@ Index: subversion-1.7.0/build.conf
         libsvn_diff libsvn_subr apr
  nonlibs = swig_core
  description = Subversion diff library bindings
-@@ -440,7 +440,7 @@
+@@ -449,7 +449,7 @@
  type = swig
  path = subversion/bindings/swig
  sources = svn_fs.i
@@ -100,7 +81,7 @@ Index: subversion-1.7.0/build.conf
         libsvn_fs libsvn_subr apr
  nonlibs = swig_core
  description = Subversion FS library bindings
-@@ -449,7 +449,7 @@
+@@ -458,7 +458,7 @@
  type = swig
  path = subversion/bindings/swig
  sources = svn_ra.i
@@ -109,7 +90,7 @@ Index: subversion-1.7.0/build.conf
         libsvn_ra libsvn_subr apr
  nonlibs = swig_core
  description = Subversion RA library bindings
-@@ -458,7 +458,7 @@
+@@ -467,7 +467,7 @@
  type = swig
  path = subversion/bindings/swig
  sources = svn_repos.i
@@ -118,7 +99,7 @@ Index: subversion-1.7.0/build.conf
         libsvn_repos libsvn_subr apr
  nonlibs = swig_core
  description = Subversion repository library bindings
-@@ -467,13 +467,13 @@
+@@ -476,13 +476,13 @@
  type = swig
  path = subversion/bindings/swig
  sources = svn_wc.i

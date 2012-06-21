@@ -1189,7 +1189,6 @@ svn_client_commit5(const apr_array_header_t *targets,
   const char *log_msg;
   const char *base_abspath;
   const char *base_url;
-  const char *ra_session_wc;
   apr_array_header_t *rel_targets;
   apr_array_header_t *lock_targets;
   apr_array_header_t *locks_obtained;
@@ -1391,19 +1390,9 @@ svn_client_commit5(const apr_array_header_t *targets,
   cb.info = &commit_info;
   cb.pool = pool;
 
-  /* When committing from multiple WCs, get the RA editor from
-   * the first WC, rather than the BASE_ABSPATH. The BASE_ABSPATH
-   * might be an unrelated parent of nested working copies.
-   * We don't support commits to multiple repositories so using
-   * the first WC to get the RA session is safe. */
-  if (lock_targets->nelts > 1)
-    ra_session_wc = APR_ARRAY_IDX(lock_targets, 0, const char *);
-  else
-    ra_session_wc = base_abspath;
-
   cmt_err = svn_error_trace(
                  get_ra_editor(&ra_session, &editor, &edit_baton, ctx,
-                               base_url, ra_session_wc, log_msg,
+                               base_url, base_abspath, log_msg,
                                commit_items, revprop_table, TRUE, lock_tokens,
                                keep_locks, capture_commit_info,
                                &cb, pool));

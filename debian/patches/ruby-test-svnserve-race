@@ -1,41 +1,21 @@
-From: Roman Zippel <zippel@linux-m68k.org>
-Date: Mon, 28 Aug 2006 02:32:59 +0200
-Subject: ruby tests: Avoid race between starting svnserve and connecting to it
+Bug #378837: Ruby testsuite: wait for svnserve to start before
+connecting to it.  This mainly affects very slow machines - observed
+on various arm and m68k builds.
 
-The tbm NSLU2 patch.  If the client tries to connect too soon, before
-svnserve has initialised itself, the test in progress gets a
-'connection refused' and fails.
-
-This one's only needed on really slow machines.  It prevents random
-ruby testsuite failures - observed on an arm with 32 MB of RAM and
-m68k buildds of unknown specs.
-
-[A predecessor to this patch just used "sleep 1".  rooneg upstream
- didn't like it because it was a kludge and it added 60 seconds to the
- build time.  But oh well, it was easy to write and easy to maintain.
-
- Later the patch was adjusted to use sleep 3 instead of sleep 1, as a
- quick fix for build failures on the even-slower m68k autobuilders.
-
- Roman's implementation of the ruby-test-svnserve-race patch (based
- on an earlier patch from nori) is actually reliable.  In this
- version, instead of just sleeping, we contact the running svnserve
- process in a loop to see if it has started listening.
-
- Thanks to Kobayashi Noritada, Wouter Verhelst and Roman Zippel.]
-
-Fixes: http://bugs.debian.org/378837
+Thanks to Roman Zippel, Kobayashi Noritada, Wouter Verhelst and Martin
+Michlmayr.
 
 --- a/subversion/bindings/swig/ruby/test/util.rb
 +++ b/subversion/bindings/swig/ruby/test/util.rb
-@@ -1,5 +1,6 @@
+@@ -19,6 +19,7 @@
+ 
  require "fileutils"
  require "pathname"
 +require "socket"
+ require "svn/util"
+ require "tmpdir"
  
- require "my-assertions"
- 
-@@ -222,11 +223,7 @@
+@@ -250,11 +251,7 @@
                 "-d", "--foreground")
          }
          pid, status = Process.waitpid2(@svnserve_pid, Process::WNOHANG)
@@ -48,7 +28,7 @@ Fixes: http://bugs.debian.org/378837
            # svnserve started successfully.  Note port number and cease
            # startup attempts.
            @svnserve_port = port
-@@ -289,4 +286,25 @@
+@@ -320,4 +317,25 @@
      include Svnserve
      extend SetupEnvironment
    end

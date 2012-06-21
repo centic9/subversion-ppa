@@ -1,19 +1,11 @@
-From: Roland Illig <roland.illig@gmx.de>
-Date: Sat, 31 Jan 2004 18:31:08 +0100
-Subject: svnshell: Make the error messages for unknown commands less confusing
+Bug #234462: The error messages that svnshell spits out for unknown
+commands are confusing. They should be replaced by a "Unknown command."
+error message.  Upstream says we have no sense of humor.  (:
 
-The error messages that svnshell spits out for unknown commands are
-confusing. They should be replaced by a "Unknown command." error
-message.
+Patch from Roland Illig <roland.illig@gmx.de>.
 
-Upstream says we have no sense of humor. :)
-
-Fixes: http://bugs.debian.org/234462
- 
-Index: subversion-1.7.0/tools/examples/svnshell.py
-===================================================================
---- subversion-1.7.0.orig/tools/examples/svnshell.py	2011-10-20 20:47:32.000000000 +0200
-+++ subversion-1.7.0/tools/examples/svnshell.py	2011-10-20 21:55:53.000000000 +0200
+--- a/tools/examples/svnshell.py
++++ b/tools/examples/svnshell.py
 @@ -56,14 +56,8 @@
    def postcmd(self, stop, line):
      self._setup_prompt()

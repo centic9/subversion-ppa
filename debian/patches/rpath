@@ -1,107 +1,51 @@
-From: David Kimdon <dwhedon@debian.org>
-Date: Mon, 26 Apr 2004 13:13:06 -0500
-Subject: Remove rpath from shared libraries
+Prevent the linker from adding an rpath to shared libraries.  Original
+patch by David Kimdon <dwhedon@debian.org>.  The basic theory is:
 
-Prevent the linker from adding an rpath to shared libraries.
+- Split the $(LINK) makefile macro into $(LINK) and $(LINK_LIB).
+- Comment out LD_RUN_PATH in the Perl makefiles.
+- Use libtool instead of apxs to install the apache modules.
+  libtool relinks without rpath in this case, apxs obviously doesn't.
 
-* Makefile.in (LINK): Remove -rpath.
-  (LINK_LIB): New variable.  This is what we use to link libraries.
-  'libtool' keys off the '-rpath' argument to know that it should create a
-  shared library.  Removing the rpath parameter from the library link will
-  cause libtool to produce a convenience library (a static archive) and no
-  shared libs, that is not what we want.  For libraries in /usr/lib,
-  libtool knows not to actually put the rpath into the binary.
-* build/generator/gen_base.py (TargetLinked): Use the '$(LINK_LIB)'
-  command by default.
-  ($(SWIG_PL_DIR)/native/Makefile): After creating the perl makefiles
-  remove runtime linker path.
-  (TargetExe): Executables should be linked with '$(LINK)' command so
-  no rpath is put into the binary.
-* build.conf (libsvn_swig_py): This should be linked with LINK_LIB.
-* build/generator/gen_make.py (Generator): Fix the swig and apache
-  module link rule to explicitly link to the necessary subversion
-  shared libraries.
-
-OK, so, this isn't really done but I finally concluded that this part
-of rpath.patch works.  It doesn't suppress the rpath for the two apache
-modules, but it does for everything else.  As far as I can tell it
-didn't actually break anything.
-
-I'll try to port the python code for the apache modules but even if I
-don't get it done, we've got fewer lintian warnings than 1.2.0-1 did.
-
-(And really, lintian shouldn't care if an apache module has an rpath
-embedded in it.  It's not a shared library, it's just a module that
-uses shared library *format*.  Same as it shouldn't care about the
-SONAME in the module.)
-
-[dk, 2004-05-02: Pass the desired libraries and search paths
- explicitly to the linker when linking apache modules.]
-
-[dk, 2004-12-10: Fix apache module link.  This way, we don't have
- rpath in apache modules either.]
-
-[dk, 2004-12-10: Remove rpath from the swig libraries, too.]
-
-[dk, 2004-12-11: Remove rpath from perl binding libraries.]
-
-[peter@p12n.org, 2005-12-03: Simplify by using "sed -i".]
-
-[peter@p12n.org, 2006-01-03: Invoke Makefile.PL with
- "INSTALLDIRS=vendor".  By doing this we no longer have to invoke
- Makefile.PL directly in debian/rules, which allows a bit of other
- cleanup.]
-
-[peter@p12n.org, 2006-03-28: Finally strip out rpaths from apache2
- modules.  The trick is just to let libtool install the modules,
- rather than having apxs2 do it (as upstream has) or copying via
- debhelper (as we were doing).  libtool strips out the rpath by first
- relinking the module.]
-
-[peter@p12n.org, 2006-05-06: Simplify the sed expression that comments
- out LD_RUN_PATH settings.]
-
-[peter@p12n.org, 2008-06-20: Fix install-swig-rb target.  libtool
- troubles, y'know.]
-
-[peter@p12n.org, 2009-10-22: Fix the LINK_CXX target, now that we're
- finally using it.  Technically there is a distinction between linking
- a C++ library and a C++ binary, but we don't have any C++ binaries,
- so LINK_CXX means the library.]
-
-[peter@p12n.org, 2010-11-08: Adjust to upstream's new template-based
- Makefile generator.]
- 
-Index: subversion-1.7.0/Makefile.in
-===================================================================
---- subversion-1.7.0.orig/Makefile.in	2011-10-20 21:55:44.000000000 +0200
-+++ subversion-1.7.0/Makefile.in	2011-10-20 21:55:49.000000000 +0200
-@@ -203,9 +203,10 @@
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -203,10 +203,10 @@
  COMPILE_JAVAHL_JAVAC = $(JAVAC) $(JAVAC_FLAGS)
  COMPILE_JAVAHL_JAVAH = $(JAVAH)
  
 -LINK = $(LIBTOOL) $(LTFLAGS) --mode=link $(CC) $(LT_LDFLAGS) $(CFLAGS) $(LDFLAGS) -rpath $(libdir)
+-LINK_LIB = $(LINK) $(LT_SO_VERSION)
+-LINK_CXX = $(LIBTOOL) $(LTCXXFLAGS) --mode=link $(CXX) $(LT_LDFLAGS) $(CXXFLAGS) $(LDFLAGS) -rpath $(libdir)
+-LINK_CXX_LIB = $(LINK_CXX) $(LT_SO_VERSION)
 +LINK = $(LIBTOOL) $(LTFLAGS) --mode=link $(CC) $(LT_LDFLAGS) $(CFLAGS) $(LDFLAGS)
- LINK_LIB = $(LINK) $(LT_SO_VERSION)
- LINK_CXX = $(LIBTOOL) $(LTCXXFLAGS) --mode=link $(CXX) $(LT_LDFLAGS) $(CXXFLAGS) $(LDFLAGS) -rpath $(libdir)
-+LINK_LIB = $(LINK) -rpath $(libdir)
- LINK_CXX_LIB = $(LINK_CXX) $(LT_SO_VERSION)
++LINK_LIB = $(LINK) $(LT_SO_VERSION) -rpath $(libdir)
++LINK_CXX = $(LIBTOOL) $(LTCXXFLAGS) --mode=link $(CXX) $(LT_LDFLAGS) $(CXXFLAGS) $(LDFLAGS)
++LINK_CXX_LIB = $(LINK_CXX) $(LT_SO_VERSION) -rpath $(libdir)
  
  # special link rule for mod_dav_svn
-Index: subversion-1.7.0/build.conf
-===================================================================
---- subversion-1.7.0.orig/build.conf	2011-10-20 21:55:48.000000000 +0200
-+++ subversion-1.7.0/build.conf	2011-10-20 21:55:49.000000000 +0200
-@@ -478,7 +478,7 @@
+ LINK_APACHE_MOD = $(LIBTOOL) $(LTFLAGS) --mode=link $(CC) $(LT_LDFLAGS) $(CFLAGS) $(LDFLAGS) -rpath $(APACHE_LIBEXECDIR) -avoid-version -module $(APACHE_LDFLAGS)
+@@ -736,7 +736,9 @@
+ 	./config.status subversion/bindings/swig/perl/native/Makefile.PL
+ 
+ $(SWIG_PL_DIR)/native/Makefile: $(SWIG_PL_DIR)/native/Makefile.PL
+-	cd $(SWIG_PL_DIR)/native; $(PERL) Makefile.PL
++	cd $(SWIG_PL_DIR)/native; \
++		$(PERL) Makefile.PL INSTALLDIRS=vendor; \
++		sed -i -e '/^LD_RUN_PATH/s/^/#/' Makefile Makefile.[a-z]*
+ 
+ # There is a "readlink -f" command on some systems for the same purpose,
+ # but it's not as portable (e.g. Mac OS X doesn't have it).  These should
+--- a/build.conf
++++ b/build.conf
+@@ -487,7 +487,7 @@
  lang = python
  path = subversion/bindings/swig/python/libsvn_swig_py
  libs = libsvn_client libsvn_wc libsvn_ra libsvn_delta libsvn_subr apriconv apr
 -link-cmd = $(LINK)
-+link-cmd = $(LINK_LIB)
++link-cmd = $(LINK_LIB) $(SWIG_PY_LIBS)
  install = swig-py-lib
  # need special build rule to include -DSWIGPYTHON
  compile-cmd = $(COMPILE_SWIG_PY)
-@@ -501,7 +501,7 @@
+@@ -510,7 +510,7 @@
  lang = ruby
  path = subversion/bindings/swig/ruby/libsvn_swig_ruby
  libs = libsvn_client libsvn_wc libsvn_delta libsvn_subr apriconv apr
@@ -110,10 +54,8 @@ Index: subversion-1.7.0/build.conf
  install = swig-rb-lib
  # need special build rule to include
  compile-cmd = $(COMPILE_SWIG_RB)
-Index: subversion-1.7.0/build/generator/gen_base.py
-===================================================================
---- subversion-1.7.0.orig/build/generator/gen_base.py	2011-10-20 21:55:44.000000000 +0200
-+++ subversion-1.7.0/build/generator/gen_base.py	2011-10-20 21:55:49.000000000 +0200
+--- a/build/generator/gen_base.py
++++ b/build/generator/gen_base.py
 @@ -407,7 +407,7 @@
      self.install = options.get('install')
      self.compile_cmd = options.get('compile-cmd')
@@ -131,3 +73,14 @@ Index: subversion-1.7.0/build/generator/gen_base.py
  
      self.manpages = options.get('manpages', '')
      self.testing = options.get('testing')
+--- a/build/generator/templates/makefile.ezt
++++ b/build/generator/templates/makefile.ezt
+@@ -126,7 +126,7 @@
+ ########################################
+ [for areas]
+ [is areas.type "apache-mod"]install-mods-shared:[for areas.files] [areas.files.fullname][end][for areas.files]
+-	cd [areas.files.dirname] ; $(MKDIR) "$(APACHE_LIBEXECDIR)" ; $(INSTALL_MOD_SHARED) -n [areas.files.name] [areas.files.filename][end]
++	cd [areas.files.dirname] ; $(MKDIR) "$(APACHE_LIBEXECDIR)" ; $(INSTALL_LIB) [areas.files.filename] $(APACHE_LIBEXECDIR)[end]
+ [else]install-[areas.type]: [for areas.files][if-index areas.files first][else] [end][areas.files.fullname][end]
+ 	$(MKDIR) $(DESTDIR)$([areas.varname]dir)[for areas.files][is areas.type "locale"]
+ 	$(MKDIR) [areas.files.installdir]

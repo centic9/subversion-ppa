@@ -65,9 +65,8 @@
 
 /* Implementation of svn_auth__password_set_t that stores
    the password in the OS X KeyChain. */
-static svn_error_t *
-keychain_password_set(svn_boolean_t *done,
-                      apr_hash_t *creds,
+static svn_boolean_t
+keychain_password_set(apr_hash_t *creds,
                       const char *realmstring,
                       const char *username,
                       const char *password,
@@ -107,16 +106,13 @@ keychain_password_set(svn_boolean_t *done,
   if (non_interactive)
     SecKeychainSetUserInteractionAllowed(TRUE);
 
-  *done = (status == 0);
-
-  return SVN_NO_ERROR;
+  return status == 0;
 }
 
 /* Implementation of svn_auth__password_get_t that retrieves
    the password from the OS X KeyChain. */
-static svn_error_t *
-keychain_password_get(svn_boolean_t *done,
-                      const char **password,
+static svn_boolean_t
+keychain_password_get(const char **password,
                       apr_hash_t *creds,
                       const char *realmstring,
                       const char *username,
@@ -127,8 +123,6 @@ keychain_password_get(svn_boolean_t *done,
   OSStatus status;
   UInt32 length;
   void *data;
-
-  *done = FALSE;
 
   if (non_interactive)
     SecKeychainSetUserInteractionAllowed(FALSE);
@@ -143,12 +137,11 @@ keychain_password_get(svn_boolean_t *done,
     SecKeychainSetUserInteractionAllowed(TRUE);
 
   if (status != 0)
-    return SVN_NO_ERROR;
+    return FALSE;
 
   *password = apr_pstrmemdup(pool, data, length);
   SecKeychainItemFreeContent(NULL, data);
-  *done = TRUE;
-  return SVN_NO_ERROR;
+  return TRUE;
 }
 
 /* Get cached encrypted credentials from the simple provider's cache. */

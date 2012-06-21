@@ -350,17 +350,12 @@
 */
 #ifdef SWIGPYTHON
 %typemap(in) (char *buffer, apr_size_t *len) ($*2_type temp) {
-    if (PyLong_Check($input)) {
-        temp = PyLong_AsLong($input);
-    }
-    else if (PyInt_Check($input)) {
-        temp = PyInt_AsLong($input);
-    }
-    else {
+    if (!PyInt_Check($input)) {
         PyErr_SetString(PyExc_TypeError,
                         "expecting an integer for the buffer size");
         SWIG_fail;
     }
+    temp = PyInt_AsLong($input);
     if (temp < 0) {
         PyErr_SetString(PyExc_ValueError,
                         "buffer size must be a positive integer");

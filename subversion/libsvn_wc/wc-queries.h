@@ -1237,7 +1237,7 @@
 
 #define STMT_SELECT_ALL_FILES 140
 #define STMT_140 \
-  "SELECT local_relpath FROM nodes_current " \
+  "SELECT DISTINCT local_relpath FROM nodes " \
   "WHERE wc_id = ?1 AND parent_relpath = ?2 AND kind = 'file' " \
   ""
 
