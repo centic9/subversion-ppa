@@ -1,159 +1,224 @@
-subversion (1.7.6-0ubuntu0~ppa2) precise; urgency=low
-
-  * Bump to upload with full sources because of new upstream version.
-
- -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Sun, 19 Aug 2012 09:34:49 +0200
-
-subversion (1.7.6-0ubuntu0~ppa1) precise; urgency=low
-
-  * Update to latest upstream version.
-
- -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Sun, 19 Aug 2012 09:30:57 +0200
-
-subversion (1.7.5-0ubuntu0~ppa5) precise; urgency=low
-
-  * Bump version to rebuild against updated libserf1.
-
- -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Thu, 19 Jul 2012 23:41:24 +0200
-
-subversion (1.7.5-0ubuntu0~ppa4) precise; urgency=low
-
-  * Bump version for re-upload.
-
- -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Sun, 15 Jul 2012 10:53:20 +0200
-
-subversion (1.7.5-0ubuntu0~ppa3) precise; urgency=low
-
-  * Merge a few small things from the official quantal-package, most changes
-    were not included yet.
-
- -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Sun, 15 Jul 2012 09:52:27 +0200
-
-subversion (1.7.5-0ubuntu0~ppa2) precise; urgency=low
-
-  * Fix target version to precise
-
- -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Mon, 21 May 2012 20:32:27 +0200
-
-subversion (1.7.5-0ubuntu0~ppa1) precise; urgency=low
-
-  * Update to latest upstream version.
-
- -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Sun, 20 May 2012 22:27:48 +0200
-
-subversion (1.7.4-0ubuntu0~ppa1) precise; urgency=low
-
-  * Update to latest upstream version.
-
- -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Sun, 13 May 2012 20:14:28 +0200
-
-subversion (1.7.3-0ubuntu0~ppa1) lucid; urgency=low
-
-  * Update to latest upstream version.
-
- -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Wed, 15 Feb 2012 21:17:18 +0100
-
-subversion (1.7.2-0ubuntu0~ppa1) lucid; urgency=low
-
-  * Update to latest upstream version.
-
- -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Mon, 12 Dec 2011 08:47:46 +0100
-
-subversion (1.7.1-0ubuntu0~ppa10) lucid; urgency=low
-
-  * Fix path for perl related files to try to include them again.
-
- -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Thu, 03 Nov 2011 23:34:47 +0100
-
-subversion (1.7.1-0ubuntu0~ppa9) lucid; urgency=low
-
-  * Rebuild for all versions to update invalid dependency on libserf1.
-
- -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Wed, 02 Nov 2011 21:55:49 +0100
-
-subversion (1.7.1-0ubuntu0~ppa8) lucid; urgency=low
-
-  * Oneiric and Precise builds require libs for svn-make-config.
-
- -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Sun, 30 Oct 2011 09:50:43 +0100
-
-subversion (1.7.1-0ubuntu0~ppa7) lucid; urgency=low
-
-  * Trigger rebuild to automatically populate all Versions via a script.
-
- -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Sat, 29 Oct 2011 11:01:36 +0200
-
-subversion (1.7.1-0ubuntu0~ppa6) lucid; urgency=low
-
-  * Remove svn_ra_serf_init from libsvn1.symbols, file svn_ra.i states this is
-    not a public interface and it caused trouble if libserf-1.* is not available
-
- -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Fri, 28 Oct 2011 21:05:04 +0200
-
-subversion (1.7.1-0ubuntu0~ppa5) lucid; urgency=low
-
-  * Update symbols-file to try to fix strange dependency on libserf-private.
-
- -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Wed, 26 Oct 2011 11:14:33 +0200
-
-subversion (1.7.1-0ubuntu0~ppa4) lucid; urgency=low
-
-  * Add patch to set version-info to 1 to get *so.1*
-
- -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Tue, 25 Oct 2011 14:43:27 +0200
-
-subversion (1.7.1-0ubuntu0~ppa3) lucid; urgency=low
-
-  * Update symbols file once more for 1.7.1
-
- -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Tue, 25 Oct 2011 07:36:13 +0200
-
-subversion (1.7.1-0ubuntu0~ppa2) lucid; urgency=low
-
-  * Apply some minor patches from Bug 621692.
-
- -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Mon, 24 Oct 2011 23:53:42 +0200
-
-subversion (1.7.1-0ubuntu0~ppa1) lucid; urgency=low
-
-  * Bump to Subversion 1.7.1
-  * Add --with-serf=...
-
- -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Mon, 24 Oct 2011 21:16:34 +0200
-
-subversion (1.7.0-0ubuntu0~ppa4) lucid; urgency=low
-
-  * Remove more files which are not part of Subversion any more.
-  * libs are named .so.0 instead .so.1 now?
-  * update debian/libsvn1.symbols
-  * some _fs_ libs seem to require symbols now, do not exclude it from
-    makeshlibs
-  * some rm is not trying to delete a directory, add "-r".
-
- -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Fri, 21 Oct 2011 19:44:52 +0200
-
-subversion (1.7.0-0ubuntu0~ppa3) lucid; urgency=low
-
-  * Remove subversion-tools as the contrib-folder is gone in 1.7.0.
-  * Remove other contrib-items as the whole contrib-dir is gone.
-  * Add dependency on libserf1, somehow the ppa build reports this
-    as missing, not sure why?
-
- -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Thu, 20 Oct 2011 22:19:02 +0200
-
-subversion (1.7.0-0ubuntu0~ppa2) lucid; urgency=low
-
-  * Switch to format 3-quilt to use orig.tar.bz2.
-
- -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Thu, 20 Oct 2011 21:56:49 +0200
-
-subversion (1.7.0-0ubuntu0~ppa1) lucid; urgency=low
-
-  * Update to latest version from subversion.apache.org.
-
- -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Wed, 19 Oct 2011 00:14:10 +0200
-
-subversion (1.6.6dfsg-2ubuntu1.3) lucid-security; urgency=low
+subversion (1.7.5-1ubuntu1) quantal; urgency=low
+
+  * Merge from Debian unstable.  Remaining changes:
+    - Create pot file on build.
+    - Build a python-subversion-dbg package.
+    - Build-depend on python-dbg.
+    - Build-depend on default-jre-headless/-jdk.
+    - Do not apply java-build patch.
+    - debian/rules: Manually create the doxygen output directory, otherwise
+      we get weird build failures when running parallel builds.
+
+ -- Andy Whitcroft <apw@ubuntu.com>  Thu, 21 Jun 2012 15:36:36 +0100
+
+subversion (1.7.5-1) unstable; urgency=low
+
+  [ Peter Samuelson ]
+  * New upstream version.
+    - Refresh patches; remove obsolete no-dbus-spam, kwallet-wid,
+      perl-warning, perl-compiler-flags, po, swig2-compat,
+      disable-failing-tests, python-exception-syntax
+    - Split patches/apr-abi into apr-abi1 (to be submitted) and
+      apr-abi2 (Debian-specific).
+    - Disable patches/ruby-test-info ... for now.
+    - Requires serf 1.0 or higher.
+  * Upstream no longer ships contrib in tarball:
+    - Remove contrib-license-audit
+    - subversion-tools now Recommends: svn2cl
+    - Ship svn-clean, svn-fast-backup, svn_apply_autoprops,
+      svn_load_dirs, commit-email.pl in debian/contrib
+    - Don't ship svnmerge.py, it has outlived its usefulness
+    - Delete patches/{svn2cl-*,svn-clean-ignore,commit-email}
+    - Overhaul debian/copyright
+  * rules: Specify that we want our own libtool.  Otherwise it finds the
+    one from /usr/share/apr-1.0/build, which doesn't support C++.
+  * patches/entropy: Remove as obsolete.  It was a workaround for apr
+    using /dev/random, but apr switched to /dev/urandom in 1.3.
+  * Move emacs plugins from subversion to subversion-tools.
+  * patches/java-osgi-metadata: Add OSGi metadata to the libsvn-java
+    jarfile.  Thanks Jakub Adam.  (Closes: #644438)
+  * Switch from python-support to dh_python2.
+  * patches/python-swig205: New patch: Adjust for swig 2.0.5+ handling of
+    Python ints vs. longs.
+
+  [ Michael Diers ]
+  * More contrib adjustments:
+    - Provide debian/contrib/emacs from upstream VCS contrib/client-side/emacs
+    - Add svn_1.6_releasenotes.html, svn_1.7_releasenotes.html
+    - subversion.docs, subversion.install
+    - subversion-tools.docs, subversion-tools.manpages
+
+ -- Peter Samuelson <peter@p12n.org>  Sat, 16 Jun 2012 23:56:38 -0500
+
+subversion (1.6.18dfsg-1) experimental; urgency=low
+
+  * New upstream version.
+    - patches/sasl-mem-handling: delete obsolete patch.
+  * Add Conflicts and Replaces: libsvn-jni.  (Closes: #675987)
+  * Rename libsvn-ruby1.8 to ruby-svn, per Ruby policy.
+    Leave transition package behind for wheezy.
+
+ -- Peter Samuelson <peter@p12n.org>  Fri, 08 Jun 2012 00:04:19 -0500
+
+subversion (1.6.17dfsg-4) unstable; urgency=medium
+
+  * Ack NMU, thanks Ondrej.  Urgency medium because the NMU fixes RC bugs.
+    - Revert libsvn-java split.  Instead, disable multiarch for libsvn-java.
+      If anyone _needs_ multiarch for Java libraries, which I doubt, we
+      should come up with a way to produce deterministic jar files.
+    - Reintroduce specific db dependencies, so a random binNMU can't
+      change the DB version without warning.
+  * Disable serf support for now, as this release won't properly work with
+    serf 1.0.
+  * patches/g++47: New patch to build with g++ 4.7.
+  * Policy 3.9.3 (no changes).
+  * Move ruby files to /usr/lib/ruby/vendor_ruby per ruby policy.
+
+ -- Peter Samuelson <peter@p12n.org>  Sun, 03 Jun 2012 17:54:15 -0500
+
+subversion (1.6.17dfsg-3.1) unstable; urgency=low
+
+  * Non-maintainer upload
+  * Disable test-suite which was broken by apr 1.4.6 update (Closes: #669494)
+  * Also rescue on Errno::EINVAL (Closes: #624810, #629952)
+  * Split libsvn-java to libsvn-java and libsvn-jni (Closes: #670034)
+  * Depend on generic libdb-dev and db-util (Closes: #621460)
+  * Install java files prior to dh_install -i call
+  * Declare proper relationships between -jni and -java packages
+
+ -- Ondřej Surý <ondrej@debian.org>  Tue, 29 May 2012 15:49:32 +0200
+
+subversion (1.6.17dfsg-3ubuntu5) quantal; urgency=low
+
+  * Switch from libdb4.8-dev to libdb5.1-dev, tracking apr-util.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Wed, 20 Jun 2012 19:19:02 -0600
+
+subversion (1.6.17dfsg-3ubuntu4) quantal; urgency=low
+
+  * Port to gcc-4.7.
+  * Fix APR hash ordering issues in much of the test suite.
+  * Fix python svn_stream_read() to allow Long integers matching its own
+    generated constants.
+  * Fix "svn log -g" output for merges.
+
+ -- Andy Whitcroft <apw@ubuntu.com>  Wed, 20 Jun 2012 13:44:11 +0100
+
+subversion (1.6.17dfsg-3ubuntu3) precise; urgency=low
+
+  * Build using dh_python2
+
+ -- Matthias Klose <doko@ubuntu.com>  Sat, 17 Dec 2011 15:01:54 +0000
+
+subversion (1.6.17dfsg-3ubuntu2) precise; urgency=low
+
+  * Allow libserf-dev to satisfy serf build-dependency.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Sun, 27 Nov 2011 19:02:00 +0000
+
+subversion (1.6.17dfsg-3ubuntu1) precise; urgency=low
+
+  * Resynchronise with Debian.  Remaining changes:
+    - Create pot file on build.
+    - Build a python-subversion-dbg package.
+    - Build-depend on default-jre-headless/-jdk.
+    - Do not apply java-build patch.
+    - debian/rules: Manually create the doxygen output directory, otherwise
+      we get weird build failures when running parallel builds.
+  * Re-enable the serf backend (LP: #830778).
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Sun, 27 Nov 2011 12:45:05 +0000
+
+subversion (1.6.17dfsg-3) unstable; urgency=medium
+
+  * libapache2.preinst: Fix upgrade case from before 1.6.17dfsg-2.
+  * libapache2.prerm: 'a2dismod' modules in reverse dependency order.
+  * patches/apache_module_dependency: New patch to allow mod_authz_svn to
+    load before mod_dav_svn and still use its functions.
+    All these together, Closes: #642250.
+  * Remove a bit more autofoo in 'clean' target.
+
+ -- Peter Samuelson <peter@p12n.org>  Sat, 19 Nov 2011 18:56:28 -0600
+
+subversion (1.6.17dfsg-2ubuntu1) precise; urgency=low
+
+  * Resynchronise with Debian.  Remaining changes:
+    - Create pot file on build.
+    - Build a python-subversion-dbg package.
+    - Build-depend on default-jre-headless/-jdk.
+    - Do not apply java-build patch.
+    - debian/rules: Manually create the doxygen output directory, otherwise
+      we get weird build failures when running parallel builds.
+    - Disable the serf backend because serf is in universe.
+  * Sync up python-subversion-dbg control fields with python-subversion.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Wed, 16 Nov 2011 16:08:09 +0000
+
+subversion (1.6.17dfsg-2) unstable; urgency=low
+
+  * Standards-Version: 3.9.2.  Also, multiarch.
+  * Move to debhelper level 7.
+  * patches/perl-warning: New patch to suppress a bogus Perl undef warning.
+    (Closes: #422699)
+  * patches/swig2-compat: New patch from upstream to build with swig 2.x.
+    (Closes: #634049)
+  * patches/perl-compiler-flags: New patch from upstream to address an
+    issue brought to light by Perl 5.14.  (Closes: #628507)
+  * patches/sasl-mem-handling: New patch from upstream to fix a crash with
+    svn:// URLs and SASL authentication.  (Closes: #631765)
+  * patches/svn2cl-upstream: Use --non-interactive in svn2cl to avoid
+    hanging on, e.g., password prompts.  (Closes: #443860)
+  * patches/python-exception-syntax: New patch: Fix a couple instances of
+    literal string exceptions in Python, which don't work in 2.6+.
+    (Closes: #585358)
+  * Remove some preinst/postinst magic that hasn't been needed in years.
+  * Split authz_svn.load away from dav_svn.load, since most users do not
+    need both.  New installs will enable only dav_svn by default.
+  * Restart apache in libapache2-svn postinst.  (Closes: #610236, #628990)
+  * Improve symbols file with (regex)__ catchall for private symbols not
+    otherwise accounted for.  (Closes: #607544)  I'm also including a
+    workaround for rapidsvn, to be removed when 0.14 is released.
+  * Add ${misc:Depends} everywhere.  Drop libsvn-java dependency on a jre.
+    Thanks, Lintian.
+  * Remove the extra copy of jquery supplied by doxygen, from libsvn-doc.
+    Doesn't seem to even be used.  Thanks, Lintian.
+  * patches/po: New patch from Laurent Bigonville to fix minor issues in
+    fr.po and ja.po.  (Closes: #607381)
+  * Move to dh_lintian, and fix up the overrides a bit.
+
+ -- Peter Samuelson <peter@p12n.org>  Thu, 15 Sep 2011 12:02:03 -0500
+
+subversion (1.6.17dfsg-1) unstable; urgency=high
+
+  * New upstream version.  Includes security fixes:
+    - CVE-2011-1752: Remotely triggered crash in mod_dav_svn
+    - CVE-2011-1783: Remotely triggered memory exhaustion in mod_dav_svn
+    - CVE-2011-1921: Content leak of certain files marked unreadable
+  * svn-bisect: Support $SVN environment variable, requested by Daniel
+    Shahaf upstream.
+  * Update Lintian overrides to account for python through 2.9,
+    in case that ever comes to be.
+
+ -- Peter Samuelson <peter@p12n.org>  Wed, 01 Jun 2011 17:07:33 -0500
+
+subversion (1.6.16dfsg-1) unstable; urgency=high
+
+  * New upstream version.
+    - Fixes CVE-2011-0715: Remotely crash mod_dav_svn anonymously via a
+      lock token.
+  * patches/change-range: New patch to support -cA-B syntax on command line.
+  * Stop using svn-make-config.c; we can do the same just by running svn
+    itself in a controlled home directory.  Delete debian/tools/.
+
+ -- Peter Samuelson <peter@p12n.org>  Thu, 03 Mar 2011 10:55:42 -0600
+
+subversion (1.6.12dfsg-4ubuntu6) precise; urgency=low
+
+  * Rebuild for Perl 5.14.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Wed, 16 Nov 2011 01:03:49 +0000
+
+subversion (1.6.12dfsg-4ubuntu5) oneiric; urgency=low
 
   * SECURITY UPDATE: denial of service via baselined WebDAV resource
     request
@@ -170,9 +235,22 @@ subversion (1.6.6dfsg-2ubuntu1.3) lucid-security; urgency=low
       subversion/mod_dav_svn/authz.c.
     - CVE-2011-1921
 
- -- Marc Deslauriers <marc.deslauriers@ubuntu.com>  Thu, 02 Jun 2011 13:27:51 -0400
+ -- Marc Deslauriers <marc.deslauriers@ubuntu.com>  Fri, 05 Aug 2011 10:53:00 -0400
 
-subversion (1.6.6dfsg-2ubuntu1.2) lucid-security; urgency=low
+subversion (1.6.12dfsg-4ubuntu4) oneiric; urgency=low
+
+  * Disable KWallet support on armel, again temporarily.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Fri, 06 May 2011 14:21:16 +0100
+
+subversion (1.6.12dfsg-4ubuntu3) oneiric; urgency=low
+
+  * Temporarily disable Java and tests on armel to resolve a circular
+    build-depends loop in Oneiric.  These will be re-enabled shortly.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Fri, 06 May 2011 12:27:29 +0100
+
+subversion (1.6.12dfsg-4ubuntu2) natty; urgency=low
 
   * SECURITY UPDATE: denial of service via request containing lock token
     - debian/patches/CVE-2011-0715.patch: correctly handle locks being
@@ -180,24 +258,152 @@ subversion (1.6.6dfsg-2ubuntu1.2) lucid-security; urgency=low
       subversion/mod_dav_svn/version.c.
     - CVE-2011-0715
 
- -- Marc Deslauriers <marc.deslauriers@ubuntu.com>  Mon, 21 Mar 2011 15:10:54 -0400
+ -- Marc Deslauriers <marc.deslauriers@ubuntu.com>  Mon, 21 Mar 2011 13:03:32 -0400
 
-subversion (1.6.6dfsg-2ubuntu1.1) lucid-security; urgency=low
+subversion (1.6.12dfsg-4ubuntu1) natty; urgency=low
 
-  * SECURITY UPDATE: restriction bypass via named repo as a rule scope
-    - debian/patches/CVE-2010-3315.patch: use repo_basename in
-      subversion/mod_dav_svn/authz.c.
-    - CVE-2010-3315
-  * SECURITY UPDATE: denial of service via SVNParentPath walking
-    - debian/patches/CVE-2010-4539.patch: don't try and walk SVNParentPath
-      collection in subversion/mod_dav_svn/repos.c.
-    - CVE-2010-4539
-  * SECURITY UPDATE: denial of service via -g memory leaks
-    - debian/patches/CVE-2010-4644.patch: improve logic in
-      subversion/libsvn_repos/rev_hunt.c.
-    - CVE-2010-4644
+  * Merge with Debian unstable. Remaining changes:
+    - Create pot file on build.
+    - Build a python-subversion-dbg package.
+    - (Build-)depend on default-jre-headless/-jdk.
+    - Do not apply java-build patch.
+    - debian/rules: Manually create the doxygen output directory, otherwise
+      we get weird build failures when running parallel builds.
+    - Disable the serf backend because serf is in universe.
+    - Don't override LD_LIBRARY_PATH completely but prepend to it as to not
+      break fakeroot.
+    - Fix FTBFS against Python 2.7 by disabling some problematic tests.
+    - debian/tools/Makefile:
+      + Add APR_LIBS and use it when linking svn-make-config
+      + svn_config_ensure() moved from libsvn_client/libsvn_client-1.la to
+        libsvn_subr/libsvn_subr-1.la.
 
- -- Marc Deslauriers <marc.deslauriers@ubuntu.com>  Fri, 14 Jan 2011 12:36:43 -0600
+ -- Michael Bienia <geser@ubuntu.com>  Fri, 28 Jan 2011 14:14:19 +0100
+
+subversion (1.6.12dfsg-4) unstable; urgency=high
+
+  * patches/loosen-sqlite-version-check: New patch: Relax the SQLite
+    version check, to match the Debian sqlite3 packaging.
+    (Closes: #608925)
+  * patches/cve-2010-4539: New patch for CVE-2010-4539, fixing a remotely
+    triggered crash in mod_dav_svn involving use of the SVNParentPath
+    feature.  (Closes: #608989)
+
+ -- Peter Samuelson <peter@p12n.org>  Wed, 05 Jan 2011 10:43:01 -0600
+
+subversion (1.6.12dfsg-3) unstable; urgency=medium
+
+  * Apply two patches from upstream 1.6.15:
+    - patches/server-memleak: New patch: fix some server-side memory
+      leaks, including CVE-2010-4644.
+    - patches/no-wc1.7-check: New patch: Stop checking for being inside a
+      1.7 working copy.  The value is too low and the performance penalty
+      too high.
+
+ -- Peter Samuelson <peter@p12n.org>  Wed, 22 Dec 2010 20:38:17 -0600
+
+subversion (1.6.12dfsg-2ubuntu3) natty; urgency=low
+
+  * debian/tools/Makefile: add APR_LIBS and use it when linking
+    svn-make-config:
+    APR_LIBS = `apr-config --ldflags --link-ld --libs`
+
+ -- Loïc Minier <loic.minier@ubuntu.com>  Sat, 20 Nov 2010 11:21:18 +0100
+
+subversion (1.6.12dfsg-2ubuntu2) natty; urgency=low
+
+  [ Barry Warsaw ]
+  * Fix FTBFS against Python 2.7 by disabling some problematic tests.
+    (LP: #670139)
+
+  [ Loïc Minier ]
+  * Fix FTBFS in natty; LP: #670139; thanks Barry Warsaw.
+    - Don't override LD_LIBRARY_PATH completely but prepend to it as to not
+      break fakeroot.
+    - debian/tools/Makefile: svn_config_ensure() moved from
+      libsvn_client/libsvn_client-1.la to libsvn_subr/libsvn_subr-1.la.
+
+ -- Barry Warsaw <barry@ubuntu.com>  Fri, 12 Nov 2010 15:16:04 -0500
+
+subversion (1.6.12dfsg-2ubuntu1) natty; urgency=low
+
+  * Merge from debian unstable.  Remaining changes:
+    - Create pot file on build.
+    - Build a python-subversion-dbg package.
+    - (Build-)depend on default-jre-headless/-jdk.
+    - Do not apply java-build patch.
+    - debian/rules: Manually create the doxygen output directory, otherwise
+      we get weird build failures when running parallel builds.
+    - Disable the serf backend because serf is in universe.
+    - Amend the XS-Python-Version line to ">= 2.4" rather than explicit
+      versions.
+
+ -- Michael Vogt <michael.vogt@ubuntu.com>  Mon, 18 Oct 2010 15:34:10 +0200
+
+subversion (1.6.12dfsg-2) unstable; urgency=medium
+
+  * patches/cve-2010-3315: New patch for CVE-2010-3315, whereby, in rare
+    configurations, mod_dav_svn could give too much access to authorized
+    users.
+  * control: Update Vcs-* fields, Homepage, Policy to 3.9.1 (no changes),
+    tweak python version declaration (Closes: #587853).
+
+ -- Peter Samuelson <peter@p12n.org>  Fri, 01 Oct 2010 12:11:10 -0500
+
+subversion (1.6.12dfsg-1ubuntu1) maverick; urgency=low
+
+  * Merge from debian testing (LP: #600914), remaining changes:
+    - Create pot file on build.
+    - Build a python-subversion-dbg package.
+    - (Build-)depend on default-jre-headless/-jdk.
+    - Do not apply java-build patch.
+    - debian/rules: Manually create the doxygen output directory, otherwise
+      we get weird build failures when running parallel builds.
+    - Disable the serf backend because serf is in universe.
+    - Amend the XS-Python-Version line to ">= 2.4" rather than explicit
+      versions.
+
+ -- Max Bowsher <maxb@f2s.com>  Fri, 02 Jul 2010 06:54:21 +0100
+
+subversion (1.6.12dfsg-1) unstable; urgency=medium
+
+  * Urgency medium, as it (probably) fixes some FTBFS.
+  * New upstream version.
+    - Fixes some or all cases of inappropriate need for read access to the
+      root of the repository.  (Closes: #510883)
+  * Disable parallel mode for 'make check', which appears to have made
+    some build daemons sad.
+  * svn-bisect: use pegs to support bisecting in deleted branches.
+    Thanks Nikita Borodikhin.  (Closes: #582344)
+  * patches/ruby-test-info: expand for more failures nobody can figure
+    out.  Sigh.
+  * Upgrade from source format 1.0 to 1.0.
+
+ -- Peter Samuelson <peter@p12n.org>  Mon, 21 Jun 2010 11:53:14 -0500
+
+subversion (1.6.11dfsg-1) unstable; urgency=low
+
+  * New upstream version.  Rediff a patch or two.
+    - Mergeinfo queries no longer require access to repository root.
+      (Ref: #510883)
+    - Ignores errors reading .svn/ in parent directories.  (Closes: #570271)
+  * rules: Run 'check' target in parallel mode.
+
+ -- Peter Samuelson <peter@p12n.org>  Mon, 19 Apr 2010 23:22:07 -0500
+
+subversion (1.6.9dfsg-1) unstable; urgency=low
+
+  * New upstream release.
+    - patches/16x-po, patches/ruby-test-core: remove, applied upstream.
+  * patches/java-build: Update for gcj 4.4.  Update the build dependency
+    too, as this version of the patch will not work on gcj 4.3.
+    Thanks to Nobuhiro Iwamatsu.  (Closes: #561516)
+  * patches/build-fixes: Fix parallelism in 'doc-api' target.  Again.
+    (Closes: #537297)
+  * patches/ruby-test-info: Disable the two failing ruby tests that
+    nobody can reproduce except on the buildds.  (Closes: #545372)
+
+ -- Peter Samuelson <peter@p12n.org>  Wed, 27 Jan 2010 01:57:47 -0600
 
 subversion (1.6.6dfsg-2ubuntu1) lucid; urgency=low
 
@@ -2594,3 +2800,4 @@ subversion-svn (252-1) unstable; urgency=low
   * Initial release.
 
  -- David Kimdon <dwhedon@debian.org>  Fri, 28 Sep 2001 20:31:48 -0700
+

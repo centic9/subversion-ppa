@@ -1,18 +1,10 @@
-From: Peter Samuelson <peter@p12n.org>
-Date: Fri, 21 Apr 2006 09:47:18 -0500
-Subject: Use the correct encoding when expanding the $LastChangedDate$ keyword (#290774)
+Bug #290774: Convert $LastChangedDate$ keyword to the local character
+set, since it is already rendered in the local language.
 
-Convert $LastChangedDate$ keyword to the local character set.
+Not accepted upstream: http://svn.haxx.se/dev/archive-2006-04/0730.shtml
 
-Upstream discussion came to no conclusion:
-http://subversion.tigris.org/ds/viewMessage.do?dsForumId=462&dsMessageId=723613
-
-Fixes http://bugs.debian.org/290774
-
-Index: subversion-1.7.0/subversion/libsvn_subr/subst.c
-===================================================================
---- subversion-1.7.0.orig/subversion/libsvn_subr/subst.c	2011-10-20 20:47:32.000000000 +0200
-+++ subversion-1.7.0/subversion/libsvn_subr/subst.c	2011-10-20 21:55:47.000000000 +0200
+--- a/subversion/libsvn_subr/subst.c
++++ b/subversion/libsvn_subr/subst.c
 @@ -200,8 +200,12 @@
            break;
          case 'D': /* long format of date of this revision */

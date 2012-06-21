@@ -1,33 +1,11 @@
-From: Peter Samuelson <peter@p12n.org>
-Date: Wed, 09 Nov 2005 06:03:45 -0600
-Subject: Work around "libtool disease" in '{apr,aprutil,neon}-config --libs'
-
-... where they think our runtime linker is too stupid to handle recursive
-library dependencies.  See Debian bug #338302.
-
-With this patch, subversion will no longer depend on: libssl0.9.8,
-libldap2, libexpat2, libxml2, zlib1g.  I'm hoping this fixes #336373
-because of the libssl confusion - waiting to hear back from the
-submitter.
-
-[gpastore@debian.org, 2005-12-26: update for svn 1.3.x]
-
-[ps, 2006-09-08: Use {apr,apu}-config --link-ld and "pkg-config --libs
- neon" instead of straight library names.]
-
-[ps, 2008-06-07: Use pkg-config rather than apr-config and apu-config,
- just on general principle.  Note this hard-codes apr/apr-util 1.x,
- not 0.9.]
+Bug #338302: Use pkg-config instead of '{apr,aprutil,neon}-config --libs'
+to improve link stuff.  At the time this patch was originally deployed,
+it eliminated redundant dependencies on: libssl0.9.8, libldap2,
+libexpat2, libxml2, zlib1g.
 
 --- a/build/ac-macros/apr.m4
 +++ b/build/ac-macros/apr.m4
-@@ -93,15 +93,15 @@
-     AC_MSG_ERROR([apr-config --prefix failed])
-   fi
- 
-   if test "$enable_all_static" = "yes"; then
-     SVN_APR_LIBS="`$apr_config --link-ld --libs`"
-     if test $? -ne 0; then
+@@ -99,9 +99,9 @@
        AC_MSG_ERROR([apr-config --link-ld --libs failed])
      fi
    else
@@ -41,20 +19,15 @@ submitter.
    SVN_APR_LIBS="`SVN_REMOVE_STANDARD_LIB_DIRS($SVN_APR_LIBS)`"
 --- a/build/ac-macros/aprutil.m4
 +++ b/build/ac-macros/aprutil.m4
-@@ -77,14 +77,8 @@
-     AC_MSG_ERROR([apu-config --prefix failed])
+@@ -103,9 +103,9 @@
+       AC_MSG_ERROR([apu-config --link-ld --libs failed])
+     fi
+   else
+-    SVN_APRUTIL_LIBS="`$apu_config --link-ld`"
++    SVN_APRUTIL_LIBS="`pkg-config --libs apr-util-1`"
+     if test $? -ne 0; then
+-      AC_MSG_ERROR([apu-config --link-ld failed])
++      AC_MSG_ERROR([pkg-config --libs apr-util-1 failed])
+     fi
    fi
- 
--  dnl When APR stores the dependent libs in the .la file, we don't need
--  dnl --libs.
--  SVN_APRUTIL_LIBS="`$apu_config --link-libtool --libs`"
--  if test $? -ne 0; then
--    AC_MSG_ERROR([apu-config --link-libtool --libs failed])
--  fi
--
--  SVN_APRUTIL_EXPORT_LIBS="`$apu_config --link-ld --libs`"
-+  SVN_APRUTIL_LIBS="`pkg-config --libs apr-util-1`"
-+  SVN_APRUTIL_EXPORT_LIBS="`pkg-config --libs apr-util-1`"
-   if test $? -ne 0; then
-     AC_MSG_ERROR([apu-config --link-ld --libs failed])
-   fi
+   SVN_APRUTIL_LIBS="`SVN_REMOVE_STANDARD_LIB_DIRS($SVN_APRUTIL_LIBS)`"

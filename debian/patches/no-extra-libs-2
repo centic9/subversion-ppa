@@ -1,23 +1,11 @@
-From: Peter Samuelson <peter@p12n.org>
-Date: Thu, 05 Jan 2006 10:30:35 -0600
-Subject: Eliminate several unneeded inter-library linkages
+More link pruning, which eliminates one package dependency: subversion
+-> libneon; nobody but libsvn_ra_neon should link neon directly.  Also
+hack the apriconv library declaration not to pull in aprutil.  (It
+might be correct on Windows, I don't know, but we don't need apriconv
+_at all_, so we don't want it to pull in aprutil for us.)
 
-More link pruning, which eliminates one package dependency (subversion
--> libneon).  I'll probably submit at least the build.conf portion of
-this upstream.
-
-[ps, 2006-09-09: Remove a couple more instances of neon (nobody but
- libsvn_ra_dav should link neon directly).  Also hack the apriconv
- library declaration not to pull in aprutil.  (It might be correct on
- Windows, I don't know, but we don't need apriconv _at all_, so we
- don't want it to pull in aprutil for us.)]
-
-[ps, 2010-11-08: refresh]
-
-Index: subversion-1.7.0/build.conf
-===================================================================
---- subversion-1.7.0.orig/build.conf	2011-10-20 21:55:44.000000000 +0200
-+++ subversion-1.7.0/build.conf	2011-10-20 21:55:48.000000000 +0200
+--- a/build.conf
++++ b/build.conf
 @@ -109,7 +109,7 @@
  type = exe
  path = subversion/svn
@@ -36,7 +24,7 @@ Index: subversion-1.7.0/build.conf
  install = bin
  manpages = subversion/svnsync/svnsync.1
  
-@@ -597,7 +597,7 @@
+@@ -606,7 +606,7 @@
  type = lib
  path = subversion/bindings/javahl/native
  libs = libsvn_repos libsvn_client libsvn_wc libsvn_ra libsvn_delta libsvn_diff 
@@ -45,7 +33,7 @@ Index: subversion-1.7.0/build.conf
  sources = *.cpp *.c
  add-deps = $(javahl_javah_DEPS) $(javahl_java_DEPS) $(javahl_callback_javah_DEPS) $(javahl_types_javah_DEPS)
  install = javahl-lib
-@@ -1023,7 +1023,7 @@
+@@ -1040,7 +1040,7 @@
  
  [apriconv]
  type = lib
@@ -54,25 +42,31 @@ Index: subversion-1.7.0/build.conf
  
  [bdb]
  type = lib
-Index: subversion-1.7.0/subversion/bindings/swig/perl/native/Makefile.PL.in
-===================================================================
---- subversion-1.7.0.orig/subversion/bindings/swig/perl/native/Makefile.PL.in	2011-10-20 20:46:13.000000000 +0200
-+++ subversion-1.7.0/subversion/bindings/swig/perl/native/Makefile.PL.in	2011-10-20 21:55:48.000000000 +0200
-@@ -42,7 +42,12 @@
-                    @modules, qw/diff subr ra_local ra_svn ra_neon
+@@ -1188,7 +1188,7 @@
+ path = tools/client-side/svnmucc
+ sources = svnmucc.c
+ install = tools
+-libs = libsvn_client libsvn_ra libsvn_subr libsvn_delta apriconv apr neon
++libs = libsvn_client libsvn_ra libsvn_subr libsvn_delta apriconv apr
+ 
+ [diff]
+ type = exe
+--- a/subversion/bindings/swig/perl/native/Makefile.PL.in
++++ b/subversion/bindings/swig/perl/native/Makefile.PL.in
+@@ -43,6 +43,12 @@
                                  ra_serf fs_base fs_util fs_fs/);
  
--my @ldmodules = map {"-lsvn_$_-1"} (@modules, qw/diff subr/);
+ my @ldmodules = map {"-lsvn_$_-1"} (@modules, qw/diff subr/);
 +sub libs_line {
-+   return join(' ', $apr_ldflags,
-+               (map {$_ = abs_path($_); "-L$_"} @ldpaths),
-+               (map {"-lsvn_$_-1"} @_),
-+               '-lsvn_swig_perl-1', `$swig -perl -ldflags`);
++    return join(' ', $apr_ldflags,
++                (map {"-L$_"} @ldpaths),
++                (map {"-lsvn_$_-1"} @_),
++                '-lsvn_swig_perl-1', qx($swig -perl -ldflags));
 +}
  
  my $apr_shlib_path_var = '@SVN_APR_SHLIB_PATH_VAR@';
  my $cppflags = '@CPPFLAGS@';
-@@ -67,10 +72,6 @@
+@@ -67,10 +73,6 @@
                   " -I$svnlib_builddir",
                   " -I$swig_srcdir -g"),
      OBJECT => q/$(O_FILES)/,
@@ -83,7 +77,7 @@ Index: subversion-1.7.0/subversion/bindings/swig/perl/native/Makefile.PL.in
      test => { TESTS => "$swig_srcdir/perl/native/t/*.t" }
  );
  
-@@ -80,6 +81,7 @@
+@@ -80,6 +82,7 @@
      $_;
  }
  
@@ -91,7 +85,7 @@ Index: subversion-1.7.0/subversion/bindings/swig/perl/native/Makefile.PL.in
  WriteMakefile(%config, NAME => 'SVN::_Core', C => ['core.c'],
          PM => {map { ("$swig_srcdir/perl/native/$_.pm" =>
                        "\$(INST_LIBDIR)/$_.pm") }
-@@ -94,6 +96,7 @@
+@@ -94,6 +97,7 @@
         );
  
  for (@modules) {

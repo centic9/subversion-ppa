@@ -1,12 +1,8 @@
-From: Peter Samuelson <peter@p12n.org>
-Date: Sun, 29 Oct 2006 09:18:00 -0600
-Subject: Fix build instructions for libsvn-doc/examples/*.c
- 
-@DPATCH@
-Index: subversion-1.7.0/tools/examples/getlocks_test.c
-===================================================================
---- subversion-1.7.0.orig/tools/examples/getlocks_test.c	2011-10-20 20:47:32.000000000 +0200
-+++ subversion-1.7.0/tools/examples/getlocks_test.c	2011-10-20 21:55:57.000000000 +0200
+Fix build instructions for libsvn-doc/examples/*.c.
+
+
+--- a/tools/examples/getlocks_test.c
++++ b/tools/examples/getlocks_test.c
 @@ -20,13 +20,11 @@
   *    under the License.
   * ====================================================================
@@ -24,10 +20,8 @@ Index: subversion-1.7.0/tools/examples/getlocks_test.c
   *
   */
  
-Index: subversion-1.7.0/tools/examples/headrev.c
-===================================================================
---- subversion-1.7.0.orig/tools/examples/headrev.c	2011-10-20 20:47:32.000000000 +0200
-+++ subversion-1.7.0/tools/examples/headrev.c	2011-10-20 21:55:57.000000000 +0200
+--- a/tools/examples/headrev.c
++++ b/tools/examples/headrev.c
 @@ -20,13 +20,11 @@
   *    under the License.
   * ====================================================================
@@ -45,10 +39,8 @@ Index: subversion-1.7.0/tools/examples/headrev.c
   *
   */
  
-Index: subversion-1.7.0/tools/examples/minimal_client.c
-===================================================================
---- subversion-1.7.0.orig/tools/examples/minimal_client.c	2011-10-20 20:47:32.000000000 +0200
-+++ subversion-1.7.0/tools/examples/minimal_client.c	2011-10-20 21:55:57.000000000 +0200
+--- a/tools/examples/minimal_client.c
++++ b/tools/examples/minimal_client.c
 @@ -30,12 +30,10 @@
   *  For a much more complex example, the svn cmdline client might be
   *  considered the 'reference implementation'.
@@ -64,10 +56,8 @@ Index: subversion-1.7.0/tools/examples/minimal_client.c
   *
   */
  
-Index: subversion-1.7.0/tools/examples/svnput.c
-===================================================================
---- subversion-1.7.0.orig/tools/examples/svnput.c	2011-10-20 20:47:32.000000000 +0200
-+++ subversion-1.7.0/tools/examples/svnput.c	2011-10-20 21:55:57.000000000 +0200
+--- a/tools/examples/svnput.c
++++ b/tools/examples/svnput.c
 @@ -33,13 +33,10 @@
   *    under the License.
   * ====================================================================
@@ -84,10 +74,8 @@ Index: subversion-1.7.0/tools/examples/svnput.c
   *
   */
  
-Index: subversion-1.7.0/tools/examples/testwrite.c
-===================================================================
---- subversion-1.7.0.orig/tools/examples/testwrite.c	2011-10-20 20:47:32.000000000 +0200
-+++ subversion-1.7.0/tools/examples/testwrite.c	2011-10-20 21:55:57.000000000 +0200
+--- a/tools/examples/testwrite.c
++++ b/tools/examples/testwrite.c
 @@ -20,13 +20,11 @@
   *    under the License.
   * ====================================================================

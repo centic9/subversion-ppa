@@ -1,6 +1,4 @@
-From: Peter Samuelson <peter@p12n.org>
-Date: Sat, 03 May 2008 01:18:09 -0500
-Subject: Avoid accidentally becoming an ssh ControlMaster
+Bug #413102: Avoid accidentally becoming an ssh ControlMaster.
 
 If you set ControlMaster via your ssh config:
 .ssh/config:
@@ -8,28 +6,16 @@ Host *
     ControlMaster auto
     Controlpath ~/.ssh/master-%r@%h:%p
 
-you will get 'svn: Can't write to connection: Broken pipe'
-when doing svn log but svn up and other subversion commands will work fine.
-This only happens with svn+ssh.
+you can get 'svn: Can't write to connection: Broken pipe' with certain
+ssh commands, because svn can open multiple ssh sessions and kill them
+at unpredictable times.
 
-As I note in the bug log for #413102, I don't really think the problem
-is either svn's or openssh's fault, but the obvious way to avoid
-it is to avoid accidentally becoming a ControlMaster.  In this
-mode we will still use ssh connection sharing, but only if a
-ControlMaster is already present.
+I don't really think the problem is either svn's or openssh's fault,
+but this is the obvious way to avoid it.  We will still use ssh
+connection sharing, but only if a ControlMaster is already present.
 
-[ps, 2009-08-20: Replace previous patch with the much simpler approach
- upstream demonstrates with 'ssh -q'.
-
- I was pretty embarrassed to see this on the dev list, given what I had
- done instead.]
-
-Fixes: http://bugs.debian.org/413102
-
-Index: subversion-1.7.0/subversion/libsvn_subr/config_file.c
-===================================================================
---- subversion-1.7.0.orig/subversion/libsvn_subr/config_file.c	2011-10-20 20:47:32.000000000 +0200
-+++ subversion-1.7.0/subversion/libsvn_subr/config_file.c	2011-10-20 21:55:52.000000000 +0200
+--- a/subversion/libsvn_subr/config_file.c
++++ b/subversion/libsvn_subr/config_file.c
 @@ -1027,7 +1027,7 @@
          "### passed to the tunnel agent as <user>@<hostname>.)  If the"      NL
          "### built-in ssh scheme were not predefined, it could be defined"   NL
@@ -39,10 +25,8 @@ Index: subversion-1.7.0/subversion/libsvn_subr/config_file.c
          "### If you wanted to define a new 'rsh' scheme, to be used with"    NL
          "### 'svn+rsh:' URLs, you could do so as follows:"                   NL
          "# rsh = rsh"                                                        NL
-Index: subversion-1.7.0/subversion/libsvn_ra_svn/client.c
-===================================================================
---- subversion-1.7.0.orig/subversion/libsvn_ra_svn/client.c	2011-10-20 20:47:31.000000000 +0200
-+++ subversion-1.7.0/subversion/libsvn_ra_svn/client.c	2011-10-20 21:55:52.000000000 +0200
+--- a/subversion/libsvn_ra_svn/client.c
++++ b/subversion/libsvn_ra_svn/client.c
 @@ -391,7 +391,7 @@
         * versions have it too. If the user is using some other ssh
         * implementation that doesn't accept it, they can override it

@@ -17,10 +17,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 dir=.svn-bisect
+: ${SVN:=svn}
 
 svn_info ()
 {
-    LC_ALL=C svn info | awk "/^$1:/{ print \$2 }"
+    LC_ALL=C $SVN info | awk "/^$1:/{ print \$2 }"
 }
 
 usage ()
@@ -55,7 +56,7 @@ do_reset ()
     fi
     url=$(cat $dir/url)
     rev=$(cat $dir/start)
-    svn switch -r$rev $url
+    $SVN switch -r$rev "$url@$rev"
     rm -fr $dir
     echo "Now at r$rev in $url"
 }
@@ -101,7 +102,7 @@ do_good_bad ()
         done > $dir/revs.new;
         mv $dir/revs.new $dir/revs
     elif [ -f $dir/good ] && [ -f $dir/bad ]; then
-        svn log -q -r$(cat $dir/good):$(cat $dir/bad) |
+        $SVN log -q -r$(cat $dir/good):$(cat $dir/bad) |
           awk '/^r/{print $1}' | cut -c2- > $dir/revs
     else
         return 0
@@ -109,6 +110,7 @@ do_good_bad ()
     good=$(head -n1 $dir/revs)
     bad=$(tail -n1 $dir/revs)
     url=$(cat $dir/url)
+    start=$(cat $dir/start)
     n=$(wc -l < $dir/revs)
     case $n in
         0)
@@ -121,14 +123,14 @@ do_good_bad ()
             echo "Regression found!"
             echo "Last good revision: r$good"
             echo "First bad revision:"
-            svn log -r$bad
+            $SVN log -r$bad
             echo "Use '$0 reset' or 'rm -r $dir' to clean up"
             echo $bad > $dir/found
             return 0 ;;
     esac
     target=$(head -n $(((n+1)/2)) $dir/revs | tail -n1)
     echo "Switching to r$target ..."
-    svn switch -r$target "$url"
+    $SVN switch -r$target "$url@$start"
     url2=$(svn_info URL)
     if [ "$url" != "$url2" ]; then
         echo "r$target is in $url2"

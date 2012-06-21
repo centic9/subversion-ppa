@@ -1,16 +1,9 @@
-From: Peter Samuelson <peter@p12n.org>
-Date: Thu, 05 Jan 2006 08:13:55 -0600
-Subject: Compile ruby bindings with -fno-strict-aliasing
-
 It seems swig is generating _really_ bad code here, or something.
-
 Whatever it is, this line suppresses 1323 warnings, any of which might
 be real bugs with real consequences.
- 
-Index: subversion-1.7.0/Makefile.in
-===================================================================
---- subversion-1.7.0.orig/Makefile.in	2011-10-20 21:55:49.000000000 +0200
-+++ subversion-1.7.0/Makefile.in	2011-10-20 21:55:51.000000000 +0200
+
+--- a/Makefile.in
++++ b/Makefile.in
 @@ -138,7 +138,7 @@
  SWIG_PY_LIBS = @SWIG_PY_LIBS@
  SWIG_PL_INCLUDES = @SWIG_PL_INCLUDES@
