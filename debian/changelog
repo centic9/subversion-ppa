@@ -1,3 +1,9 @@
+subversion (1.7.5-0ubuntu0~ppa4) precise; urgency=low
+
+  * Bump version for re-upload.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Sun, 15 Jul 2012 10:53:20 +0200
+
 subversion (1.7.5-0ubuntu0~ppa3) precise; urgency=low
 
   * Merge a few small things from the official quantal-package, most changes
