@@ -1,3 +1,10 @@
+subversion (1.7.5-0ubuntu0~ppa3) precise; urgency=low
+
+  * Merge a few small things from the official quantal-package, most changes
+    were not included yet.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Sun, 15 Jul 2012 09:52:27 +0200
+
 subversion (1.7.5-0ubuntu0~ppa2) precise; urgency=low
 
   * Fix target version to precise
