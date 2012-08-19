@@ -24,7 +24,7 @@ Standards-Version: 3.9.3
 Package: subversion
 Architecture: any
 Depends: libsvn1 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
-Suggests: subversion-tools, db5.1-util, patch
+Suggests: db5.1-util, patch
 Description: Advanced version control system
  Apache Subversion, also known as svn, is a centralised version control
  system.  Version control systems allow many individuals (who may be

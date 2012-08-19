@@ -1,3 +1,9 @@
+subversion (1.7.5-0ubuntu0~ppa5) precise; urgency=low
+
+  * Bump version to rebuild against updated libserf1.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Thu, 19 Jul 2012 23:41:24 +0200
+
 subversion (1.7.5-0ubuntu0~ppa4) precise; urgency=low
 
   * Bump version for re-upload.
