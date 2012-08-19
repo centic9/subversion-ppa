@@ -1,3 +1,9 @@
+subversion (1.7.6-0ubuntu0~ppa1) precise; urgency=low
+
+  * Update to latest upstream version.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Sun, 19 Aug 2012 09:30:57 +0200
+
 subversion (1.7.5-0ubuntu0~ppa5) precise; urgency=low
 
   * Bump version to rebuild against updated libserf1.
