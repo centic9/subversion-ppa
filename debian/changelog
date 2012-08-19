@@ -1,3 +1,9 @@
+subversion (1.7.6-0ubuntu0~ppa2) precise; urgency=low
+
+  * Bump to upload with full sources because of new upstream version.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Sun, 19 Aug 2012 09:34:49 +0200
+
 subversion (1.7.6-0ubuntu0~ppa1) precise; urgency=low
 
   * Update to latest upstream version.
