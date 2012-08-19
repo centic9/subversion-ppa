@@ -5,55 +5,57 @@ Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
 XSBC-Original-Maintainer: Peter Samuelson <peter@p12n.org>
 Uploaders: Troy Heber <troyh@debian.org>,
            Guilherme de S. Pastore <gpastore@debian.org>
-Build-Depends: debhelper, libneon27-gnutls-dev, libserf-dev, zlib1g-dev,
-               libapr1-dev, libaprutil1-dev, libdb4.8-dev,
+Build-Depends: debhelper, libneon27-gnutls-dev, libserf-dev (>= 1), zlib1g-dev,
+               libapr1-dev, libaprutil1-dev, libdb5.1-dev,
                libsasl2-dev, apache2-threaded-dev,
                libsqlite3-dev (>= 3.4), libgnome-keyring-dev, libdbus-1-dev, kdelibs5-dev,
                quilt, doxygen, autotools-dev, autoconf, libtool, swig,
-               python-all-dev, python-all-dbg, python-support,
-               perl, libperl-dev, ruby1.8, ruby1.8-dev,
+               python-all-dev (>= 2.6.6-3~), python-all-dbg, python-support, perl, libperl-dev, ruby1.8, ruby1.8-dev,               
                default-jdk [!alpha !arm !hppa !m68k !mips !mipsel !hurd-i386],
                junit [!alpha !arm !hppa !m68k !mips !mipsel !hurd-i386],
                libmagic-dev
-Build-Conflicts: libsvn-dev (<< 1.6)
-XS-Python-Version: >= 2.4
-Homepage: http://subversion.tigris.org/
-Vcs-Svn: svn://svn.debian.org/pkg-subversion/1.6.x/
-Vcs-Browser: http://svn.debian.org/wsvn/pkg-subversion/1.6.x/
-Standards-Version: 3.8.3
+Build-Conflicts: libsvn-dev (<< 1.7~)
+X-Python-Version: >= 2.4
+Homepage: http://subversion.apache.org/
+Vcs-Svn: svn://svn.debian.org/pkg-subversion/src/1.7.x/
+Vcs-Browser: http://svn.debian.org/wsvn/pkg-subversion/src/1.7.x/
+Standards-Version: 3.9.3
 
 Package: subversion
 Architecture: any
-Depends: libsvn1 (= ${binary:Version}), ${shlibs:Depends}
-Suggests: db4.8-util, patch
+Depends: libsvn1 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Suggests: db5.1-util, patch
 Description: Advanced version control system
- Subversion, also known as svn, is a version control system much like
- the Concurrent Versions System (CVS).  Version control systems allow
- many individuals (who may be distributed geographically) to
- collaborate on a set of files (typically source code).  Subversion has
- all the major features of CVS, plus certain new features that CVS
- users often wish they had.
+ Apache Subversion, also known as svn, is a centralised version control
+ system.  Version control systems allow many individuals (who may be
+ distributed geographically) to collaborate on a set of files (source
+ code, websites, etc).  Subversion began with a CVS paradigm and
+ supports all the major features of CVS, but has evolved to support
+ many features that CVS users often wish they had.
  .
- This package includes the Subversion client (svn), tools to create a
- Subversion repository (svnadmin) and to make a repository available
- over a network (svnserve).
+ This package includes the Subversion client (svn), repository
+ administration tools (svnadmin, svnlook) and a network server (svnserve).
 
 Package: libsvn1
 Architecture: any
-Depends: ${shlibs:Depends}
-Description: Shared libraries used by Subversion
- This package includes shared libraries to manipulate Subversion (svn)
- repositories and working copies.  See the 'subversion' package for
+Multi-Arch: same
+Pre-Depends: multiarch-support
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Shared libraries used by Apache Subversion
+ This package includes shared libraries to manipulate Apache Subversion
+ (svn) repositories and working copies.  See the 'subversion' package for
  more information.
 
 Package: libsvn-dev
+Section: libdevel
 Priority: extra
 Architecture: any
-Depends: libsvn1 (= ${binary:Version}), libapr1-dev, libaprutil1-dev
+Depends: libsvn1 (= ${binary:Version}), libapr1-dev, libaprutil1-dev,
+         ${misc:Depends}
 Suggests: libsvn-doc, zlib1g-dev, libneon27-gnutls-dev
-Description: Development files for Subversion libraries
+Description: Development files for Apache Subversion libraries
  This package contains the symlinks, headers, and object files needed
- to compile and link programs which use libsvn1, the Subversion
+ to compile and link programs which use libsvn1, the Apache Subversion
  libraries.  This package is needed only in order to compile software
  that uses libsvn1.
 
@@ -62,29 +64,31 @@ Suggests: libsvn-dev
 Section: doc
 Priority: extra
 Architecture: all
+Depends: ${misc:Depends}
 Description: Developer documentation for libsvn
  This package contains development (API) documentation for libsvn1, the
- Subversion libraries.  See the 'libsvn1' package for more information.
+ Apache Subversion libraries.  See the 'libsvn1' package for more information.
 
 Package: libapache2-svn
 Section: httpd
 Architecture: any
-Depends: apache2.2-common, ${shlibs:Depends}
-Suggests: db4.8-util
-Description: Subversion server modules for Apache
+Depends: apache2.2-common, ${shlibs:Depends}, ${misc:Depends}
+Suggests: db5.1-util
+Description: Apache Subversion server modules for Apache httpd
  This package provides the mod_dav_svn and mod_authz_svn modules for
- the Apache 2.2 web server.  These modules provide Subversion's WebDAV
+ the Apache 2.2 web server.  These modules provide Apache Subversion's WebDAV
  server backend, to serve repositories over the http and https
  protocols.  See the 'subversion' package for more information.
 
 Package: python-subversion
 Section: python
 Architecture: any
-Depends: subversion, ${shlibs:Depends}, ${python:Depends}
-Provides: ${python:Provides}
+Pre-Depends: multiarch-support
+Depends: subversion, ${shlibs:Depends}, ${python:Depends}, ${misc:Depends}
 Suggests: python-subversion-dbg
-Description: Python bindings for Subversion
- This is a set of Python interfaces to libsvn, the Subversion
+Provides: ${python:Provides}
+Description: Python bindings for Apache Subversion
+ This is a set of Python interfaces to libsvn, the Apache Subversion
  libraries.  It is useful if you want to, for example, write a Python
  script that manipulates a Subversion repository or working copy.  See
  the 'subversion' package for more information.
@@ -93,7 +97,9 @@ Package: python-subversion-dbg
 Priority: extra
 Section: python
 Architecture: any
-Depends: python-subversion (= ${Source-Version}), python-dbg, ${shlibs:Depends}
+Pre-Depends: multiarch-support
+Depends: python-subversion (= ${binary:Version}), python-dbg, ${shlibs:Depends}, ${python:Depends}, ${misc:Depends}
+Provides: ${python:Provides}
 Description: Python bindings for Subversion (debug extension)
  This is a set of Python interfaces to libsvn, the Subversion
  libraries.  It is useful if you want to, for example, write a Python
@@ -105,19 +111,22 @@ Description: Python bindings for Subversion (debug extension)
 Package: libsvn-java
 Section: java
 Architecture: any
-Depends: default-jre-headless | java5-runtime-headless, libsvn1 (= ${binary:Version}), ${shlibs:Depends}
-Description: Java bindings for Subversion
+Depends: libsvn1 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Conflicts: libsvn-jni
+Replaces: libsvn-jni
+Description: Java bindings for Apache Subversion
  This is a set of Java classes which provide the functionality of
- libsvn, the Subversion libraries.  It is useful if you want to, for
- example, write a Java class that manipulates a Subversion repository
+ libsvn, the Apache Subversion libraries.  It is useful if you want to,
+ for example, write a Java class that manipulates a Subversion repository
  or working copy.  See the 'subversion' package for more information.
 
 Package: libsvn-perl
 Section: perl
 Architecture: any
-Depends: ${perl:Depends}, ${shlibs:Depends}
-Description: Perl bindings for Subversion
- This is a set of Perl interfaces to libsvn, the Subversion libraries.
+Pre-Depends: multiarch-support
+Depends: ${perl:Depends}, ${shlibs:Depends}, ${misc:Depends}
+Description: Perl bindings for Apache Subversion
+ This is a set of Perl interfaces to libsvn, the Apache Subversion libraries.
  It is useful if you want to, for example, write a Perl script that
  manipulates a Subversion repository or working copy.  See the
  'subversion' package for more information.
