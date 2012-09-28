@@ -115,8 +115,8 @@ Breaks: subversion (<< 1.7)
 Replaces: subversion (<< 1.7)
 Recommends: python-subversion, libsvn-perl,
             libconfig-inifiles-perl, liburi-perl,
-            exim4 | mail-transport-agent, rsync, svn2cl
-Suggests: libsvn-ruby1.8
+            exim4 | mail-transport-agent, rsync
+Suggests: libsvn-ruby1.8, svn2cl
 Description: Assorted tools related to Apache Subversion
  This package includes miscellaneous tools for use with Apache Subversion
  clients and servers:

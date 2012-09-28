@@ -1,3 +1,10 @@
+subversion (1.7.5-1ubuntu2) quantal; urgency=low
+
+  * Drop svn2cl to Suggests; we don't particularly need it in Ubuntu main
+    (LP: #1048824).
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Fri, 28 Sep 2012 11:53:18 +0100
+
 subversion (1.7.5-1ubuntu1) quantal; urgency=low
 
   * Merge from Debian unstable.  Remaining changes:
