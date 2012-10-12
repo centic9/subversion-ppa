@@ -1,3 +1,9 @@
+subversion (1.7.7-0ubuntu0~ppa2) precise; urgency=low
+
+  * Try to fix build failure because of rm.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Fri, 12 Oct 2012 20:06:35 +0200
+
 subversion (1.7.7-0ubuntu0~ppa1) precise; urgency=low
 
   * Update to latest upstream version.
