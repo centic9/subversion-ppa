@@ -1901,7 +1901,8 @@ handle_response(serf_request_t *request,
 
       if (err
           && (!SERF_BUCKET_READ_ERROR(err->apr_err)
-               || APR_STATUS_IS_ECONNRESET(err->apr_err)))
+               || APR_STATUS_IS_ECONNRESET(err->apr_err)
+               || APR_STATUS_IS_ECONNABORTED(err->apr_err)))
         {
           /* These errors are special cased in serf
              ### We hope no handler returns these by accident. */
@@ -2160,7 +2161,8 @@ svn_ra_serf__discover_vcc(const char **vcc_url,
 
       /* Now recreate the root_url. */
       session->repos_root = session->session_url;
-      session->repos_root.path = apr_pstrdup(session->pool, url_buf->data);
+      session->repos_root.path =
+        (char *)svn_fspath__canonicalize(url_buf->data, session->pool);
       session->repos_root_str =
         svn_urlpath__canonicalize(apr_uri_unparse(session->pool,
                                                   &session->repos_root, 0),
