@@ -1,3 +1,12 @@
+subversion (1.7.7-0ubuntu0~ppa1) precise; urgency=low
+
+  * Update to latest upstream version.
+  * Start integrating some changes from Ubuntu/Debian version 1.7.5-1, but
+    many differences still present in this package for now, need to slowly 
+    migrate onto the official one now.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Fri, 12 Oct 2012 18:20:07 +0200
+
 subversion (1.7.6-0ubuntu0~ppa2) precise; urgency=low
 
   * Bump to upload with full sources because of new upstream version.

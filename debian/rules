@@ -12,6 +12,7 @@
 export DEB_HOST_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
 export DEB_BUILD_GNU_TYPE ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
 export DEB_HOST_ARCH      ?= $(shell dpkg-architecture -qDEB_HOST_ARCH)
+export DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
 
 # Fully functional Java support is still a bit spotty on some Debian
 # architectures.  DISABLE_JAVAHL_ARCHS overrides ENABLE_JAVAHL=yes.
@@ -61,7 +62,7 @@ PYDEFAULT := $(shell pyversions -vd)
 
 allpy = \
 	set -e; for v in $(PYVERSIONS); do \
-		$(RM) -r $(PY_DIR); \
+		$(RM) $(PY_DIR); \
 		ln -fs python$$v $(PY_DIR); \
 		pylib=$$(python$$v -c 'from distutils import sysconfig; print sysconfig.get_python_lib()'); \
 		$1; \
@@ -69,15 +70,18 @@ allpy = \
 
 allpydbg = \
 	set -e; for v in $(PYVERSIONS); do \
-		$(RM) -r $(PY_DIR); \
+		$(RM) $(PY_DIR); \
 		ln -fs python$$v-dbg $(PY_DIR); \
 		pylib=$$(python$$v -c 'from distutils import sysconfig; print sysconfig.get_python_lib()'); \
 		$1; \
 	done
 
+libdir := /usr/lib/$(DEB_HOST_MULTIARCH)
 confflags := \
 		--prefix=/usr \
+		--libdir=$(libdir) \
 		--mandir=\$${prefix}/share/man \
+		--with-custom-libtool=libtool \
 		--with-apr=/usr \
 		--with-apr-util=/usr \
 		--with-neon=/usr \
@@ -157,7 +161,7 @@ debian/stamp-configure: $(QUILT_STAMPFN) debian/stamp-autogen
 	dh_testdir
 
 	test -e patches || ln -s debian/patches patches
-	mkdir -p $(DEB_BUILDDIR)
+	mkdir -p $(DEB_BUILDDIR) $(HOME)
 	cd $(DEB_BUILDDIR) && \
 		PYTHON=/usr/bin/python RUBY=/usr/bin/$(RUBY) \
 		$(CURDIR)/configure $(confflags)
@@ -179,20 +183,20 @@ debian/stamp-configure: $(QUILT_STAMPFN) debian/stamp-autogen
 
 build: debian/stamp-build-arch debian/stamp-build-indep
 
-check_defs := CLEANUP=true LC_ALL=C
+check_defs := CLEANUP=1 LC_ALL=C
 check_swig := check-swig-py check-swig-pl $(if $(DEB_OPT_WITH_RUBY),check-swig-rb)
 check_all := $(check_swig) $(if $(DEB_OPT_WITH_JAVAHL),check-javahl) check
 check-help:
 	@echo "$(MAKE) $(check_all)"
 
-check check-swig-rb check-javahl:
+check check-swig-rb check-javahl: debian/stamp-build-arch
 	+$(MAKE_B) $@ $(check_defs)
 
-check-swig-pl:
+check-swig-pl: debian/stamp-build-arch
 	+$(MAKE_B) $@ $(check_defs)
 	$(MAKE) -C $(PERL_DIR) test LC_ALL=C
 
-check-swig-py:
+check-swig-py: debian/stamp-build-arch
 	$(call allpy, \
 	  $(MAKE_B) $@ PYTHON=python$$v PYVER=$$v $(check_defs))
 	$(call allpydbg, \
@@ -209,6 +213,8 @@ debian/stamp-build-arch: debian/stamp-configure
 	$(call allpydbg, $(MAKE_B) -j1 autogen-swig)
 	ln -sf python$(PYDEFAULT) $(PY_DIR)
 	+$(MAKE_B) all tools
+	# Run svn once, to make sure it populates $(HOME)/.subversion/*
+	$(DEB_BUILDDIR)/subversion/svn/svn --version > /dev/null
 	$(call allpy, \
 	  $(MAKE_B) swig-py PYTHON=python$$v PYVER=$$v \
 	            PYTHON_INCLUDES=-I/usr/include/python$$v \
@@ -225,7 +231,7 @@ debian/stamp-build-arch: debian/stamp-configure
 	$(MAKE) -C $(PERL_DIR) all \
 		OPTIMIZE="-g -Wall $(EXTRA_CFLAGS)"
 ifdef DEB_OPT_WITH_RUBY
-	+$(MAKE_B) swig-rb
+	+$(MAKE_B) swig-rb $(rb_defs)
 endif
 ifdef DEB_OPT_WITH_JAVAHL
 	+$(MAKE_B) -j1 javahl
@@ -398,6 +404,7 @@ binary-indep: debian/stamp-install-indep
 	$(call fix_shebangs_in, debian/*/usr/share/doc/*/examples)
 	dh_installman -i
 	dh_installchangelogs -i CHANGES
+	dh_lintian -i
 	dh_compress -i
 	dh_fixperms -i
 	dh_perl -i
@@ -414,9 +421,10 @@ binary-arch: debian/stamp-install-arch
 	dh_installexamples -s
 	$(call fix_shebangs_in, debian/*/usr/share/doc/*/examples)
 	dh_installchangelogs -s CHANGES
+	dh_lintian -s
 	dh_fixperms -s
 	dh_strip -s -Npython-subversion -Npython-subversion-dbg
-	DH_COMPAT=5 dh_strip -ppython-subversion --dbg-package=python-subversion-dbg
+	dh_strip -ppython-subversion --dbg-package=python-subversion-dbg
 	rm -rf debian/python-subversion-dbg/usr/share/doc/python-subversion-dbg
 	ln -s python-subversion \
 		debian/python-subversion-dbg/usr/share/doc/python-subversion-dbg
