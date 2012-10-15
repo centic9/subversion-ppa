@@ -1,4 +1,19 @@
-subversion (1.7.5-1ubuntu2) quantal; urgency=low
+subversion (1.7.7-0ubuntu0~ppa2) precise; urgency=low
+
+  * Try to fix build failure because of rm.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Fri, 12 Oct 2012 20:06:35 +0200
+
+subversion (1.7.7-0ubuntu0~ppa1) precise; urgency=low
+
+  * Update to latest upstream version.
+  * Start integrating some changes from Ubuntu/Debian version 1.7.5-1, but
+    many differences still present in this package for now, need to slowly 
+    migrate onto the official one now.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Fri, 12 Oct 2012 18:20:07 +0200
+
+subversion (1.7.6-0ubuntu0~ppa2) precise; urgency=low
 
   * Drop svn2cl to Suggests; we don't particularly need it in Ubuntu main
     (LP: #1048824).
