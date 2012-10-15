@@ -1,3 +1,10 @@
+subversion (1.7.7-0ubuntu0~ppa4) precise; urgency=low
+
+  * Previous versions were actually still 1.7.5 because of a 
+    git merge problem, now it should be fixed.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Mon, 15 Oct 2012 21:39:57 +0200
+
 subversion (1.7.7-0ubuntu0~ppa2) precise; urgency=low
 
   * Try to fix build failure because of rm.
