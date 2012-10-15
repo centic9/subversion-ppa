@@ -12,6 +12,12 @@ subversion (1.7.7-0ubuntu0~ppa4) precise; urgency=low
 
  -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Mon, 15 Oct 2012 21:39:57 +0200
 
+subversion (1.7.7-0ubuntu0~ppa3) precise; urgency=low
+
+  * Update new upstream version, based on latest quantal package now.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Fri, 12 Oct 2012 20:40:29 +0200
+
 subversion (1.7.7-0ubuntu0~ppa2) precise; urgency=low
 
   * Try to fix build failure because of rm.
@@ -26,12 +32,6 @@ subversion (1.7.7-0ubuntu0~ppa1) precise; urgency=low
     migrate onto the official one now.
 
  -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Fri, 12 Oct 2012 18:20:07 +0200
-
-subversion (1.7.7-0ubuntu0~ppa3) precise; urgency=low
-
-  * Update new upstream version, based on latest quantal package now.
-
- -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Fri, 12 Oct 2012 20:40:29 +0200
 
 subversion (1.7.5-1ubuntu2) quantal; urgency=low
 
