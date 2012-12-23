@@ -1,3 +1,9 @@
+subversion (1.7.8-0ubuntu0~ppa1) precise; urgency=low
+
+  * Upgrade to latest upstream release.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Sun, 23 Dec 2012 10:15:42 +0100
+
 subversion (1.7.7-0ubuntu0~ppa5) precise; urgency=low
 
   * Refresh and fix patches, one applied upstream, refresh all 
