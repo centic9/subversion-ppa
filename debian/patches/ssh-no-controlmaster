@@ -14,8 +14,10 @@ I don't really think the problem is either svn's or openssh's fault,
 but this is the obvious way to avoid it.  We will still use ssh
 connection sharing, but only if a ControlMaster is already present.
 
---- a/subversion/libsvn_subr/config_file.c
-+++ b/subversion/libsvn_subr/config_file.c
+Index: git/subversion/libsvn_subr/config_file.c
+===================================================================
+--- git.orig/subversion/libsvn_subr/config_file.c	2012-10-15 22:11:39.000000000 +0200
++++ git/subversion/libsvn_subr/config_file.c	2012-10-15 22:12:06.000000000 +0200
 @@ -1027,7 +1027,7 @@
          "### passed to the tunnel agent as <user>@<hostname>.)  If the"      NL
          "### built-in ssh scheme were not predefined, it could be defined"   NL
@@ -25,8 +27,10 @@ connection sharing, but only if a ControlMaster is already present.
          "### If you wanted to define a new 'rsh' scheme, to be used with"    NL
          "### 'svn+rsh:' URLs, you could do so as follows:"                   NL
          "# rsh = rsh"                                                        NL
---- a/subversion/libsvn_ra_svn/client.c
-+++ b/subversion/libsvn_ra_svn/client.c
+Index: git/subversion/libsvn_ra_svn/client.c
+===================================================================
+--- git.orig/subversion/libsvn_ra_svn/client.c	2012-10-15 22:11:39.000000000 +0200
++++ git/subversion/libsvn_ra_svn/client.c	2012-10-15 22:12:06.000000000 +0200
 @@ -391,7 +391,7 @@
         * versions have it too. If the user is using some other ssh
         * implementation that doesn't accept it, they can override it

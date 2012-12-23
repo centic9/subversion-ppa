@@ -1,8 +1,10 @@
 Take ABI version into consideration in the module loading codepaths.
 Suitable for upstream, but not sent yet.
 
---- a/subversion/libsvn_fs/fs-loader.c
-+++ b/subversion/libsvn_fs/fs-loader.c
+Index: git/subversion/libsvn_fs/fs-loader.c
+===================================================================
+--- git.orig/subversion/libsvn_fs/fs-loader.c	2012-10-15 22:11:39.000000000 +0200
++++ git/subversion/libsvn_fs/fs-loader.c	2012-10-15 22:12:07.000000000 +0200
 @@ -100,8 +100,8 @@
      const char *funcname;
      apr_status_t status;
@@ -14,8 +16,10 @@ Suitable for upstream, but not sent yet.
      funcname = apr_psprintf(pool, "svn_fs_%s__init", name);
  
      /* Find/load the specified library.  If we get an error, assume
---- a/subversion/libsvn_ra/ra_loader.c
-+++ b/subversion/libsvn_ra/ra_loader.c
+Index: git/subversion/libsvn_ra/ra_loader.c
+===================================================================
+--- git.orig/subversion/libsvn_ra/ra_loader.c	2012-10-15 22:11:39.000000000 +0200
++++ git/subversion/libsvn_ra/ra_loader.c	2012-10-15 22:12:07.000000000 +0200
 @@ -159,8 +159,8 @@
      const char *compat_funcname;
      apr_status_t status;
@@ -27,8 +31,10 @@ Suitable for upstream, but not sent yet.
      funcname = apr_psprintf(pool, "svn_ra_%s__init", ra_name);
      compat_funcname = apr_psprintf(pool, "svn_ra_%s_init", ra_name);
  
---- a/subversion/libsvn_subr/auth.c
-+++ b/subversion/libsvn_subr/auth.c
+Index: git/subversion/libsvn_subr/auth.c
+===================================================================
+--- git.orig/subversion/libsvn_subr/auth.c	2012-10-15 22:11:39.000000000 +0200
++++ git/subversion/libsvn_subr/auth.c	2012-10-15 22:12:07.000000000 +0200
 @@ -399,9 +399,9 @@
        const char *library_label, *library_name;
        const char *provider_function_name, *version_function_name;
@@ -41,8 +47,10 @@ Suitable for upstream, but not sent yet.
        library_label = apr_psprintf(pool, "svn_%s", provider_name);
        provider_function_name = apr_psprintf(pool,
                                              "svn_auth_get_%s_%s_provider",
---- a/configure.ac
-+++ b/configure.ac
+Index: git/configure.ac
+===================================================================
+--- git.orig/configure.ac	2012-10-15 22:12:02.000000000 +0200
++++ git/configure.ac	2012-10-15 22:12:07.000000000 +0200
 @@ -99,7 +99,7 @@
  if test `expr $apr_version : 2` -ne 0; then
    dnl Bump the library so-version to 2 if using APR-2

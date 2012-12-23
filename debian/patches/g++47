@@ -1,8 +1,10 @@
 Build fix for g++ 4.7.x.  Upstream r1345740.
 
---- a/subversion/libsvn_auth_kwallet/kwallet.cpp
-+++ b/subversion/libsvn_auth_kwallet/kwallet.cpp
-@@ -52,6 +52,9 @@
+Index: git/subversion/libsvn_auth_kwallet/kwallet.cpp
+===================================================================
+--- git.orig/subversion/libsvn_auth_kwallet/kwallet.cpp	2012-10-15 22:11:39.000000000 +0200
++++ git/subversion/libsvn_auth_kwallet/kwallet.cpp	2012-10-15 22:12:11.000000000 +0200
+@@ -60,6 +60,9 @@
  /* KWallet simple provider, puts passwords in KWallet                    */
  /*-----------------------------------------------------------------------*/
  
@@ -12,7 +14,7 @@ Build fix for g++ 4.7.x.  Upstream r1345740.
  
  static const char *
  get_application_name(apr_hash_t *parameters,
-@@ -182,12 +185,11 @@ kwallet_password_get(const char **passwo
+@@ -212,12 +215,11 @@
    QCoreApplication *app;
    if (! qApp)
      {
@@ -28,7 +30,7 @@ Build fix for g++ 4.7.x.  Upstream r1345740.
                       get_application_name(parameters, pool),
                       "subversion",
                       ki18n(get_application_name(parameters, pool)),
-@@ -252,12 +254,11 @@ kwallet_password_set(apr_hash_t *creds,
+@@ -289,12 +291,11 @@
    QCoreApplication *app;
    if (! qApp)
      {
