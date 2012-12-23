@@ -2,9 +2,11 @@ Bug #644438: Ship a OSGi metadata file with the Java bindings.
 Patch by Jakub Adam, via upstream r1234864.
 
 
---- a/Makefile.in
-+++ b/Makefile.in
-@@ -302,8 +302,11 @@ SWIG_RB_SRC_DIR = $(top_srcdir)/subversi
+Index: git/Makefile.in
+===================================================================
+--- git.orig/Makefile.in	2012-10-15 22:12:09.000000000 +0200
++++ git/Makefile.in	2012-10-15 22:12:11.000000000 +0200
+@@ -302,8 +302,11 @@
  
  ### Automate JAR creation using Makefile generator's javahl-java.jar
  ### property.  Enhance generator to support JAR installation.
@@ -17,8 +19,10 @@ Patch by Jakub Adam, via upstream r1234864.
  	$(INSTALL_DATA) $(JAVAHL_JAR) $(DESTDIR)$(javahl_javadir);
  
  INSTALL_EXTRA_JAVAHL_LIB=@INSTALL_EXTRA_JAVAHL_LIB@
---- /dev/null
-+++ b/subversion/bindings/javahl/Manifest.in
+Index: git/subversion/bindings/javahl/Manifest.in
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ git/subversion/bindings/javahl/Manifest.in	2012-10-15 22:12:11.000000000 +0200
 @@ -0,0 +1,10 @@
 +Manifest-Version: 1.0
 +Bundle-ManifestVersion: 2

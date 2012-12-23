@@ -62,7 +62,7 @@ PYDEFAULT := $(shell pyversions -vd)
 
 allpy = \
 	set -e; for v in $(PYVERSIONS); do \
-		$(RM) $(PY_DIR); \
+		$(RM) -r $(PY_DIR); \
 		ln -fs python$$v $(PY_DIR); \
 		pylib=$$(python$$v -c 'from distutils import sysconfig; print sysconfig.get_python_lib()'); \
 		$1; \
@@ -70,7 +70,7 @@ allpy = \
 
 allpydbg = \
 	set -e; for v in $(PYVERSIONS); do \
-		$(RM) $(PY_DIR); \
+		$(RM) -r $(PY_DIR); \
 		ln -fs python$$v-dbg $(PY_DIR); \
 		pylib=$$(python$$v -c 'from distutils import sysconfig; print sysconfig.get_python_lib()'); \
 		$1; \
