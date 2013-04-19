@@ -5,8 +5,10 @@ on various arm and m68k builds.
 Thanks to Roman Zippel, Kobayashi Noritada, Wouter Verhelst and Martin
 Michlmayr.
 
---- a/subversion/bindings/swig/ruby/test/util.rb
-+++ b/subversion/bindings/swig/ruby/test/util.rb
+Index: git/subversion/bindings/swig/ruby/test/util.rb
+===================================================================
+--- git.orig/subversion/bindings/swig/ruby/test/util.rb	2012-10-15 22:11:39.000000000 +0200
++++ git/subversion/bindings/swig/ruby/test/util.rb	2012-10-15 22:12:06.000000000 +0200
 @@ -19,6 +19,7 @@
  
  require "fileutils"

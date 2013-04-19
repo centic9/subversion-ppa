@@ -1,3 +1,50 @@
+subversion (1.7.8-0ubuntu0~ppa1) precise; urgency=low
+
+  * Upgrade to latest upstream release.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Sun, 23 Dec 2012 10:15:42 +0100
+
+subversion (1.7.7-0ubuntu0~ppa5) precise; urgency=low
+
+  * Refresh and fix patches, one applied upstream, refresh all 
+    patches to latest code.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Mon, 15 Oct 2012 22:12:42 +0200
+
+subversion (1.7.7-0ubuntu0~ppa4) precise; urgency=low
+
+  * Previous versions were actually still 1.7.5 because of a 
+    git merge problem, now it should be fixed.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Mon, 15 Oct 2012 21:39:57 +0200
+
+subversion (1.7.7-0ubuntu0~ppa3) precise; urgency=low
+
+  * Update new upstream version, based on latest quantal package now.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Fri, 12 Oct 2012 20:40:29 +0200
+
+subversion (1.7.7-0ubuntu0~ppa2) precise; urgency=low
+
+  * Try to fix build failure because of rm.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Fri, 12 Oct 2012 20:06:35 +0200
+
+subversion (1.7.7-0ubuntu0~ppa1) precise; urgency=low
+
+  * Update to latest upstream version.
+  * Start integrating some changes from Ubuntu/Debian version 1.7.5-1, but
+    many differences still present in this package for now, need to slowly 
+    migrate onto the official one now.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Fri, 12 Oct 2012 18:20:07 +0200
+
+subversion (1.7.5-1ubuntu3) raring; urgency=low
+
+  * Fix python multi-arch includes issues. 
+
+ -- Chris J Arges <chris.j.arges@canonical.com>  Thu, 17 Jan 2013 12:25:15 -0600
+
 subversion (1.7.5-1ubuntu2) quantal; urgency=low
 
   * Drop svn2cl to Suggests; we don't particularly need it in Ubuntu main
