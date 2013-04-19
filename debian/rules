@@ -64,6 +64,7 @@ allpy = \
 	set -e; for v in $(PYVERSIONS); do \
 		$(RM) -r $(PY_DIR); \
 		ln -fs python$$v $(PY_DIR); \
+		pyinc=$$(python$$v-config --includes); \
 		pylib=$$(python$$v -c 'from distutils import sysconfig; print sysconfig.get_python_lib()'); \
 		$1; \
 	done
@@ -72,6 +73,7 @@ allpydbg = \
 	set -e; for v in $(PYVERSIONS); do \
 		$(RM) -r $(PY_DIR); \
 		ln -fs python$$v-dbg $(PY_DIR); \
+		pyinc=$$(python$$v-dbg-config --includes); \
 		pylib=$$(python$$v -c 'from distutils import sysconfig; print sysconfig.get_python_lib()'); \
 		$1; \
 	done
@@ -204,7 +206,7 @@ check-swig-py: debian/stamp-build-arch
 	  $(MAKE_B) $@ PYTHON=python$$v PYVER=$$v $(check_defs))
 	$(call allpydbg, \
 	  $(MAKE_B) $@ PYTHON=python$$v-dbg PYVER=$${v}_d \
-		PYTHON_INCLUDES=-I/usr/include/python$${v}_d $(check_defs))
+		PYTHON_INCLUDES="$$pyinc" $(check_defs))
 
 build-arch: debian/stamp-build-arch
 debian/stamp-build-arch: debian/stamp-configure
@@ -220,11 +222,11 @@ debian/stamp-build-arch: debian/stamp-configure
 	$(DEB_BUILDDIR)/subversion/svn/svn --version > /dev/null
 	$(call allpy, \
 	  $(MAKE_B) swig-py PYTHON=python$$v PYVER=$$v \
-	            PYTHON_INCLUDES=-I/usr/include/python$$v \
+	            PYTHON_INCLUDES="$$pyinc" \
 	            swig_pydir=$$pylib/libsvn swig_pydir_extra=$$pylib/svn)
 	$(call allpydbg, \
 	  $(MAKE_B) swig-py PYTHON=python$$v PYVER=$${v}_d \
-	            PYTHON_INCLUDES=-I/usr/include/python$${v}_d \
+	            PYTHON_INCLUDES="$$pyinc" \
 	            EXTRA_SWIG_PY_CFLAGS=-O0 \
 	            swig_pydir=$$pylib/libsvn swig_pydir_extra=$$pylib/svn)
 	ln -sf python$(PYDEFAULT) $(PY_DIR)
@@ -347,7 +349,7 @@ debian/stamp-install-arch: debian/stamp-build-arch
 	$(call allpydbg, \
 	  $(MAKE_B) install-swig-py DESTDIR=$(CURDIR)/debian/tmp \
 	            PYTHON=python$$v-dbg PYVER=$${v}_d \
-	            PYTHON_INCLUDES=-I/usr/include/python$${v}_d \
+	            PYTHON_INCLUDES="$$pyinc" \
 	            EXTRA_SWIG_PY_CFLAGS=-O0 \
 	            swig_pydir=$$pylib/libsvn swig_pydir_extra=$$pylib/svn)
 	for i in $$(find debian/tmp/usr/lib/python* -name '*.so'); do \
