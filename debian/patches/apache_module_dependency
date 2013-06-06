@@ -7,7 +7,7 @@ dependencies, mod_authz_svn is loaded first.
 
 --- a/subversion/include/mod_dav_svn.h
 +++ b/subversion/include/mod_dav_svn.h
-@@ -25,6 +25,7 @@
+@@ -30,6 +30,7 @@
  
  #include <httpd.h>
  #include <mod_dav.h>
@@ -15,8 +15,8 @@ dependencies, mod_authz_svn is loaded first.
  
  
  #ifdef __cplusplus
-@@ -75,6 +76,15 @@ AP_MODULE_DECLARE(dav_error *) dav_svn_s
-                                                  const char **repos_name,
+@@ -83,6 +84,15 @@
+                                                  const char **repos_basename,
                                                   const char **relative_path,
                                                   const char **repos_path);
 +APR_DECLARE_OPTIONAL_FN(dav_error *, dav_svn_split_uri,
@@ -30,8 +30,8 @@ dependencies, mod_authz_svn is loaded first.
 +                         const char **repos_path));
  
  
- /* Given an apache request R and a ROOT_PATH to the svn location
-@@ -83,6 +93,10 @@ AP_MODULE_DECLARE(dav_error *) dav_svn_s
+ /**
+@@ -91,6 +101,10 @@
  AP_MODULE_DECLARE(dav_error *) dav_svn_get_repos_path(request_rec *r,
                                                        const char *root_path,
                                                        const char **repos_path);
@@ -44,7 +44,7 @@ dependencies, mod_authz_svn is loaded first.
  }
 --- a/subversion/mod_authz_svn/mod_authz_svn.c
 +++ b/subversion/mod_authz_svn/mod_authz_svn.c
-@@ -17,7 +17,7 @@
+@@ -22,7 +22,7 @@
   * ====================================================================
   */
  
@@ -53,7 +53,7 @@ dependencies, mod_authz_svn is loaded first.
  
  #include <httpd.h>
  #include <http_config.h>
-@@ -50,6 +50,13 @@ typedef struct {
+@@ -64,6 +64,13 @@
    const char *force_username_case;
  } authz_svn_config_rec;
  
@@ -67,7 +67,7 @@ dependencies, mod_authz_svn is loaded first.
  /*
   * Configuration
   */
-@@ -665,6 +672,16 @@ auth_checker(request_rec *r)
+@@ -777,6 +784,16 @@
    return OK;
  }
  
@@ -84,7 +84,7 @@ dependencies, mod_authz_svn is loaded first.
  /*
   * Module flesh
   */
-@@ -685,6 +702,9 @@ register_hooks(apr_pool_t *p)
+@@ -798,6 +815,9 @@
                         AUTHZ_SVN__SUBREQ_BYPASS_PROV_NAME,
                         AUTHZ_SVN__SUBREQ_BYPASS_PROV_VER,
                         (void*)subreq_bypass);
@@ -96,7 +96,7 @@ dependencies, mod_authz_svn is loaded first.
  module AP_MODULE_DECLARE_DATA authz_svn_module =
 --- a/subversion/mod_dav_svn/mod_dav_svn.c
 +++ b/subversion/mod_dav_svn/mod_dav_svn.c
-@@ -749,6 +749,9 @@ static dav_provider provider =
+@@ -1040,6 +1040,9 @@
  static void
  register_hooks(apr_pool_t *pconf)
  {

@@ -1,4 +1,5 @@
 build-fixes
+java-build
 last-changed-date-charset
 no-extra-libs
 no-extra-libs-2
@@ -13,10 +14,11 @@ apr-abi1
 apr-abi2
 fix-bdb-version-detection
 python-builds
-python-swig205
 examples-compile-instructions
 loosen-sqlite-version-check
 apache_module_dependency
 workaround_EINVAL_on_kfreebsd
-g++47
 java-osgi-metadata
+chunksize-integer.patch
+CVE-2013-1968.patch
+CVE-2013-2112.patch

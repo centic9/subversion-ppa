@@ -167,7 +167,7 @@ Fix some build problems:
  description = Test in-memory cache
 --- a/subversion/libsvn_ra_serf/update.c
 +++ b/subversion/libsvn_ra_serf/update.c
-@@ -2528,12 +2528,6 @@
+@@ -2536,12 +2536,6 @@
           then go process the pending content.  */
        if (!parser_ctx->paused && parser_ctx->pending != NULL)
          SVN_ERR(svn_ra_serf__process_pending(parser_ctx, iterpool_inner));

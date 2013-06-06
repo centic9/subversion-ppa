@@ -81,6 +81,6 @@ patch by David Kimdon <dwhedon@debian.org>.  The basic theory is:
  [is areas.type "apache-mod"]install-mods-shared:[for areas.files] [areas.files.fullname][end][for areas.files]
 -	cd [areas.files.dirname] ; $(MKDIR) "$(APACHE_LIBEXECDIR)" ; $(INSTALL_MOD_SHARED) -n [areas.files.name] [areas.files.filename][end]
 +	cd [areas.files.dirname] ; $(MKDIR) "$(APACHE_LIBEXECDIR)" ; $(INSTALL_LIB) [areas.files.filename] $(APACHE_LIBEXECDIR)[end]
- [else]install-[areas.type]: [for areas.files][if-index areas.files first][else] [end][areas.files.fullname][end]
+ [else]install-[areas.type]: [for areas.files][if-index areas.files first][else] [end][areas.files.fullname][end] [for areas.apache_files] [areas.apache_files.fullname][end]
  	$(MKDIR) $(DESTDIR)$([areas.varname]dir)[for areas.files][is areas.type "locale"]
  	$(MKDIR) [areas.files.installdir]

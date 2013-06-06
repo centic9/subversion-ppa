@@ -4,7 +4,7 @@ Patch by Jakub Adam, via upstream r1234864.
 
 --- a/Makefile.in
 +++ b/Makefile.in
-@@ -302,8 +302,11 @@ SWIG_RB_SRC_DIR = $(top_srcdir)/subversi
+@@ -302,8 +302,11 @@
  
  ### Automate JAR creation using Makefile generator's javahl-java.jar
  ### property.  Enhance generator to support JAR installation.
