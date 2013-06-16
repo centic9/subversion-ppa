@@ -1,3 +1,10 @@
+subversion (1.7.10-0ubuntu0~ppa1) precise; urgency=low
+
+  * Reapply some changes from local ppa, remove two CVE patches as they are
+    applied upstream now.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Sun, 16 Jun 2013 21:33:54 +0200
+
 subversion (1.7.9-1+nmu2) unstable; urgency=high
 
   * Non-maintainer upload.
