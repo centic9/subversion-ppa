@@ -37,14 +37,12 @@ my $repospath = tempdir('svn-perl-test-XXXXXX', TMPDIR => 1, CLEANUP => 1);
 
 my $repos;
 
-# TEST
 ok($repos = SVN::Repos::create("$repospath", undef, undef, undef, undef),
    "create repository at $repospath");
 
 my $fs = $repos->fs;
 
 my $acc = SVN::Fs::create_access('foo');
-# TEST
 is($acc->get_username, 'foo');
 $fs->set_access($acc);
 
@@ -60,15 +58,11 @@ my $token = "opaquelocktoken:notauuid-$$";
 
 $fs->lock('/testfile', $token, 'we hate software', 0, 0, $fs->youngest_rev, 0);
 
-# TEST
 ok(my $lock = $fs->get_lock('/testfile'));
-# TEST
 is($lock->token, $token);
-# TEST
 is($lock->owner, 'foo');
 
 $acc = SVN::Fs::create_access('fnord');
-# TEST
 is($acc->get_username, 'fnord');
 $fs->set_access($acc);
 
@@ -76,13 +70,11 @@ eval {
 $fs->lock('/testfile', $token, 'we hate software', 0, 0, $fs->youngest_rev, 0);
 };
 
-# TEST
 like($@, qr/already locked/);
 
 eval {
 $fs->unlock('/testfile', 'software', 0)
 };
-# TEST
 like($@, qr/no such lock/);
 
 $fs->unlock('/testfile', 'software', 1);

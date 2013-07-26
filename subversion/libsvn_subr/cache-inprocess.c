@@ -30,7 +30,6 @@
 #include "svn_private_config.h"
 
 #include "cache.h"
-#include "private/svn_mutex.h"
 
 /* The (internal) cache object. */
 typedef struct inprocess_cache_t {
@@ -81,10 +80,12 @@ typedef struct inprocess_cache_t {
    */
   apr_size_t data_size;
 
+#if APR_HAS_THREADS
   /* A lock for intra-process synchronization to the cache, or NULL if
    * the cache's creator doesn't feel the cache needs to be
    * thread-safe. */
-  svn_mutex__t *mutex;
+  apr_thread_mutex_t *mutex;
+#endif
 } inprocess_cache_t;
 
 /* A cache page; all items on the page are allocated from the same
@@ -181,28 +182,39 @@ duplicate_key(inprocess_cache_t *cache,
     return apr_pmemdup(pool, key, cache->klen);
 }
 
+/* If applicable, locks CACHE's mutex. */
 static svn_error_t *
-inprocess_cache_get_internal(char **buffer,
-                             apr_size_t *size,
-                             inprocess_cache_t *cache,
-                             const void *key,
-                             apr_pool_t *result_pool)
+lock_cache(inprocess_cache_t *cache)
 {
-  struct cache_entry *entry = apr_hash_get(cache->hash, key, cache->klen);
+#if APR_HAS_THREADS
+  apr_status_t status;
+  if (! cache->mutex)
+    return SVN_NO_ERROR;
 
-  *buffer = NULL;
-  if (entry)
-    {
-      SVN_ERR(move_page_to_front(cache, entry->page));
-
-      /* duplicate the buffer entry */
-      *buffer = apr_palloc(result_pool, entry->size);
-      memcpy(*buffer, entry->value, entry->size);
-
-      *size = entry->size;
-    }
+  status = apr_thread_mutex_lock(cache->mutex);
+  if (status)
+    return svn_error_wrap_apr(status, _("Can't lock cache mutex"));
+#endif
 
   return SVN_NO_ERROR;
+}
+
+/* If applicable, unlocks CACHE's mutex, then returns ERR. */
+static svn_error_t *
+unlock_cache(inprocess_cache_t *cache,
+             svn_error_t *err)
+{
+#if APR_HAS_THREADS
+  apr_status_t status;
+  if (! cache->mutex)
+    return err;
+
+  status = apr_thread_mutex_unlock(cache->mutex);
+  if (status && !err)
+    return svn_error_wrap_apr(status, _("Can't unlock cache mutex"));
+#endif
+
+  return err;
 }
 
 static svn_error_t *
@@ -213,25 +225,38 @@ inprocess_cache_get(void **value_p,
                     apr_pool_t *result_pool)
 {
   inprocess_cache_t *cache = cache_void;
-  char* buffer = NULL;
-  apr_size_t size;
+  svn_error_t *err = NULL;
+  struct cache_entry *entry;
+  char* buffer;
 
-  if (key)
-    SVN_MUTEX__WITH_LOCK(cache->mutex,
-                         inprocess_cache_get_internal(&buffer,
-                                                      &size,
-                                                      cache,
-                                                      key,
-                                                      result_pool));
+  SVN_ERR(lock_cache(cache));
+
+  entry = apr_hash_get(cache->hash, key, cache->klen);
+  if (! entry)
+    {
+      *found = FALSE;
+      return unlock_cache(cache, SVN_NO_ERROR);
+    }
+
+  SVN_ERR(move_page_to_front(cache, entry->page));
+
+  /* duplicate the buffer entry */
+  buffer = apr_palloc(result_pool, entry->size);
+  memcpy(buffer, entry->value, entry->size);
+
+  /* the cache is no longer being accessed */
+  SVN_ERR(unlock_cache(cache, SVN_NO_ERROR));
 
   /* deserialize the buffer content. Usually, this will directly
      modify the buffer content directly.
    */
-  *value_p = NULL;
-  *found = buffer != NULL;
-  return buffer && size
-    ? cache->deserialize_func(value_p, buffer, size, result_pool)
-    : SVN_NO_ERROR;
+  *found = TRUE;
+  if (entry->value)
+    err = cache->deserialize_func(value_p, buffer, entry->size, result_pool);
+  else
+    *value_p = NULL;
+
+  return err;
 }
 
 /* Removes PAGE from the LRU list, removes all of its entries from
@@ -267,12 +292,16 @@ erase_page(inprocess_cache_t *cache,
 
 
 static svn_error_t *
-inprocess_cache_set_internal(inprocess_cache_t *cache,
-                             const void *key,
-                             void *value,
-                             apr_pool_t *scratch_pool)
+inprocess_cache_set(void *cache_void,
+                    const void *key,
+                    void *value,
+                    apr_pool_t *scratch_pool)
 {
+  inprocess_cache_t *cache = cache_void;
   struct cache_entry *existing_entry;
+  svn_error_t *err = SVN_NO_ERROR;
+
+  SVN_ERR(lock_cache(cache));
 
   existing_entry = apr_hash_get(cache->hash, key, cache->klen);
 
@@ -304,13 +333,11 @@ inprocess_cache_set_internal(inprocess_cache_t *cache,
       cache->data_size -= existing_entry->size;
       if (value)
         {
-          SVN_ERR(cache->serialize_func(&existing_entry->value,
-                                        &existing_entry->size,
-                                        value,
-                                        page->page_pool));
+          err = cache->serialize_func((char **)&existing_entry->value,
+                                      &existing_entry->size,
+                                      value,
+                                      page->page_pool);
           cache->data_size += existing_entry->size;
-          if (existing_entry->size == 0)
-            existing_entry->value = NULL;
         }
       else
         {
@@ -318,7 +345,7 @@ inprocess_cache_set_internal(inprocess_cache_t *cache,
           existing_entry->size = 0;
         }
 
-      return SVN_NO_ERROR;
+      goto cleanup;
     }
 
   /* Do we not have a partial page to put it on, but we are allowed to
@@ -356,19 +383,20 @@ inprocess_cache_set_internal(inprocess_cache_t *cache,
     new_entry->key = duplicate_key(cache, key, page->page_pool);
     if (value)
       {
-        SVN_ERR(cache->serialize_func(&new_entry->value,
-                                      &new_entry->size,
-                                      value,
-                                      page->page_pool));
+        err = cache->serialize_func((char **)&new_entry->value,
+                                    &new_entry->size,
+                                    value,
+                                    page->page_pool);
         cache->data_size += new_entry->size;
-        if (new_entry->size == 0)
-          new_entry->value = NULL;
       }
     else
       {
         new_entry->value = NULL;
         new_entry->size = 0;
       }
+
+    if (err)
+      goto cleanup;
 
     /* Add the entry to the page's list. */
     new_entry->page = page;
@@ -390,25 +418,8 @@ inprocess_cache_set_internal(inprocess_cache_t *cache,
       }
   }
 
-  return SVN_NO_ERROR;
-}
-
-static svn_error_t *
-inprocess_cache_set(void *cache_void,
-                    const void *key,
-                    void *value,
-                    apr_pool_t *scratch_pool)
-{
-  inprocess_cache_t *cache = cache_void;
-
-  if (key)
-    SVN_MUTEX__WITH_LOCK(cache->mutex,
-                         inprocess_cache_set_internal(cache,
-                                                      key,
-                                                      value,
-                                                      scratch_pool));
-
-  return SVN_NO_ERROR;
+ cleanup:
+  return unlock_cache(cache, err);
 }
 
 /* Baton type for svn_cache__iter. */
@@ -444,33 +455,10 @@ inprocess_cache_iter(svn_boolean_t *completed,
   b.user_cb = user_cb;
   b.user_baton = user_baton;
 
-  SVN_MUTEX__WITH_LOCK(cache->mutex,
-                       svn_iter_apr_hash(completed, cache->hash,
-                                         iter_cb, &b, scratch_pool));
-
-  return SVN_NO_ERROR;
-}
-
-static svn_error_t *
-inprocess_cache_get_partial_internal(void **value_p,
-                                     svn_boolean_t *found,
-                                     inprocess_cache_t *cache,
-                                     const void *key,
-                                     svn_cache__partial_getter_func_t func,
-                                     void *baton,
-                                     apr_pool_t *result_pool)
-{
-  struct cache_entry *entry = apr_hash_get(cache->hash, key, cache->klen);
-  if (! entry)
-    {
-      *found = FALSE;
-      return SVN_NO_ERROR;
-    }
-
-  SVN_ERR(move_page_to_front(cache, entry->page));
-
-  *found = TRUE;
-  return func(value_p, entry->value, entry->size, baton, result_pool);
+  SVN_ERR(lock_cache(cache));
+  return unlock_cache(cache,
+                      svn_iter_apr_hash(completed, cache->hash, iter_cb, &b,
+                                        scratch_pool));
 }
 
 static svn_error_t *
@@ -483,43 +471,23 @@ inprocess_cache_get_partial(void **value_p,
                             apr_pool_t *result_pool)
 {
   inprocess_cache_t *cache = cache_void;
+  struct cache_entry *entry;
 
-  if (key)
-    SVN_MUTEX__WITH_LOCK(cache->mutex,
-                         inprocess_cache_get_partial_internal(value_p,
-                                                              found,
-                                                              cache,
-                                                              key,
-                                                              func,
-                                                              baton,
-                                                              result_pool));
-  else
-    *found = FALSE;
+  SVN_ERR(lock_cache(cache));
 
-  return SVN_NO_ERROR;
-}
-
-static svn_error_t *
-inprocess_cache_set_partial_internal(inprocess_cache_t *cache,
-                                     const void *key,
-                                     svn_cache__partial_setter_func_t func,
-                                     void *baton,
-                                     apr_pool_t *scratch_pool)
-{
-  struct cache_entry *entry = apr_hash_get(cache->hash, key, cache->klen);
-  if (entry)
+  entry = apr_hash_get(cache->hash, key, cache->klen);
+  if (! entry)
     {
-      SVN_ERR(move_page_to_front(cache, entry->page));
-
-      cache->data_size -= entry->size;
-      SVN_ERR(func(&entry->value,
-                   &entry->size,
-                   baton,
-                   entry->page->page_pool));
-      cache->data_size += entry->size;
+      *found = FALSE;
+      return unlock_cache(cache, SVN_NO_ERROR);
     }
 
-  return SVN_NO_ERROR;
+  SVN_ERR(move_page_to_front(cache, entry->page));
+
+  *found = TRUE;
+  return unlock_cache(cache,
+                      func(value_p, entry->value, entry->size, baton,
+                           result_pool));
 }
 
 static svn_error_t *
@@ -530,16 +498,25 @@ inprocess_cache_set_partial(void *cache_void,
                             apr_pool_t *scratch_pool)
 {
   inprocess_cache_t *cache = cache_void;
+  struct cache_entry *entry;
+  svn_error_t *err = SVN_NO_ERROR;
 
-  if (key)
-    SVN_MUTEX__WITH_LOCK(cache->mutex,
-                         inprocess_cache_set_partial_internal(cache,
-                                                              key,
-                                                              func,
-                                                              baton,
-                                                              scratch_pool));
+  SVN_ERR(lock_cache(cache));
 
-  return SVN_NO_ERROR;
+  entry = apr_hash_get(cache->hash, key, cache->klen);
+  if (! entry)
+    return unlock_cache(cache, err);
+
+  SVN_ERR(move_page_to_front(cache, entry->page));
+
+  cache->data_size -= entry->size;
+  err = func((char **)&entry->value,
+             &entry->size,
+             baton,
+             entry->page->page_pool);
+  cache->data_size += entry->size;
+
+  return unlock_cache(cache, err);
 }
 
 static svn_boolean_t
@@ -555,10 +532,15 @@ inprocess_cache_is_cachable(void *cache_void, apr_size_t size)
 }
 
 static svn_error_t *
-inprocess_cache_get_info_internal(inprocess_cache_t *cache,
-                                  svn_cache__info_t *info,
-                                  apr_pool_t *result_pool)
+inprocess_cache_get_info(void *cache_void,
+                         svn_cache__info_t *info,
+                         svn_boolean_t reset,
+                         apr_pool_t *result_pool)
 {
+  inprocess_cache_t *cache = cache_void;
+
+  SVN_ERR(lock_cache(cache));
+
   info->id = apr_pstrdup(result_pool, cache->id);
 
   info->used_entries = apr_hash_count(cache->hash);
@@ -570,25 +552,9 @@ inprocess_cache_get_info_internal(inprocess_cache_t *cache,
                    + cache->items_per_page * sizeof(struct cache_page)
                    + info->used_entries * sizeof(struct cache_entry);
 
-  return SVN_NO_ERROR;
+  return unlock_cache(cache, SVN_NO_ERROR);
 }
 
-
-static svn_error_t *
-inprocess_cache_get_info(void *cache_void,
-                         svn_cache__info_t *info,
-                         svn_boolean_t reset,
-                         apr_pool_t *result_pool)
-{
-  inprocess_cache_t *cache = cache_void;
-
-  SVN_MUTEX__WITH_LOCK(cache->mutex,
-                       inprocess_cache_get_info_internal(cache,
-                                                         info,
-                                                         result_pool));
-
-  return SVN_NO_ERROR;
-}
 
 static svn_cache__vtable_t inprocess_cache_vtable = {
   inprocess_cache_get,
@@ -636,7 +602,17 @@ svn_cache__create_inprocess(svn_cache__t **cache_p,
   /* The sentinel doesn't need a pool.  (We're happy to crash if we
    * accidentally try to treat it like a real page.) */
 
-  SVN_ERR(svn_mutex__init(&cache->mutex, thread_safe, pool));
+#if APR_HAS_THREADS
+  if (thread_safe)
+    {
+      apr_status_t status = apr_thread_mutex_create(&(cache->mutex),
+                                                    APR_THREAD_MUTEX_DEFAULT,
+                                                    pool);
+      if (status)
+        return svn_error_wrap_apr(status,
+                                  _("Can't create cache mutex"));
+    }
+#endif
 
   cache->cache_pool = pool;
 

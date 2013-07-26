@@ -24,7 +24,6 @@
 #include <string.h>
 #include <ctype.h>
 
-#include "svn_hash.h"
 #include "svn_pools.h"
 #include "svn_error.h"
 #include "svn_fs.h"
@@ -32,12 +31,10 @@
 #include "svn_props.h"
 #include "svn_repos.h"
 #include "svn_time.h"
-#include "svn_sorts.h"
 #include "repos.h"
 #include "svn_private_config.h"
 #include "private/svn_repos_private.h"
 #include "private/svn_utf_private.h"
-#include "private/svn_fspath.h"
 
 
 /*** Commit wrappers ***/
@@ -51,38 +48,12 @@ svn_repos_fs_commit_txn(const char **conflict_p,
 {
   svn_error_t *err, *err2;
   const char *txn_name;
-  apr_hash_t *props;
-  apr_pool_t *iterpool;
-  apr_hash_index_t *hi;
-  apr_hash_t *hooks_env;
 
   *new_rev = SVN_INVALID_REVNUM;
 
-  /* Parse the hooks-env file (if any). */
-  SVN_ERR(svn_repos__parse_hooks_env(&hooks_env, repos->hooks_env_path,
-                                     pool, pool));
-
   /* Run pre-commit hooks. */
   SVN_ERR(svn_fs_txn_name(&txn_name, txn, pool));
-  SVN_ERR(svn_repos__hooks_pre_commit(repos, hooks_env, txn_name, pool));
-
-  /* Remove any ephemeral transaction properties. */
-  SVN_ERR(svn_fs_txn_proplist(&props, txn, pool));
-  iterpool = svn_pool_create(pool);
-  for (hi = apr_hash_first(pool, props); hi; hi = apr_hash_next(hi))
-    {
-      const void *key;
-      apr_hash_this(hi, &key, NULL, NULL);
-
-      svn_pool_clear(iterpool);
-
-      if (strncmp(key, SVN_PROP_TXN_PREFIX,
-                  (sizeof(SVN_PROP_TXN_PREFIX) - 1)) == 0)
-        {
-          SVN_ERR(svn_fs_change_txn_prop(txn, key, NULL, iterpool));
-        }
-    }
-  svn_pool_destroy(iterpool);
+  SVN_ERR(svn_repos__hooks_pre_commit(repos, txn_name, pool));
 
   /* Commit. */
   err = svn_fs_commit_txn(conflict_p, new_rev, txn, pool);
@@ -90,8 +61,7 @@ svn_repos_fs_commit_txn(const char **conflict_p,
     return err;
 
   /* Run post-commit hooks. */
-  if ((err2 = svn_repos__hooks_post_commit(repos, hooks_env,
-                                           *new_rev, txn_name, pool)))
+  if ((err2 = svn_repos__hooks_post_commit(repos, *new_rev, pool)))
     {
       err2 = svn_error_create
                (SVN_ERR_REPOS_POST_COMMIT_HOOK_FAILED, err2,
@@ -113,33 +83,23 @@ svn_repos_fs_begin_txn_for_commit2(svn_fs_txn_t **txn_p,
                                    apr_hash_t *revprop_table,
                                    apr_pool_t *pool)
 {
+  svn_string_t *author = apr_hash_get(revprop_table, SVN_PROP_REVISION_AUTHOR,
+                                      APR_HASH_KEY_STRING);
   apr_array_header_t *revprops;
-  const char *txn_name;
-  svn_string_t *author = svn_hash_gets(revprop_table, SVN_PROP_REVISION_AUTHOR);
-  apr_hash_t *hooks_env;
 
-  /* Parse the hooks-env file (if any). */
-  SVN_ERR(svn_repos__parse_hooks_env(&hooks_env, repos->hooks_env_path,
-                                     pool, pool));
+  /* Run start-commit hooks. */
+  SVN_ERR(svn_repos__hooks_start_commit(repos, author ? author->data : NULL,
+                                        repos->client_capabilities, pool));
 
-  /* Begin the transaction, ask for the fs to do on-the-fly lock checks.
-     We fetch its name, too, so the start-commit hook can use it.  */
+  /* Begin the transaction, ask for the fs to do on-the-fly lock checks. */
   SVN_ERR(svn_fs_begin_txn2(txn_p, repos->fs, rev,
                             SVN_FS_TXN_CHECK_LOCKS, pool));
-  SVN_ERR(svn_fs_txn_name(&txn_name, *txn_p, pool));
 
   /* We pass the revision properties to the filesystem by adding them
      as properties on the txn.  Later, when we commit the txn, these
      properties will be copied into the newly created revision. */
   revprops = svn_prop_hash_to_array(revprop_table, pool);
-  SVN_ERR(svn_repos_fs_change_txn_props(*txn_p, revprops, pool));
-
-  /* Run start-commit hooks. */
-  SVN_ERR(svn_repos__hooks_start_commit(repos, hooks_env,
-                                        author ? author->data : NULL,
-                                        repos->client_capabilities, txn_name,
-                                        pool));
-  return SVN_NO_ERROR;
+  return svn_repos_fs_change_txn_props(*txn_p, revprops, pool);
 }
 
 
@@ -153,14 +113,46 @@ svn_repos_fs_begin_txn_for_commit(svn_fs_txn_t **txn_p,
 {
   apr_hash_t *revprop_table = apr_hash_make(pool);
   if (author)
-    svn_hash_sets(revprop_table, SVN_PROP_REVISION_AUTHOR,
-                  svn_string_create(author, pool));
+    apr_hash_set(revprop_table, SVN_PROP_REVISION_AUTHOR,
+                 APR_HASH_KEY_STRING,
+                 svn_string_create(author, pool));
   if (log_msg)
-    svn_hash_sets(revprop_table, SVN_PROP_REVISION_LOG,
-                  svn_string_create(log_msg, pool));
+    apr_hash_set(revprop_table, SVN_PROP_REVISION_LOG,
+                 APR_HASH_KEY_STRING,
+                 svn_string_create(log_msg, pool));
   return svn_repos_fs_begin_txn_for_commit2(txn_p, repos, rev, revprop_table,
                                             pool);
 }
+
+
+svn_error_t *
+svn_repos_fs_begin_txn_for_update(svn_fs_txn_t **txn_p,
+                                  svn_repos_t *repos,
+                                  svn_revnum_t rev,
+                                  const char *author,
+                                  apr_pool_t *pool)
+{
+  /* ### someday, we might run a read-hook here. */
+
+  /* Begin the transaction. */
+  SVN_ERR(svn_fs_begin_txn2(txn_p, repos->fs, rev, 0, pool));
+
+  /* We pass the author to the filesystem by adding it as a property
+     on the txn. */
+
+  /* User (author). */
+  if (author)
+    {
+      svn_string_t val;
+      val.data = author;
+      val.len = strlen(author);
+      SVN_ERR(svn_fs_change_txn_prop(*txn_p, SVN_PROP_REVISION_AUTHOR,
+                                     &val, pool));
+    }
+
+  return SVN_NO_ERROR;
+}
+
 
 
 /*** Property wrappers ***/
@@ -170,7 +162,7 @@ svn_repos__validate_prop(const char *name,
                          const svn_string_t *value,
                          apr_pool_t *pool)
 {
-  svn_prop_kind_t kind = svn_property_kind2(name);
+  svn_prop_kind_t kind = svn_property_kind(NULL, name);
 
   /* Disallow setting non-regular properties. */
   if (kind != svn_prop_regular_kind)
@@ -187,7 +179,7 @@ svn_repos__validate_prop(const char *name,
        * LF line endings. */
       if (svn_prop_needs_translation(name))
         {
-          if (!svn_utf__is_valid(value->data, value->len))
+          if (svn_utf__is_valid(value->data, value->len) == FALSE)
             {
               return svn_error_createf
                 (SVN_ERR_BAD_PROPERTY_VALUE, NULL,
@@ -329,7 +321,6 @@ svn_repos_fs_change_rev_prop4(svn_repos_t *repos,
     {
       const svn_string_t *old_value;
       char action;
-      apr_hash_t *hooks_env;
 
       SVN_ERR(svn_repos__validate_prop(name, new_value, pool));
 
@@ -356,24 +347,17 @@ svn_repos_fs_change_rev_prop4(svn_repos_t *repos,
       else
         action = 'M';
 
-      /* Parse the hooks-env file (if any, and if to be used). */
-      if (use_pre_revprop_change_hook || use_post_revprop_change_hook)
-        SVN_ERR(svn_repos__parse_hooks_env(&hooks_env, repos->hooks_env_path,
-                                           pool, pool));
-
       /* ### currently not passing the old_value to hooks */
       if (use_pre_revprop_change_hook)
-        SVN_ERR(svn_repos__hooks_pre_revprop_change(repos, hooks_env, rev,
-                                                    author, name, new_value,
-                                                    action, pool));
+        SVN_ERR(svn_repos__hooks_pre_revprop_change(repos, rev, author, name,
+                                                    new_value, action, pool));
 
       SVN_ERR(svn_fs_change_rev_prop2(repos->fs, rev, name,
                                       &old_value, new_value, pool));
 
       if (use_post_revprop_change_hook)
-        SVN_ERR(svn_repos__hooks_post_revprop_change(repos, hooks_env, rev,
-                                                     author, name, old_value,
-                                                     action, pool));
+        SVN_ERR(svn_repos__hooks_post_revprop_change(repos, rev, author,  name,
+                                                     old_value, action, pool));
     }
   else  /* rev is either unreadable or only partially readable */
     {
@@ -409,8 +393,10 @@ svn_repos_fs_revision_prop(svn_string_t **value_p,
   else if (readability == svn_repos_revision_access_partial)
     {
       /* Only svn:author and svn:date are fetchable. */
-      if ((strcmp(propname, SVN_PROP_REVISION_AUTHOR) != 0)
-          && (strcmp(propname, SVN_PROP_REVISION_DATE) != 0))
+      if ((strncmp(propname, SVN_PROP_REVISION_AUTHOR,
+                   strlen(SVN_PROP_REVISION_AUTHOR)) != 0)
+          && (strncmp(propname, SVN_PROP_REVISION_DATE,
+                      strlen(SVN_PROP_REVISION_DATE)) != 0))
         *value_p = NULL;
 
       else
@@ -457,13 +443,17 @@ svn_repos_fs_revision_proplist(apr_hash_t **table_p,
 
       /* If they exist, we only copy svn:author and svn:date into the
          'real' hashtable being returned. */
-      value = svn_hash_gets(tmphash, SVN_PROP_REVISION_AUTHOR);
+      value = apr_hash_get(tmphash, SVN_PROP_REVISION_AUTHOR,
+                           APR_HASH_KEY_STRING);
       if (value)
-        svn_hash_sets(*table_p, SVN_PROP_REVISION_AUTHOR, value);
+        apr_hash_set(*table_p, SVN_PROP_REVISION_AUTHOR,
+                     APR_HASH_KEY_STRING, value);
 
-      value = svn_hash_gets(tmphash, SVN_PROP_REVISION_DATE);
+      value = apr_hash_get(tmphash, SVN_PROP_REVISION_DATE,
+                           APR_HASH_KEY_STRING);
       if (value)
-        svn_hash_sets(*table_p, SVN_PROP_REVISION_DATE, value);
+        apr_hash_set(*table_p, SVN_PROP_REVISION_DATE,
+                     APR_HASH_KEY_STRING, value);
     }
   else /* wholly readable revision */
     {
@@ -490,11 +480,6 @@ svn_repos_fs_lock(svn_lock_t **lock,
   const char *username = NULL;
   const char *new_token;
   apr_array_header_t *paths;
-  apr_hash_t *hooks_env;
-
-  /* Parse the hooks-env file (if any). */
-  SVN_ERR(svn_repos__parse_hooks_env(&hooks_env, repos->hooks_env_path,
-                                     pool, pool));
 
   /* Setup an array of paths in anticipation of the ra layers handling
      multiple locks in one request (1.3 most likely).  This is only
@@ -513,8 +498,8 @@ svn_repos_fs_lock(svn_lock_t **lock,
 
   /* Run pre-lock hook.  This could throw error, preventing
      svn_fs_lock() from happening. */
-  SVN_ERR(svn_repos__hooks_pre_lock(repos, hooks_env, &new_token, path,
-                                    username, comment, steal_lock, pool));
+  SVN_ERR(svn_repos__hooks_pre_lock(repos, &new_token, path, username, comment,
+                                    steal_lock, pool));
   if (*new_token)
     token = new_token;
 
@@ -523,8 +508,7 @@ svn_repos_fs_lock(svn_lock_t **lock,
                       expiration_date, current_rev, steal_lock, pool));
 
   /* Run post-lock hook. */
-  if ((err = svn_repos__hooks_post_lock(repos, hooks_env,
-                                        paths, username, pool)))
+  if ((err = svn_repos__hooks_post_lock(repos, paths, username, pool)))
     return svn_error_create
       (SVN_ERR_REPOS_POST_LOCK_HOOK_FAILED, err,
        "Lock succeeded, but post-lock hook failed");
@@ -543,17 +527,10 @@ svn_repos_fs_unlock(svn_repos_t *repos,
   svn_error_t *err;
   svn_fs_access_t *access_ctx = NULL;
   const char *username = NULL;
-  apr_array_header_t *paths;
-  apr_hash_t *hooks_env;
-
-  /* Parse the hooks-env file (if any). */
-  SVN_ERR(svn_repos__parse_hooks_env(&hooks_env, repos->hooks_env_path,
-                                     pool, pool));
-
   /* Setup an array of paths in anticipation of the ra layers handling
      multiple locks in one request (1.3 most likely).  This is only
      used by svn_repos__hooks_post_lock. */
-  paths = apr_array_make(pool, 1, sizeof(const char *));
+  apr_array_header_t *paths = apr_array_make(pool, 1, sizeof(const char *));
   APR_ARRAY_PUSH(paths, const char *) = path;
 
   SVN_ERR(svn_fs_get_access(&access_ctx, repos->fs));
@@ -568,15 +545,14 @@ svn_repos_fs_unlock(svn_repos_t *repos,
 
   /* Run pre-unlock hook.  This could throw error, preventing
      svn_fs_unlock() from happening. */
-  SVN_ERR(svn_repos__hooks_pre_unlock(repos, hooks_env, path, username, token,
+  SVN_ERR(svn_repos__hooks_pre_unlock(repos, path, username, token,
                                       break_lock, pool));
 
   /* Unlock. */
   SVN_ERR(svn_fs_unlock(repos->fs, path, token, break_lock, pool));
 
   /* Run post-unlock hook. */
-  if ((err = svn_repos__hooks_post_unlock(repos, hooks_env, paths,
-                                          username, pool)))
+  if ((err = svn_repos__hooks_post_unlock(repos, paths, username, pool)))
     return svn_error_create
       (SVN_ERR_REPOS_POST_UNLOCK_HOOK_FAILED, err,
        _("Unlock succeeded, but post-unlock hook failed"));
@@ -612,8 +588,8 @@ get_locks_callback(void *baton,
 
   /* If we can read this lock path, add the lock to the return hash. */
   if (readable)
-    svn_hash_sets(b->locks, apr_pstrdup(hash_pool, lock->path),
-                  svn_lock_dup(lock, hash_pool));
+    apr_hash_set(b->locks, apr_pstrdup(hash_pool, lock->path),
+                 APR_HASH_KEY_STRING, svn_lock_dup(lock, hash_pool));
 
   return SVN_NO_ERROR;
 }
@@ -713,8 +689,8 @@ svn_repos_fs_get_mergeinfo(svn_mergeinfo_catalog_t *mergeinfo,
      the change itself. */
   /* ### TODO(reint): ... but how about descendant merged-to paths? */
   if (readable_paths->nelts > 0)
-    SVN_ERR(svn_fs_get_mergeinfo2(mergeinfo, root, readable_paths, inherit,
-                                  include_descendants, TRUE, pool, pool));
+    SVN_ERR(svn_fs_get_mergeinfo(mergeinfo, root, readable_paths, inherit,
+                                 include_descendants, pool));
   else
     *mergeinfo = apr_hash_make(pool);
 
@@ -738,14 +714,7 @@ pack_notify_func(void *baton,
   struct pack_notify_baton *pnb = baton;
   svn_repos_notify_t *notify;
 
-  /* Simple conversion works for these values. */
-  SVN_ERR_ASSERT(pack_action >= svn_fs_pack_notify_start
-                 && pack_action <= svn_fs_pack_notify_end_revprop);
-
-  notify = svn_repos_notify_create(pack_action
-                                   + svn_repos_notify_pack_shard_start
-                                   - svn_fs_pack_notify_start,
-                                   pool);
+  notify = svn_repos_notify_create(pack_action + 3, pool);
   notify->shard = shard;
   pnb->notify_func(pnb->notify_baton, notify, pool);
 
@@ -771,71 +740,7 @@ svn_repos_fs_pack2(svn_repos_t *repos,
                      cancel_func, cancel_baton, pool);
 }
 
-svn_error_t *
-svn_repos_fs_get_inherited_props(apr_array_header_t **inherited_props_p,
-                                 svn_fs_root_t *root,
-                                 const char *path,
-                                 const char *propname,
-                                 svn_repos_authz_func_t authz_read_func,
-                                 void *authz_read_baton,
-                                 apr_pool_t *result_pool,
-                                 apr_pool_t *scratch_pool)
-{
-  apr_pool_t *iterpool = svn_pool_create(scratch_pool);
-  apr_array_header_t *inherited_props;
-  const char *parent_path = path;
 
-  inherited_props = apr_array_make(result_pool, 1,
-                                   sizeof(svn_prop_inherited_item_t *));
-  while (!(parent_path[0] == '/' && parent_path[1] == '\0'))
-    {
-      svn_boolean_t allowed = TRUE;
-      apr_hash_t *parent_properties = NULL;
-
-      svn_pool_clear(iterpool);
-      parent_path = svn_fspath__dirname(parent_path, scratch_pool);
-
-      if (authz_read_func)
-        SVN_ERR(authz_read_func(&allowed, root, parent_path,
-                                authz_read_baton, iterpool));
-      if (allowed)
-        {
-          if (propname)
-            {
-              svn_string_t *propval;
-
-              SVN_ERR(svn_fs_node_prop(&propval, root, parent_path, propname,
-                                       result_pool));
-              if (propval)
-                {
-                  parent_properties = apr_hash_make(result_pool);
-                  svn_hash_sets(parent_properties, propname, propval);
-                }
-            }
-          else
-            {
-              SVN_ERR(svn_fs_node_proplist(&parent_properties, root,
-                                           parent_path, result_pool));
-            }
-
-          if (parent_properties && apr_hash_count(parent_properties))
-            {
-              svn_prop_inherited_item_t *i_props =
-                apr_pcalloc(result_pool, sizeof(*i_props));
-              i_props->path_or_url =
-                apr_pstrdup(result_pool, parent_path + 1);
-              i_props->prop_hash = parent_properties;
-              /* Build the output array in depth-first order. */
-              svn_sort__array_insert(&i_props, inherited_props, 0);
-            }
-        }
-    }
-
-  svn_pool_destroy(iterpool);
-
-  *inherited_props_p = inherited_props;
-  return SVN_NO_ERROR;
-}
 
 /*
  * vim:ts=4:sw=2:expandtab:tw=80:fo=tcroq
