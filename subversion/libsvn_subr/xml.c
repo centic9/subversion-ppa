@@ -27,7 +27,6 @@
 #include <assert.h>
 
 #include "svn_private_config.h"         /* for SVN_HAVE_OLD_EXPAT */
-#include "svn_hash.h"
 #include "svn_pools.h"
 #include "svn_xml.h"
 #include "svn_error.h"
@@ -116,7 +115,7 @@ xml_escape_cdata(svn_stringbuf_t **outstr,
   const char *p = data, *q;
 
   if (*outstr == NULL)
-    *outstr = svn_stringbuf_create_empty(pool);
+    *outstr = svn_stringbuf_create("", pool);
 
   while (1)
     {
@@ -278,7 +277,7 @@ svn_xml_fuzzy_escape(const char *string, apr_pool_t *pool)
   if (q == end)
     return string;
 
-  outstr = svn_stringbuf_create_empty(pool);
+  outstr = svn_stringbuf_create("", pool);
   while (1)
     {
       q = p;
@@ -456,7 +455,7 @@ void svn_xml_signal_bailout(svn_error_t *error,
 /*** Attribute walking. ***/
 
 const char *
-svn_xml_get_attr_value(const char *name, const char *const *atts)
+svn_xml_get_attr_value(const char *name, const char **atts)
 {
   while (atts && (*atts))
     {
@@ -480,7 +479,7 @@ svn_xml_make_header2(svn_stringbuf_t **str, const char *encoding,
 {
 
   if (*str == NULL)
-    *str = svn_stringbuf_create_empty(pool);
+    *str = svn_stringbuf_create("", pool);
   svn_stringbuf_appendcstr(*str, "<?xml version=\"1.0\"");
   if (encoding)
     {
@@ -534,7 +533,7 @@ svn_xml_ap_to_hash(va_list ap, apr_pool_t *pool)
   while ((key = va_arg(ap, char *)) != NULL)
     {
       const char *val = va_arg(ap, const char *);
-      svn_hash_sets(ht, key, val);
+      apr_hash_set(ht, key, APR_HASH_KEY_STRING, val);
     }
 
   return ht;
@@ -647,7 +646,7 @@ void svn_xml_make_close_tag(svn_stringbuf_t **str,
                             const char *tagname)
 {
   if (*str == NULL)
-    *str = svn_stringbuf_create_empty(pool);
+    *str = svn_stringbuf_create("", pool);
 
   svn_stringbuf_appendcstr(*str, "</");
   svn_stringbuf_appendcstr(*str, tagname);

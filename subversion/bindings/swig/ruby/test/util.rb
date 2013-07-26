@@ -1,4 +1,4 @@
-# ==================================================================== 
+# ====================================================================
 #    Licensed to the Apache Software Foundation (ASF) under one
 #    or more contributor license agreements.  See the NOTICE file
 #    distributed with this work for additional information
@@ -19,7 +19,7 @@
 
 require "fileutils"
 require "pathname"
-require "./svn/util"
+require "svn/util"
 require "tmpdir"
 
 require "my-assertions"
@@ -37,26 +37,23 @@ module SvnTestUtil
     @author = ENV["USER"] || "sample-user"
     @password = "sample-password"
     @realm = "sample realm"
-
-    @svnserve_host = "127.0.0.1"
-    @svnserve_ports = (64152..64282).collect{|x| x.to_s}
-
-    @tmp_path = Dir.mktmpdir
-    @wc_path = File.join(@tmp_path, "wc")
-    @import_path = File.join(@tmp_path, "import")
-    @repos_path = File.join(@tmp_path, "repos")
+    @repos_path = "repos"
     @full_repos_path = File.expand_path(@repos_path)
     @repos_uri = "file://#{@full_repos_path.sub(/^\/?/, '/')}"
-
+    @svnserve_host = "127.0.0.1"
+    @svnserve_ports = (64152..64282).collect{|x| x.to_s}
+    @wc_base_dir = File.join(Dir.tmpdir, "wc-tmp")
+    @wc_path = File.join(@wc_base_dir, "wc")
+    @full_wc_path = File.expand_path(@wc_path)
+    @tmp_path = "tmp"
     @config_path = "config"
-    @greek = Greek.new(@tmp_path, @import_path, @wc_path, @repos_uri)
+    @greek = Greek.new(@tmp_path, @wc_path, @repos_uri)
   end
 
   def setup_basic(need_svnserve=false)
     @need_svnserve = need_svnserve
     setup_default_variables
     setup_tmp
-    setup_tmp(@import_path) 
     setup_repository
     add_hooks
     setup_svnserve if @need_svnserve
@@ -143,7 +140,7 @@ module SvnTestUtil
   end
 
   def teardown_wc
-    remove_recursively_with_retry(@wc_path)
+    remove_recursively_with_retry(@wc_base_dir)
   end
 
   def setup_config

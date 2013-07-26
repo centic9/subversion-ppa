@@ -80,10 +80,10 @@ svn_wc__db_util_fetch_wc_id(apr_int64_t *wc_id,
 /* An SQLite application defined function that allows SQL queries to
    use "relpath_depth(local_relpath)".  */
 static svn_error_t *
-relpath_depth_sqlite(svn_sqlite__context_t *sctx,
-                     int argc,
-                     svn_sqlite__value_t *values[],
-                     apr_pool_t *scratch_pool)
+relpath_depth(svn_sqlite__context_t *sctx,
+              int argc,
+              svn_sqlite__value_t *values[],
+              apr_pool_t *scratch_pool)
 {
   const char *path = NULL;
   apr_int64_t depth;
@@ -114,7 +114,6 @@ svn_wc__db_util_open_db(svn_sqlite__db_t **sdb,
                         const char *dir_abspath,
                         const char *sdb_fname,
                         svn_sqlite__mode_t smode,
-                        svn_boolean_t exclusive,
                         const char *const *my_statements,
                         apr_pool_t *result_pool,
                         apr_pool_t *scratch_pool)
@@ -136,32 +135,13 @@ svn_wc__db_util_open_db(svn_sqlite__db_t **sdb,
                                  svn_dirent_local_style(sdb_abspath,
                                                         scratch_pool));
     }
-#ifndef WIN32
-  else
-    {
-      apr_file_t *f;
-
-      /* A standard SQLite build creates a DB with mode 644 ^ !umask
-         which means the file doesn't have group/world write access
-         even when umask allows it. By ensuring the file exists before
-         SQLite gets involved we give it the permissions allowed by
-         umask. */
-      SVN_ERR(svn_io_file_open(&f, sdb_abspath,
-                               (APR_READ | APR_WRITE | APR_CREATE),
-                               APR_OS_DEFAULT, scratch_pool));
-      SVN_ERR(svn_io_file_close(f, scratch_pool));
-    }
-#endif
 
   SVN_ERR(svn_sqlite__open(sdb, sdb_abspath, smode,
                            my_statements ? my_statements : statements,
                            0, NULL, result_pool, scratch_pool));
 
-  if (exclusive)
-    SVN_ERR(svn_sqlite__exec_statements(*sdb, STMT_PRAGMA_LOCKING_MODE));
-
   SVN_ERR(svn_sqlite__create_scalar_function(*sdb, "relpath_depth", 1,
-                                             relpath_depth_sqlite, NULL));
+                                             relpath_depth, NULL));
 
   return SVN_NO_ERROR;
 }
@@ -169,8 +149,8 @@ svn_wc__db_util_open_db(svn_sqlite__db_t **sdb,
 
 /* Some helpful transaction helpers.
 
-   Instead of directly using SQLite transactions, these wrappers
-   relieve the consumer from the need to wrap the wcroot and
+   Instead of directly using SQLite transactions, these wrappers take care of
+   simple cases by allowing consumers to worry about wrapping the wcroot and
    local_relpath, which are almost always used within the transaction.
 
    This also means if we later want to implement some wc_db-specific txn
@@ -217,7 +197,6 @@ svn_wc__db_with_txn(svn_wc__db_wcroot_t *wcroot,
                     apr_pool_t *scratch_pool)
 {
   struct txn_baton_t tb;
-
   tb.wcroot = wcroot;
   tb.local_relpath = local_relpath;
   tb.cb_func = cb_func;

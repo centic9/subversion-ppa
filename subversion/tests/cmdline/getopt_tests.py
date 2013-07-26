@@ -25,9 +25,7 @@
 ######################################################################
 
 # General modules
-import sys, re, os.path, logging
-
-logger = logging.getLogger()
+import sys, re, os.path
 
 # Our testing module
 import svntest
@@ -58,9 +56,6 @@ def load_expected_output(basename):
   exp_stderr = open(stderr_filename, 'r').readlines()
 
   return exp_stdout, exp_stderr
-
-# With plaintext password storage enabled, `svn --version' emits a warning:
-warn_line_re = re.compile("WARNING: Plaintext password storage")
 
 # This is a list of lines to delete.
 del_lines_res = [
@@ -98,61 +93,21 @@ rep_lines_res = [
                   'Subversion command-line client, version X.Y.Z.'),
                 ]
 
-# This is a trigger pattern that selects the secondary set of
-# delete/replace patterns
-switch_res_line = 'System information:'
-
-# This is a list of lines to delete after having seen switch_res_line.
-switched_warn_line_re = None
-switched_del_lines_res = [
-                          # In svn --version --verbose, dependent libs loaded
-                          # shared libs are optional.
-                          re.compile(r'^\* (loaded|linked)'),
-                          # In svn --version --verbose, remove everything from
-                          # the extended lists
-                          re.compile(r'^  - '),
-                         ]
-
-# This is a list of lines to search and replace text on after having
-# seen switch_res_line.
-switched_rep_lines_res = [
-                          # We don't care about the actual canonical host
-                          (re.compile('^\* running on.*$'), '* running on'),
-                         ]
-
 def process_lines(lines):
   "delete lines that should not be compared and search and replace the rest"
   output = [ ]
-  warn_re = warn_line_re
-  del_res = del_lines_res
-  rep_res = rep_lines_res
-
-  skip_next_line = 0
   for line in lines:
-    if skip_next_line:
-      skip_next_line = 0
-      continue
-
-    if line.startswith(switch_res_line):
-      warn_re = switched_warn_line_re
-      del_res = switched_del_lines_res
-      rep_res = switched_rep_lines_res
-
     # Skip these lines from the output list.
     delete_line = 0
-    if warn_re and warn_re.match(line):
-      delete_line = 1
-      skip_next_line = 1     # Ignore the empty line after the warning
-    else:
-      for delete_re in del_res:
-        if delete_re.match(line):
-          delete_line = 1
-          break
+    for delete_re in del_lines_res:
+      if delete_re.match(line):
+        delete_line = 1
+        break
     if delete_line:
       continue
 
     # Search and replace text on the rest.
-    for replace_re, replace_str in rep_res:
+    for replace_re, replace_str in rep_lines_res:
       line = replace_re.sub(replace_str, line)
 
     output.append(line)
@@ -172,7 +127,7 @@ def run_one_test(sbox, basename, *varargs):
     exit_code, actual_stdout, actual_stderr = svntest.main.run_svn(1, *varargs)
   else:
     exit_code, actual_stdout, actual_stderr = svntest.main.run_command(svntest.main.svn_binary,
-                                                                       1, False, *varargs)
+                                                                       1, 0, *varargs)
 
   # Delete and perform search and replaces on the lines from the
   # actual and expected output that may differ between build
@@ -182,11 +137,33 @@ def run_one_test(sbox, basename, *varargs):
   actual_stdout = process_lines(actual_stdout)
   actual_stderr = process_lines(actual_stderr)
 
-  svntest.verify.compare_and_display_lines("Standard output does not match.",
-                                           "STDOUT", exp_stdout, actual_stdout)
+  if exp_stdout != actual_stdout:
+    print("Standard output does not match.")
+    print("Expected standard output:")
+    print("=====")
+    for x in exp_stdout:
+      sys.stdout.write(x)
+    print("=====")
+    print("Actual standard output:")
+    print("=====")
+    for x in actual_stdout:
+      sys.stdout.write(x)
+    print("=====")
+    raise svntest.Failure
 
-  svntest.verify.compare_and_display_lines("Standard error does not match.",
-                                           "STDERR", exp_stderr, actual_stderr)
+  if exp_stderr != actual_stderr:
+    print("Standard error does not match.")
+    print("Expected standard error:")
+    print("=====")
+    for x in exp_stderr:
+      sys.stdout.write(x)
+    print("=====")
+    print("Actual standard error:")
+    print("=====")
+    for x in actual_stderr:
+      sys.stdout.write(x)
+    print("=====")
+    raise svntest.Failure
 
 def getopt_no_args(sbox):
   "run svn with no arguments"
@@ -199,10 +176,6 @@ def getopt__version(sbox):
 def getopt__version__quiet(sbox):
   "run svn --version --quiet"
   run_one_test(sbox, 'svn--version--quiet', '--version', '--quiet')
-
-def getopt__version__verbose(sbox):
-  "run svn --version --verbose"
-  run_one_test(sbox, 'svn--version--verbose', '--version', '--verbose')
 
 def getopt__help(sbox):
   "run svn --help"
@@ -229,7 +202,6 @@ test_list = [ None,
               getopt_no_args,
               getopt__version,
               getopt__version__quiet,
-              getopt__version__verbose,
               getopt__help,
               getopt_help,
               getopt_help_bogus_cmd,
