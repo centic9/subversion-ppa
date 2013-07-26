@@ -6,8 +6,10 @@ patch by David Kimdon <dwhedon@debian.org>.  The basic theory is:
 - Use libtool instead of apxs to install the apache modules.
   libtool relinks without rpath in this case, apxs obviously doesn't.
 
---- a/Makefile.in
-+++ b/Makefile.in
+Index: git/Makefile.in
+===================================================================
+--- git.orig/Makefile.in	2012-10-15 22:12:02.000000000 +0200
++++ git/Makefile.in	2012-10-15 22:12:05.000000000 +0200
 @@ -203,10 +203,10 @@
  COMPILE_JAVAHL_JAVAC = $(JAVAC) $(JAVAC_FLAGS)
  COMPILE_JAVAHL_JAVAH = $(JAVAH)
@@ -34,9 +36,11 @@ patch by David Kimdon <dwhedon@debian.org>.  The basic theory is:
  
  # There is a "readlink -f" command on some systems for the same purpose,
  # but it's not as portable (e.g. Mac OS X doesn't have it).  These should
---- a/build.conf
-+++ b/build.conf
-@@ -487,7 +487,7 @@
+Index: git/build.conf
+===================================================================
+--- git.orig/build.conf	2012-10-15 22:12:04.000000000 +0200
++++ git/build.conf	2012-10-15 22:12:05.000000000 +0200
+@@ -491,7 +491,7 @@
  lang = python
  path = subversion/bindings/swig/python/libsvn_swig_py
  libs = libsvn_client libsvn_wc libsvn_ra libsvn_delta libsvn_subr apriconv apr
@@ -45,7 +49,7 @@ patch by David Kimdon <dwhedon@debian.org>.  The basic theory is:
  install = swig-py-lib
  # need special build rule to include -DSWIGPYTHON
  compile-cmd = $(COMPILE_SWIG_PY)
-@@ -510,7 +510,7 @@
+@@ -514,7 +514,7 @@
  lang = ruby
  path = subversion/bindings/swig/ruby/libsvn_swig_ruby
  libs = libsvn_client libsvn_wc libsvn_delta libsvn_subr apriconv apr
@@ -54,8 +58,10 @@ patch by David Kimdon <dwhedon@debian.org>.  The basic theory is:
  install = swig-rb-lib
  # need special build rule to include
  compile-cmd = $(COMPILE_SWIG_RB)
---- a/build/generator/gen_base.py
-+++ b/build/generator/gen_base.py
+Index: git/build/generator/gen_base.py
+===================================================================
+--- git.orig/build/generator/gen_base.py	2012-10-15 22:12:02.000000000 +0200
++++ git/build/generator/gen_base.py	2012-10-15 22:12:05.000000000 +0200
 @@ -407,7 +407,7 @@
      self.install = options.get('install')
      self.compile_cmd = options.get('compile-cmd')
@@ -73,9 +79,11 @@ patch by David Kimdon <dwhedon@debian.org>.  The basic theory is:
  
      self.manpages = options.get('manpages', '')
      self.testing = options.get('testing')
---- a/build/generator/templates/makefile.ezt
-+++ b/build/generator/templates/makefile.ezt
-@@ -126,7 +126,7 @@
+Index: git/build/generator/templates/makefile.ezt
+===================================================================
+--- git.orig/build/generator/templates/makefile.ezt	2012-10-15 22:11:40.000000000 +0200
++++ git/build/generator/templates/makefile.ezt	2012-10-15 22:12:05.000000000 +0200
+@@ -125,7 +125,7 @@
  ########################################
  [for areas]
  [is areas.type "apache-mod"]install-mods-shared:[for areas.files] [areas.files.fullname][end][for areas.files]

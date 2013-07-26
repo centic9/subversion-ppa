@@ -61,8 +61,9 @@ PYVERSIONS := $(shell pyversions -vi)
 
 allpy = \
 	set -e; for v in $(PYVERSIONS); do \
-		$(RM) $(PY_DIR); \
+		$(RM) -r $(PY_DIR); \
 		ln -fs python$$v $(PY_DIR); \
+		pyinc=$$(python$$v-config --includes); \
 		pylib=$$(python$$v -c 'from distutils import sysconfig; print sysconfig.get_python_lib()'); \
 		$1; \
 	done
@@ -203,7 +204,7 @@ debian/stamp-build-arch: debian/stamp-configure
 	$(DEB_BUILDDIR)/subversion/svn/svn --version > /dev/null
 	$(call allpy, \
 	  $(MAKE_B) swig-py PYTHON=python$$v PYVER=$$v \
-	            PYTHON_INCLUDES=-I/usr/include/python$$v \
+	            PYTHON_INCLUDES="$$pyinc" \
 	            swig_pydir=$$pylib/libsvn swig_pydir_extra=$$pylib/svn)
 	# note: swig-pl seems to have trouble with -jN
 	+$(MAKE_B) -j1 swig-pl
