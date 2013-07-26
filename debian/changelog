@@ -1,3 +1,9 @@
+subversion (1.8.0-0ubuntu0~ppa1) precise; urgency=low
+
+  * Update to latest upstream release.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Wed, 03 Jul 2013 21:26:05 +0200
+
 subversion (1.7.10-0ubuntu0~ppa1) precise; urgency=low
 
   * Reapply some changes from local ppa, remove two CVE patches as they are
