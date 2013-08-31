@@ -21,9 +21,6 @@
  * ====================================================================
  */
 
-/* prevent "empty compilation unit" warning on e.g. UNIX */
-typedef int win32_xlate__dummy;
-
 #ifdef WIN32
 
 /* Define _WIN32_DCOM for CoInitializeEx(). */
@@ -188,7 +185,7 @@ svn_subr__win32_xlate_to_stringbuf(win32_xlate_t *handle,
 
   if (src_length == 0)
   {
-    *dest = svn_stringbuf_create_empty(pool);
+    *dest = svn_stringbuf_create("", pool);
     return APR_SUCCESS;
   }
 

@@ -1,4 +1,3 @@
-# encoding: UTF-8
 # ====================================================================
 #    Licensed to the Apache Software Foundation (ASF) under one
 #    or more contributor license agreements.  See the NOTICE file
@@ -18,10 +17,9 @@
 #    under the License.
 # ====================================================================
 
-require "my-assertions"
 require "util"
 require "stringio"
-require 'digest/md5'
+require 'md5'
 require 'tempfile'
 
 require "svn/info"
@@ -48,8 +46,8 @@ class SvnDeltaTest < Test::Unit::TestCase
     target = StringIO.new(t)
     stream = Svn::Delta::TextDeltaStream.new(source, target)
     assert_nil(stream.md5_digest)
-    _my_assert_block do
-      ret = stream.each do |window|
+    _wrap_assertion do
+      stream.each do |window|
         window.ops.each do |op|
           op_size = op.offset + op.length
           case op.action_code
@@ -64,9 +62,8 @@ class SvnDeltaTest < Test::Unit::TestCase
           end
         end
       end
-      true if RUBY_VERSION > '1.9' # this block returns nil in > ruby '1.9'
     end
-    assert_equal(Digest::MD5.hexdigest(t), stream.md5_digest)
+    assert_equal(MD5.new(t).hexdigest, stream.md5_digest)
   end
 
   def test_txdelta_window_compose
@@ -80,11 +77,11 @@ class SvnDeltaTest < Test::Unit::TestCase
       if composed_window.nil?
         composed_window = window
       else
-        composed_window = window.compose(composed_window)
+        composed_window = composed_window.compose(window)
       end
     end
 
-    _my_assert_block do
+    _wrap_assertion do
       composed_window.ops.each do |op|
         op_size = op.offset + op.length
         case op.action_code
@@ -164,10 +161,6 @@ class SvnDeltaTest < Test::Unit::TestCase
     assert_equal(target_text * 3, apply_result.read)
   end
 
-  def get_regex(pattern, encoding='ASCII', options=0)
-    Regexp.new(pattern.encode(encoding),options)
-  end
-
   def test_svndiff
     source_text = "abcde"
     target_text = "abXde"
@@ -175,22 +168,14 @@ class SvnDeltaTest < Test::Unit::TestCase
     target = StringIO.new(target_text)
     stream = Svn::Delta::TextDeltaStream.new(source, target)
 
-    if RUBY_VERSION > '1.9'
-      output = StringIO.new("".encode('ASCII-8BIT'))
-    else
-      output = StringIO.new("")
-    end
+    output = StringIO.new("")
     handler = Svn::Delta.svndiff_handler(output)
 
     Svn::Delta.send(target_text, handler)
     output.rewind
     result = output.read
-    if RUBY_VERSION > '1.9'
-      regex = get_regex("\\ASVN.*#{target_text}\\Z".encode('utf-8'),result.encoding,16)
-      assert_match(regex, result)
-    else
-      assert_match(/\ASVN.*#{target_text}\Z/, result)
-    end
+    assert_match(/\ASVN.*#{target_text}\z/, result)
+
     # skip svndiff window
     input = StringIO.new(result[4..-1])
     window = Svn::Delta.read_svndiff_window(input, 0)

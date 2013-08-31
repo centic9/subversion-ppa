@@ -45,9 +45,8 @@
 struct svn_magic__cookie_t {
 #ifdef SVN_HAVE_LIBMAGIC
   magic_t magic;
-#else
-  char dummy;
 #endif
+  char dummy;
 };
 
 #ifdef SVN_HAVE_LIBMAGIC
