@@ -31,7 +31,6 @@
 #include "svn_pools.h"
 #include "svn_dirent_uri.h"
 #include "svn_ra.h"
-#include "svn_cmdline.h"
 
 #include "private/svn_skel.h"
 
@@ -42,7 +41,7 @@
 #define KEY_NEW_PROPVAL "value"
 
 #define USAGE_MSG \
-  "Usage: %s URL REVISION PROPNAME VALUES_SKEL WANT_ERROR CONFIG_DIR\n" \
+  "Usage: %s URL REVISION PROPNAME VALUES_SKEL HTTP_LIBRARY WANT_ERROR\n" \
   "\n" \
   "VALUES_SKEL is a proplist skel containing pseudo-properties '%s' \n" \
   "and '%s'.  A pseudo-property missing from the skel is interpreted \n" \
@@ -53,28 +52,83 @@
   "the exit code shall be zero.\n"
 
 
+
+/* implements svn_auth_simple_prompt_func_t */
+static svn_error_t *
+aborting_simple_prompt_func(svn_auth_cred_simple_t **cred,
+                            void *baton,
+                            const char *realm,
+                            const char *username,
+                            svn_boolean_t may_save,
+                            apr_pool_t *pool)
+{
+  /* Oops, the jrandom:rayjandom we passed for SVN_AUTH_PARAM_DEFAULT_* failed,
+     and the prompt provider has retried.
+   */
+  SVN_ERR_MALFUNCTION();
+}
+
+/* implements svn_auth_username_prompt_func_t */
+static svn_error_t *
+aborting_username_prompt_func(svn_auth_cred_username_t **cred,
+                              void *baton,
+                              const char *realm,
+                              svn_boolean_t may_save,
+                              apr_pool_t *pool)
+{
+  /* Oops, the jrandom:rayjandom we passed for SVN_AUTH_PARAM_DEFAULT_* failed,
+     and the prompt provider has retried.
+   */
+  SVN_ERR_MALFUNCTION();
+}
+
 static svn_error_t *
 construct_auth_baton(svn_auth_baton_t **auth_baton_p,
-                     const char *config_dir,
                      apr_pool_t *pool)
 {
-  SVN_ERR(svn_cmdline_create_auth_baton(auth_baton_p,
-                                        TRUE  /* non_interactive */,
-                                        "jrandom", "rayjandom",
-                                        config_dir,
-                                        TRUE  /* no_auth_cache */,
-                                        FALSE /* trust_server_cert */,
-                                        NULL, NULL, NULL, pool));
+  apr_array_header_t *providers;
+  svn_auth_provider_object_t *simple_provider;
+  svn_auth_baton_t *auth_baton;
+
+  /* A bit of dancing just to pass jrandom:rayjandom. */
+  providers = apr_array_make(pool, 2, sizeof(svn_auth_provider_object_t *)),
+  svn_auth_get_simple_prompt_provider(&simple_provider,
+                                      aborting_simple_prompt_func, NULL,
+                                      0, pool);
+  APR_ARRAY_PUSH(providers, svn_auth_provider_object_t *) = simple_provider;
+  svn_auth_get_username_prompt_provider(&simple_provider,
+                                        aborting_username_prompt_func, NULL,
+                                        0, pool);
+  APR_ARRAY_PUSH(providers, svn_auth_provider_object_t *) = simple_provider;
+  svn_auth_open(&auth_baton, providers, pool);
+  svn_auth_set_parameter(auth_baton,
+                         SVN_AUTH_PARAM_DEFAULT_USERNAME, "jrandom");
+  svn_auth_set_parameter(auth_baton,
+                         SVN_AUTH_PARAM_DEFAULT_PASSWORD, "rayjandom");
+
+  *auth_baton_p = auth_baton;
   return SVN_NO_ERROR;
 }
 
 static svn_error_t *
 construct_config(apr_hash_t **config_p,
-                 const char *config_dir,
+                 const char *http_library,
                  apr_pool_t *pool)
 {
-  SVN_ERR(svn_config_get_config(config_p, config_dir, pool));
+  apr_hash_t *config;
+  svn_config_t *servers;
 
+  /* Populate SERVERS. */
+  SVN_ERR(svn_config_create(&servers, FALSE,  pool));
+  svn_config_set(servers, SVN_CONFIG_SECTION_GLOBAL,
+                 SVN_CONFIG_OPTION_HTTP_LIBRARY, http_library);
+
+  /* Populate CONFIG. */
+  config = apr_hash_make(pool);
+  apr_hash_set(config, SVN_CONFIG_CATEGORY_SERVERS,
+               APR_HASH_KEY_STRING, servers);
+
+  *config_p = config;
   return SVN_NO_ERROR;
 }
 
@@ -84,8 +138,8 @@ change_rev_prop(const char *url,
                 const char *propname,
                 const svn_string_t *propval,
                 const svn_string_t *old_value,
+                const char *http_library,
                 svn_boolean_t want_error,
-                const char *config_dir,
                 apr_pool_t *pool)
 {
   svn_ra_callbacks2_t *callbacks;
@@ -95,8 +149,8 @@ change_rev_prop(const char *url,
   svn_error_t *err;
 
   SVN_ERR(svn_ra_create_callbacks(&callbacks, pool));
-  SVN_ERR(construct_auth_baton(&callbacks->auth_baton, config_dir, pool));
-  SVN_ERR(construct_config(&config, config_dir, pool));
+  SVN_ERR(construct_auth_baton(&callbacks->auth_baton, pool));
+  SVN_ERR(construct_config(&config, http_library, pool));
 
   SVN_ERR(svn_ra_open4(&sess, NULL, url, NULL, callbacks, NULL /* baton */,
                        config, pool));
@@ -162,9 +216,9 @@ main(int argc, const char *argv[])
   const char *propname;
   svn_string_t *propval;
   svn_string_t *old_propval;
+  const char *http_library;
   char *digits_end = NULL;
   svn_boolean_t want_error;
-  const char *config_dir;
 
   if (argc != 7)
     {
@@ -186,9 +240,8 @@ main(int argc, const char *argv[])
   revision = strtol(argv[2], &digits_end, 10);
   propname = argv[3];
   SVN_INT_ERR(extract_values_from_skel(&old_propval, &propval, argv[4], pool));
-  want_error = !strcmp(argv[5], "1");
-  config_dir = svn_dirent_canonicalize(argv[6], pool);
-
+  http_library = argv[5];
+  want_error = !strcmp(argv[6], "1");
 
   if ((! SVN_IS_VALID_REVNUM(revision)) || (! digits_end) || *digits_end)
     SVN_INT_ERR(svn_error_create(SVN_ERR_CL_ARG_PARSING_ERROR, NULL,
@@ -196,7 +249,7 @@ main(int argc, const char *argv[])
 
   /* Do something. */
   err = change_rev_prop(url, revision, propname, propval, old_propval,
-                        want_error, config_dir, pool);
+                        http_library, want_error, pool);
   if (err)
     {
       svn_handle_error2(err, stderr, FALSE, "atomic-ra-revprop-change: ");

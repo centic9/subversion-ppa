@@ -350,7 +350,7 @@ dir_entry_id_from_node(const svn_fs_id_t **id_p,
 
   SVN_ERR(svn_fs_base__dag_dir_entries(&entries, parent, trail, pool));
   if (entries)
-    dirent = svn_hash_gets(entries, name);
+    dirent = apr_hash_get(entries, name, APR_HASH_KEY_STRING);
   else
     dirent = NULL;
 
@@ -421,7 +421,7 @@ set_entry(dag_node_t *parent,
     entries = apr_hash_make(pool);
 
   /* Now, add our new entry to the entries list. */
-  svn_hash_sets(entries, name, id);
+  apr_hash_set(entries, name, APR_HASH_KEY_STRING, id);
 
   /* Finally, replace the old entries list with the new one. */
   SVN_ERR(svn_fs_base__unparse_entries_skel(&entries_skel, entries,
@@ -579,7 +579,7 @@ svn_fs_base__dag_get_proplist(apr_hash_t **proplist_p,
 
 svn_error_t *
 svn_fs_base__dag_set_proplist(dag_node_t *node,
-                              const apr_hash_t *proplist,
+                              apr_hash_t *proplist,
                               const char *txn_id,
                               trail_t *trail,
                               apr_pool_t *pool)
@@ -910,7 +910,7 @@ svn_fs_base__dag_delete(dag_node_t *parent,
 
   /* Find NAME in the ENTRIES skel.  */
   if (entries)
-    id = svn_hash_gets(entries, name);
+    id = apr_hash_get(entries, name, APR_HASH_KEY_STRING);
 
   /* If we never found ID in ENTRIES (perhaps because there are no
      ENTRIES, perhaps because ID just isn't in the existing ENTRIES
@@ -929,7 +929,7 @@ svn_fs_base__dag_delete(dag_node_t *parent,
                                              trail, pool));
 
   /* Remove this entry from its parent's entries list. */
-  svn_hash_sets(entries, name, NULL);
+  apr_hash_set(entries, name, APR_HASH_KEY_STRING, NULL);
 
   /* Replace the old entries list with the new one. */
   {
@@ -1593,11 +1593,12 @@ svn_fs_base__dag_commit_txn(svn_revnum_t *new_rev,
   *new_rev = SVN_INVALID_REVNUM;
   SVN_ERR(svn_fs_bdb__put_rev(new_rev, fs, &revision, trail, pool));
 
-  if (svn_hash_gets(txnprops, SVN_FS__PROP_TXN_CHECK_OOD))
+  if (apr_hash_get(txnprops, SVN_FS__PROP_TXN_CHECK_OOD, APR_HASH_KEY_STRING))
     SVN_ERR(svn_fs_base__set_txn_prop
             (fs, txn_id, SVN_FS__PROP_TXN_CHECK_OOD, NULL, trail, pool));
 
-  if (svn_hash_gets(txnprops, SVN_FS__PROP_TXN_CHECK_LOCKS))
+  if (apr_hash_get(txnprops, SVN_FS__PROP_TXN_CHECK_LOCKS,
+                   APR_HASH_KEY_STRING))
     SVN_ERR(svn_fs_base__set_txn_prop
             (fs, txn_id, SVN_FS__PROP_TXN_CHECK_LOCKS, NULL, trail, pool));
 
@@ -1631,7 +1632,7 @@ svn_fs_base__things_different(svn_boolean_t *props_changed,
   if (! props_changed && ! contents_changed)
     return SVN_NO_ERROR;
 
-  /* The node revision skels for these two nodes. */
+  /* The the node revision skels for these two nodes. */
   SVN_ERR(svn_fs_bdb__get_node_revision(&noderev1, node1->fs, node1->id,
                                         trail, pool));
   SVN_ERR(svn_fs_bdb__get_node_revision(&noderev2, node2->fs, node2->id,

@@ -104,7 +104,7 @@ canonicalize_to_lower(char c)
   if (c < 'A' || c > 'Z')
     return c;
   else
-    return (char)(c - 'A' + 'a');
+    return c - 'A' + 'a';
 }
 
 /* Locale insensitive toupper() for converting parts of dirents and urls
@@ -115,7 +115,7 @@ canonicalize_to_upper(char c)
   if (c < 'a' || c > 'z')
     return c;
   else
-    return (char)(c - 'a' + 'A');
+    return c - 'a' + 'A';
 }
 
 /* Calculates the length of the dirent absolute or non absolute root in
@@ -359,24 +359,8 @@ canonicalize(path_type_t type, const char *path, apr_pool_t *pool)
             src = seg;
 
           /* Found a hostname, convert to lowercase and copy to dst. */
-          if (*src == '[')
-            {
-             *(dst++) = *(src++); /* Copy '[' */
-
-              while (*src == ':'
-                     || (*src >= '0' && (*src <= '9'))
-                     || (*src >= 'a' && (*src <= 'f'))
-                     || (*src >= 'A' && (*src <= 'F')))
-                {
-                  *(dst++) = canonicalize_to_lower((*src++));
-                }
-
-              if (*src == ']')
-                *(dst++) = *(src++); /* Copy ']' */
-            }
-          else
-            while (*src && (*src != '/') && (*src != ':'))
-              *(dst++) = canonicalize_to_lower((*src++));
+          while (*src && (*src != '/') && (*src != ':'))
+            *(dst++) = canonicalize_to_lower((*src++));
 
           if (*src == ':')
             {
@@ -900,10 +884,10 @@ svn_dirent_local_style(const char *dirent, apr_pool_t *pool)
 }
 
 const char *
-svn_relpath__internal_style(const char *relpath,
-                            apr_pool_t *pool)
+svn_relpath__internal_style(const char *dirent,
+                           apr_pool_t *pool)
 {
-  return svn_relpath_canonicalize(internal_style(relpath, pool), pool);
+  return svn_relpath_canonicalize(internal_style(dirent, pool), pool);
 }
 
 
@@ -927,7 +911,7 @@ svn_dirent_is_root(const char *dirent, apr_size_t len)
       && dirent[len - 1] != '/')
     {
       int segments = 0;
-      apr_size_t i;
+      int i;
       for (i = len; i >= 2; i--)
         {
           if (dirent[i] == '/')
@@ -1311,17 +1295,25 @@ svn_uri_basename(const char *uri, apr_pool_t *pool)
 {
   apr_size_t len = strlen(uri);
   apr_size_t start;
+  const char *base_name;
 
   assert(svn_uri_is_canonical(uri, NULL));
 
   if (svn_uri_is_root(uri, len))
     return "";
+  else
+    {
+      start = len;
+      while (start > 0 && uri[start - 1] != '/')
+        --start;
+    }
 
-  start = len;
-  while (start > 0 && uri[start - 1] != '/')
-    --start;
+  if (pool)
+    base_name = apr_pstrmemdup(pool, uri + start, len - start);
+  else
+    base_name = uri + start;
 
-  return svn_path_uri_decode(uri + start, pool);
+  return svn_path_uri_decode(base_name, pool);
 }
 
 void
@@ -1408,6 +1400,34 @@ svn_dirent_is_child(const char *parent_dirent,
                     apr_pool_t *pool)
 {
   return is_child(type_dirent, parent_dirent, child_dirent, pool);
+}
+
+const char *
+svn_relpath__is_child(const char *parent_relpath,
+                      const char *child_relpath,
+                      apr_pool_t *pool)
+{
+  /* assert(relpath_is_canonical(parent_relpath)); */
+  /* assert(relpath_is_canonical(child_relpath)); */
+
+  return is_child(type_relpath, parent_relpath, child_relpath, pool);
+}
+
+const char *
+svn_uri__is_child(const char *parent_uri,
+                  const char *child_uri,
+                  apr_pool_t *pool)
+{
+  const char *relpath;
+
+  assert(pool); /* hysterical raisins. */
+  assert(svn_uri_is_canonical(parent_uri, NULL));
+  assert(svn_uri_is_canonical(child_uri, NULL));
+
+  relpath = is_child(type_uri, parent_uri, child_uri, pool);
+  if (relpath)
+    relpath = svn_path_uri_decode(relpath, pool);
+  return relpath;
 }
 
 const char *
@@ -1524,6 +1544,12 @@ svn_boolean_t
 svn_dirent_is_ancestor(const char *parent_dirent, const char *child_dirent)
 {
   return svn_dirent_skip_ancestor(parent_dirent, child_dirent) != NULL;
+}
+
+svn_boolean_t
+svn_relpath__is_ancestor(const char *parent_relpath, const char *child_relpath)
+{
+  return svn_relpath_skip_ancestor(parent_relpath, child_relpath) != NULL;
 }
 
 svn_boolean_t
@@ -1649,7 +1675,7 @@ svn_dirent_canonicalize(const char *dirent, apr_pool_t *pool)
 }
 
 svn_boolean_t
-svn_dirent_is_canonical(const char *dirent, apr_pool_t *scratch_pool)
+svn_dirent_is_canonical(const char *dirent, apr_pool_t *pool)
 {
   const char *ptr = dirent;
   if (*ptr == '/')
@@ -1662,8 +1688,7 @@ svn_dirent_is_canonical(const char *dirent, apr_pool_t *scratch_pool)
           /* TODO: Scan hostname and sharename and fall back to part code */
 
           /* ### Fall back to old implementation */
-          return (strcmp(dirent, svn_dirent_canonicalize(dirent, scratch_pool))
-                  == 0);
+          return (strcmp(dirent, svn_dirent_canonicalize(dirent, pool)) == 0);
         }
 #endif /* SVN_USE_DOS_PATHS */
     }
@@ -1737,7 +1762,7 @@ svn_relpath_is_canonical(const char *relpath)
 }
 
 svn_boolean_t
-svn_uri_is_canonical(const char *uri, apr_pool_t *scratch_pool)
+svn_uri_is_canonical(const char *uri, apr_pool_t *pool)
 {
   const char *ptr = uri, *seg = uri;
   const char *schema_data = NULL;
@@ -1790,28 +1815,12 @@ svn_uri_is_canonical(const char *uri, apr_pool_t *scratch_pool)
 
   /* Found a hostname, check that it's all lowercase. */
   ptr = seg;
-
-  if (*ptr == '[')
+  while (*ptr && *ptr != '/' && *ptr != ':')
     {
-      ptr++;
-      while (*ptr == ':'
-             || (*ptr >= '0' && *ptr <= '9')
-             || (*ptr >= 'a' && *ptr <= 'f'))
-        {
-          ptr++;
-        }
-
-      if (*ptr != ']')
+      if (*ptr >= 'A' && *ptr <= 'Z')
         return FALSE;
       ptr++;
     }
-  else
-    while (*ptr && *ptr != '/' && *ptr != ':')
-      {
-        if (*ptr >= 'A' && *ptr <= 'Z')
-          return FALSE;
-        ptr++;
-      }
 
   /* Found a portnumber */
   if (*ptr == ':')
@@ -2482,6 +2491,21 @@ svn_fspath__is_root(const char *fspath, apr_size_t len)
 
 
 const char *
+svn_fspath__is_child(const char *parent_fspath,
+                     const char *child_fspath,
+                     apr_pool_t *pool)
+{
+  const char *result;
+  assert(svn_fspath__is_canonical(parent_fspath));
+  assert(svn_fspath__is_canonical(child_fspath));
+
+  result = svn_relpath__is_child(parent_fspath + 1, child_fspath + 1, pool);
+
+  assert(result == NULL || svn_relpath_is_canonical(result));
+  return result;
+}
+
+const char *
 svn_fspath__skip_ancestor(const char *parent_fspath,
                           const char *child_fspath)
 {
@@ -2489,6 +2513,16 @@ svn_fspath__skip_ancestor(const char *parent_fspath,
   assert(svn_fspath__is_canonical(child_fspath));
 
   return svn_relpath_skip_ancestor(parent_fspath + 1, child_fspath + 1);
+}
+
+svn_boolean_t
+svn_fspath__is_ancestor(const char *parent_fspath,
+                        const char *child_fspath)
+{
+  assert(svn_fspath__is_canonical(parent_fspath));
+  assert(svn_fspath__is_canonical(child_fspath));
+
+  return svn_relpath__is_ancestor(parent_fspath + 1, child_fspath + 1);
 }
 
 

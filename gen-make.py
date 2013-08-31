@@ -142,6 +142,12 @@ def _usage_exit(err=None):
   print("           look for Berkeley DB headers and libs in")
   print("           DIR")
   print("")
+  print("  --with-neon=DIR")
+  print("           the Neon sources are in DIR")
+  print("")
+  print("  --without-neon")
+  print("           Don't build Neon sources (if present)")
+  print("")
   print("  --with-serf=DIR")
   print("           the Serf sources are in DIR")
   print("")
@@ -156,11 +162,11 @@ def _usage_exit(err=None):
   print("           implies --enable-nls")
   print("")
   print("  --with-openssl=DIR")
-  print("           tell serf to look for OpenSSL headers")
+  print("           tell neon to look for OpenSSL headers")
   print("           and libs in DIR")
   print("")
   print("  --with-zlib=DIR")
-  print("           tell Subversion to look for ZLib headers and")
+  print("           tell neon to look for ZLib headers and")
   print("           libs in DIR")
   print("")
   print("  --with-jdk=DIR")
@@ -204,11 +210,8 @@ def _usage_exit(err=None):
   print("  --with-static-apr")
   print("           Use static apr and apr-util")
   print("")
-  print("  --with-static-openssl")
-  print("           Use static openssl")
-  print("")
   print("  --vsnet-version=VER")
-  print("           generate for VS.NET version VER (2002, 2003, 2005, 2008, 2010 or 2012)")
+  print("           generate for VS.NET version VER (2002, 2003, 2005, 2008 or 2010)")
   print("           [only valid in combination with '-t vcproj']")
   print("")
   print("  --with-apr_memcache=DIR")
@@ -239,6 +242,8 @@ if __name__ == '__main__':
                             'with-apr-util=',
                             'with-apr-iconv=',
                             'with-berkeley-db=',
+                            'with-neon=',
+                            'without-neon',
                             'with-serf=',
                             'with-httpd=',
                             'with-libintl=',
@@ -251,7 +256,6 @@ if __name__ == '__main__':
                             'with-sasl=',
                             'with-apr_memcache=',
                             'with-static-apr',
-                            'with-static-openssl',
                             'enable-pool-debug',
                             'enable-purify',
                             'enable-quantify',
@@ -261,13 +265,6 @@ if __name__ == '__main__':
                             'disable-shared',
                             'installed-libs=',
                             'vsnet-version=',
-
-                            # Keep distributions that help by adding a path
-                            # working. On unix this would be filtered by
-                            # configure, but on Windows gen-make.py is used
-                            # directly.
-                            'with-neon=',
-                            'without-neon',
                             ])
     if len(args) > 1:
       _usage_exit("Too many arguments")
@@ -292,9 +289,6 @@ if __name__ == '__main__':
         if opt != '--debug':
           rest.add(opt, val)
       del prev_conf
-    elif opt == '--with-neon' or opt == '--without-neon':
-      # Provide a warning that we ignored these arguments
-      print("Ignoring no longer supported argument '%s'" % opt)
     else:
       rest.add(opt, val)
 
