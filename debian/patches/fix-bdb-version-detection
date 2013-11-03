@@ -8,8 +8,10 @@ libdb.
 I don't think this can be sent upstream, as it won't work when
 compiling aprutil in-tree.  But I'm not certain.
 
---- a/build/ac-macros/berkeley-db.m4
-+++ b/build/ac-macros/berkeley-db.m4
+Index: git/build/ac-macros/berkeley-db.m4
+===================================================================
+--- git.orig/build/ac-macros/berkeley-db.m4	2012-10-15 22:11:39.000000000 +0200
++++ git/build/ac-macros/berkeley-db.m4	2012-10-15 22:12:08.000000000 +0200
 @@ -183,7 +183,7 @@
      SVN_DB_LIBS=["${SVN_DB_LIBS-`$apu_config --libs | $SED -e 's/.*\(-ldb[^[:space:]]*\).*/\1/' | $EGREP -- '-ldb[^[:space:]]*'`}"]
  
