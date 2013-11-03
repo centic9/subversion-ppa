@@ -5,8 +5,10 @@ Fix some build problems:
   Unlikely to work in a build chroot.
 - Add aprutil as a direct dependency for libsvn_client and libsvn_ra.
 
---- a/build/generator/swig/checkout_swig_header.py
-+++ b/build/generator/swig/checkout_swig_header.py
+Index: git/build/generator/swig/checkout_swig_header.py
+===================================================================
+--- git.orig/build/generator/swig/checkout_swig_header.py	2013-11-03 19:52:46.000000000 +0100
++++ git/build/generator/swig/checkout_swig_header.py	2013-11-03 20:07:43.000000000 +0100
 @@ -40,15 +40,14 @@
  
    def write_makefile_rules(self, makefile):
@@ -27,9 +29,11 @@ Fix some build problems:
                       '\t$(CHECKOUT_SWIG) %s\n\n' % path)
      makefile.write('SWIG_CHECKOUT_FILES = %s\n\n\n'
                     % " ".join(checkout_locations))
---- a/Makefile.in
-+++ b/Makefile.in
-@@ -290,14 +290,14 @@
+Index: git/Makefile.in
+===================================================================
+--- git.orig/Makefile.in	2013-11-03 20:06:46.000000000 +0100
++++ git/Makefile.in	2013-11-03 20:07:43.000000000 +0100
+@@ -300,14 +300,14 @@
  
  # The path to generated and complementary source files for the SWIG
  # bindings.
@@ -49,7 +53,7 @@ Fix some build problems:
  
  ### Automate JAR creation using Makefile generator's javahl-java.jar
  ### property.  Enhance generator to support JAR installation.
-@@ -770,8 +770,7 @@
+@@ -794,8 +794,7 @@
  	fi
  	for d in $(SWIG_PL_DIR)/libsvn_swig_perl; \
  	do \
@@ -59,7 +63,7 @@ Fix some build problems:
  	done
  	if [ -f "$(SWIG_PL_DIR)/native/Makefile" ]; then \
  	  cd $(SWIG_PL_DIR)/native; $(MAKE) clean; \
-@@ -804,7 +803,7 @@
+@@ -829,7 +828,7 @@
  	fi
  	for d in $(SWIG_PY_DIR) $(SWIG_PY_DIR)/libsvn_swig_py; \
  	do \
@@ -68,7 +72,7 @@ Fix some build problems:
  	done
  	find $(SWIG_PY_SRC_DIR) $(SWIG_PY_DIR) -name "*.pyc" -exec rm {} ';'
  
-@@ -828,8 +827,7 @@
+@@ -859,8 +858,7 @@
  	fi
  	for d in $(SWIG_RB_DIR) $(SWIG_RB_DIR)/libsvn_swig_ruby; \
  	do \
@@ -78,9 +82,11 @@ Fix some build problems:
  	done
  
  extraclean-swig-rb: clean-swig-rb
---- a/build/generator/gen_base.py
-+++ b/build/generator/gen_base.py
-@@ -333,7 +333,8 @@
+Index: git/build/generator/gen_base.py
+===================================================================
+--- git.orig/build/generator/gen_base.py	2013-11-03 19:55:16.000000000 +0100
++++ git/build/generator/gen_base.py	2013-11-03 20:07:43.000000000 +0100
+@@ -335,7 +335,8 @@
  
  class SWIGSource(SourceFile):
    def __init__(self, filename):
@@ -90,8 +96,10 @@ Fix some build problems:
  
  
  lang_abbrev = {
---- a/build/generator/swig/header_wrappers.py
-+++ b/build/generator/swig/header_wrappers.py
+Index: git/build/generator/swig/header_wrappers.py
+===================================================================
+--- git.orig/build/generator/swig/header_wrappers.py	2013-11-03 19:55:16.000000000 +0100
++++ git/build/generator/swig/header_wrappers.py	2013-11-03 20:07:43.000000000 +0100
 @@ -52,7 +52,7 @@
      """Write makefile rules for generating SWIG wrappers for Subversion
      header files."""
@@ -101,18 +109,20 @@ Fix some build problems:
      makefile.write('GEN_SWIG_WRAPPER = cd $(top_srcdir) && $(PYTHON)' +
                     ' %s build.conf $(SWIG)\n\n'  % python_script)
      for fname in self.includes:
---- a/configure.ac
-+++ b/configure.ac
-@@ -668,6 +668,7 @@
+Index: git/configure.ac
+===================================================================
+--- git.orig/configure.ac	2013-11-03 19:55:17.000000000 +0100
++++ git/configure.ac	2013-11-03 20:08:38.000000000 +0100
+@@ -688,6 +688,7 @@
  fi
  
- AH_BOTTOM(
+ AH_BOTTOM([
 +#undef /* */ _
- #define N_(x) x
- #define U_(x) x
- #ifdef ENABLE_NLS
-@@ -1355,6 +1356,11 @@
- rm -f .swig_checked
+ /* Indicate to translators that string X should be translated.  Do not look
+    up the translation at run time; just expand to X.  This macro is suitable
+    for use where a constant string is required at compile time. */
+@@ -1505,6 +1506,11 @@
+                    [Defined to the config.guess name of the build target])
  
  AC_OUTPUT
 +if test "$abs_srcdir" != "$abs_builddir"
@@ -123,9 +133,11 @@ Fix some build problems:
  
  # ==== Print final messages to user ==========================================
  
---- a/build.conf
-+++ b/build.conf
-@@ -196,7 +196,7 @@
+Index: git/build.conf
+===================================================================
+--- git.orig/build.conf	2013-11-03 20:06:46.000000000 +0100
++++ git/build.conf	2013-11-03 20:10:15.000000000 +0100
+@@ -213,7 +213,7 @@
  description = Subversion Client Library
  type = lib
  path = subversion/libsvn_client
@@ -134,7 +146,7 @@ Fix some build problems:
  install = lib
  msvc-export = svn_client.h private/svn_client_private.h
  
-@@ -259,7 +259,7 @@
+@@ -276,7 +276,7 @@
  description = Subversion Repository Access Library
  type = lib
  path = subversion/libsvn_ra
@@ -143,7 +155,7 @@ Fix some build problems:
  # conditionally add more dependencies
  add-deps = $(SVN_RA_LIB_DEPS)
  add-install-deps = $(SVN_RA_LIB_INSTALL_DEPS)
-@@ -703,13 +703,14 @@
+@@ -744,13 +744,14 @@
  # ----------------------------------------------------------------------------
  # Tests for libsvn_subr
  
@@ -153,7 +165,7 @@ Fix some build problems:
 -path = subversion/tests/libsvn_subr
 -sources = auth-test.c
 -install = test
--libs = libsvn_test libsvn_subr
+-libs = libsvn_test libsvn_subr apr
 +# Fails because it assumes gnome-keyring facilities are available at test time
 +#[auth-test]
 +#description = Test platform-specific auth provider access
@@ -161,30 +173,17 @@ Fix some build problems:
 +#path = subversion/tests/libsvn_subr
 +#sources = auth-test.c
 +#install = test
-+#libs = libsvn_test libsvn_subr
++#libs = libsvn_test libsvn_subr apr
  
  [cache-test]
  description = Test in-memory cache
---- a/subversion/libsvn_ra_serf/update.c
-+++ b/subversion/libsvn_ra_serf/update.c
-@@ -2536,12 +2536,6 @@
-          then go process the pending content.  */
-       if (!parser_ctx->paused && parser_ctx->pending != NULL)
-         SVN_ERR(svn_ra_serf__process_pending(parser_ctx, iterpool_inner));
--
--      /* Debugging purposes only! */
--      for (i = 0; i < sess->num_conns; i++)
--        {
--         serf_debug__closed_conn(sess->conns[i]->bkt_alloc);
--        }
-     }
+Index: git/subversion/libsvn_ra_serf/util.c
+===================================================================
+--- git.orig/subversion/libsvn_ra_serf/util.c	2013-11-03 19:55:31.000000000 +0100
++++ git/subversion/libsvn_ra_serf/util.c	2013-11-03 20:07:43.000000000 +0100
+@@ -862,12 +862,6 @@
  
-   /* Ensure that we opened and closed our root dir and that we closed
---- a/subversion/libsvn_ra_serf/util.c
-+++ b/subversion/libsvn_ra_serf/util.c
-@@ -716,12 +716,6 @@
- 
-           return svn_error_wrap_apr(status, _("Error running context"));
+           return svn_ra_serf__wrap_err(status, _("Error running context"));
          }
 -
 -      /* Debugging purposes only! */
