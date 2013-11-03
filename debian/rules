@@ -25,6 +25,12 @@ ifneq (,$(filter $(DEB_HOST_ARCH), $(DISABLE_JAVAHL_ARCHS)))
   ENABLE_JAVAHL :=
 endif
 
+ifeq (,amd64, $(DISABLE_JAVAHL_ARCHS)))
+  JAVAHL_JDK=/usr/lib/jvm/java-6-openjdk-amd64
+else
+  JAVAHL_JDK=/usr/lib/jvm/java-6-openjdk-i386
+endif
+
 # We may need to disable libapache2-svn and/or libsvn-ruby*.
 ENABLE_APACHE        := yes
 ENABLE_RUBY          := yes
@@ -98,7 +104,7 @@ export DH_OPTIONS
 ifdef DEB_OPT_WITH_JAVAHL
   # jikes 1.22 cannot compile javahl.
   confflags += --enable-javahl --without-jikes \
-               --with-jdk=/usr/lib/jvm/java-gcj \
+               --with-jdk=$(JAVAHL_JDK) \
                --with-junit=/usr/share/java/junit.jar
 else
   DH_OPTIONS += -Nlibsvn-java
@@ -165,7 +171,7 @@ debian/stamp-configure: $(QUILT_STAMPFN) debian/stamp-autogen
 	# files, which may interact badly with the build if Debian swig
 	# is not version 1.3.25 - particularly with swig 1.3.24.
 	# Thus we unconditionally delete the pregenerated files.
-	+$(MAKE_B) extraclean-swig
+	+$(MAKE_B) extraclean-bindings
 	for v in $(PYVERSIONS); do \
 		cp -la $(PY_DIR) $(PY_DIR)$$v; \
 	done

@@ -10,7 +10,7 @@ Build-Depends: debhelper, libneon27-gnutls-dev, libserf-dev (>= 1.2.1), zlib1g-d
                libsqlite3-dev (>= 3.7.12), libgnome-keyring-dev, libdbus-1-dev, kdelibs5-dev,
                quilt, doxygen, autotools-dev, autoconf, libtool, swig,
                python-all-dev, perl, libperl-dev, ruby1.8, ruby1.8-dev,
-               gcj-jdk (>= 4:4.4) [!alpha !arm !hppa !m68k !mips !mipsel !hurd-i386],
+               openjdk-6-jdk [!alpha !arm !hppa !m68k !mips !mipsel !hurd-i386],
                junit [!alpha !arm !hppa !m68k !mips !mipsel !hurd-i386]
 Build-Conflicts: libsvn-dev (<< 1.7~)
 Homepage: http://subversion.apache.org/
