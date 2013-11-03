@@ -17,9 +17,9 @@ Sent upstream: http://svn.haxx.se/dev/archive-2006-09/0536.shtml
 
 Index: git/subversion/bindings/swig/include/svn_types.swg
 ===================================================================
---- git.orig/subversion/bindings/swig/include/svn_types.swg	2012-10-15 22:11:39.000000000 +0200
-+++ git/subversion/bindings/swig/include/svn_types.swg	2012-10-15 22:12:06.000000000 +0200
-@@ -1066,7 +1066,7 @@
+--- git.orig/subversion/bindings/swig/include/svn_types.swg	2013-11-03 20:02:08.000000000 +0100
++++ git/subversion/bindings/swig/include/svn_types.swg	2013-11-03 20:02:44.000000000 +0100
+@@ -1093,7 +1093,7 @@
  #ifdef SWIGRUBY
  %typemap(argout) unsigned char digest[ANY] {
    char *digest_string = (char *)svn_md5_digest_to_cstring($1, _global_pool);
