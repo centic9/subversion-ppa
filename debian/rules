@@ -23,12 +23,15 @@ ENABLE_JAVAHL        := yes
 DISABLE_JAVAHL_ARCHS := alpha arm hppa m68k mips mipsel hurd-i386
 ifneq (,$(filter $(DEB_HOST_ARCH), $(DISABLE_JAVAHL_ARCHS)))
   ENABLE_JAVAHL :=
-endif
-
-ifeq (,amd64, $(DISABLE_JAVAHL_ARCHS)))
-  JAVAHL_JDK=/usr/lib/jvm/java-6-openjdk-amd64
 else
-  JAVAHL_JDK=/usr/lib/jvm/java-6-openjdk-i386
+  # javah from GCJ fails to generate inner classes, see http://subversion.tigris.org/issues/show_bug.cgi?id=4443
+  # therefore use OpenJDK, however there we need to use different directories based on architecture
+  # TODO: this likely will not work on other archs, which ones are supported after the exclusion list above_
+  ifeq (,amd64, $(DEB_HOST_ARCH)))
+    JAVAHL_JDK=/usr/lib/jvm/java-6-openjdk-amd64
+  else
+    JAVAHL_JDK=/usr/lib/jvm/java-6-openjdk-i386
+  endif
 endif
 
 # We may need to disable libapache2-svn and/or libsvn-ruby*.
