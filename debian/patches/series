@@ -1,8 +1,6 @@
 build-fixes
 java-build
-last-changed-date-charset
 no-extra-libs
-no-extra-libs-2
 repos-templates
 rpath
 ruby-no-strict-aliasing
@@ -10,7 +8,6 @@ ruby-test-svnserve-race
 ruby-typemap-digest
 ssh-no-controlmaster
 svnshell
-apr-abi1
 apr-abi2
 fix-bdb-version-detection
 python-builds
@@ -18,7 +15,5 @@ examples-compile-instructions
 loosen-sqlite-version-check
 apache_module_dependency
 workaround_EINVAL_on_kfreebsd
-java-osgi-metadata
-chunksize-integer.patch
-CVE-2013-1968.patch
-CVE-2013-2112.patch
+sqlite-ngqp-statistics
+apache-module-path

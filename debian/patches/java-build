@@ -2,8 +2,8 @@ A hack to get around differences between Sun javah and gcj javah - in Sun
 javah, symbols in a nested class use _ as a separator instead of _00024.
 Patch is originally from Nobuhiro Iwamatsu, bug #561516.
 
---- a/build/generator/templates/makefile.ezt
-+++ b/build/generator/templates/makefile.ezt
+--- a/build/generator/templates/build-outputs.mk.ezt
++++ b/build/generator/templates/build-outputs.mk.ezt
 @@ -99,7 +99,8 @@
  [if-any target.headers][target.varname]_CLASS_FILENAMES =[for target.header_class_filenames] [target.header_class_filenames][end]
  [target.varname]_CLASSES =[for target.header_classes] [target.header_classes][end]

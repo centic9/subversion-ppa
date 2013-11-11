@@ -1,0 +1,11 @@
+--- subversion-1.8.4-orig/build/ac-macros/apache.m4	2013-04-30 08:01:28.000000000 +0400
++++ subversion-1.8.4/build/ac-macros/apache.m4	2013-11-08 14:35:20.692119243 +0400
+@@ -123,7 +123,7 @@ AC_ARG_WITH(apache-libexecdir,
+                             [Install Apache modules to Apache's configured
+                              modules directory instead of LIBEXECDIR;
+                              if PATH is given, install to PATH.])],
+-[APACHE_LIBEXECDIR="$withval"],[APACHE_LIBEXECDIR='no'])
++[APACHE_LIBEXECDIR="$withval"],[APACHE_LIBEXECDIR='yes'])
+ 
+ INSTALL_APACHE_MODS=false
+ if test -n "$APXS" && test "$APXS" != "no"; then

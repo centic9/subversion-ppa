@@ -12,9 +12,9 @@ Michlmayr.
  require "fileutils"
  require "pathname"
 +require "socket"
- require "svn/util"
- require "tmpdir"
  
+ # Tale of a hack...
+ #
 @@ -250,11 +251,7 @@
                 "-d", "--foreground")
          }
