@@ -4,10 +4,10 @@ Priority: optional
 Maintainer: Peter Samuelson <peter@p12n.org>
 Uploaders: Troy Heber <troyh@debian.org>,
            Guilherme de S. Pastore <gpastore@debian.org>
-Build-Depends: debhelper, libneon27-gnutls-dev, libserf-dev (>= 1), zlib1g-dev,
+Build-Depends: debhelper, libneon27-gnutls-dev, libserf-dev (>= 1.2.1), zlib1g-dev,
                libapr1-dev, libaprutil1-dev, libdb5.1-dev,
                libsasl2-dev, apache2-threaded-dev,
-               libsqlite3-dev (>= 3.4), libgnome-keyring-dev, libdbus-1-dev, kdelibs5-dev,
+               libsqlite3-dev (>= 3.7.12), libgnome-keyring-dev, libdbus-1-dev, kdelibs5-dev,
                quilt, doxygen, autotools-dev, autoconf, libtool, swig,
                python-all-dev, perl, libperl-dev, ruby1.8, ruby1.8-dev,
                gcj-jdk (>= 4:4.4) [!alpha !arm !hppa !m68k !mips !mipsel !hurd-i386],
