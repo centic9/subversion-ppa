@@ -1,10 +1,8 @@
 /* Proxy classes for svn_version.h
- * DO NOT EDIT -- AUTOMATICALLY GENERATED
- * BY build/generator/swig/header_wrappers.py */
+ * DO NOT EDIT -- AUTOMATICALLY GENERATED */
 
 /* No default constructors for opaque structs */
 #ifdef SWIGPYTHON
-%nodefault svn_version_extended_t;
 #endif
 
 /* Callback typemaps */
@@ -28,9 +26,6 @@
 /* Structure definitions */
 #ifdef SWIGPYTHON
 %proxy(svn_version_checklist_t);
-%opaque_proxy(svn_version_extended_t);
-%proxy(svn_version_ext_linked_lib_t);
-%proxy(svn_version_ext_loaded_lib_t);
 #endif
 
 /* Callbacks */

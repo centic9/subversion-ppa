@@ -37,7 +37,6 @@
 #define CORE_PRIVATE      /* To make ap_show_mpm public in 2.2 */
 #include <http_config.h>
 
-#include "svn_hash.h"
 #include "svn_types.h"
 #include "svn_pools.h"
 #include "svn_error.h"
@@ -49,7 +48,6 @@
 #include "svn_version.h"
 #include "svn_props.h"
 #include "svn_ctype.h"
-#include "svn_subst.h"
 #include "mod_dav_svn.h"
 #include "svn_ra.h"  /* for SVN_RA_CAPABILITY_* */
 #include "svn_dirent_uri.h"
@@ -1504,7 +1502,7 @@ get_parentpath_resource(request_rec *r,
   repos->xslt_uri = dav_svn__get_xslt_uri(r);
   repos->autoversioning = dav_svn__get_autoversioning_flag(r);
   repos->bulk_updates = dav_svn__get_bulk_updates_flag(r);
-  repos->v2_protocol = dav_svn__check_httpv2_support(r);
+  repos->v2_protocol = dav_svn__get_v2_protocol_flag(r);
   repos->base_url = ap_construct_url(r->pool, "", r);
   repos->special_uri = dav_svn__get_special_uri(r);
   repos->username = r->user;
@@ -1578,7 +1576,7 @@ static const char *get_entry(apr_pool_t *p, accept_rec *result,
 
         for (cp = parm; (*cp && !svn_ctype_isspace(*cp) && *cp != '='); ++cp)
           {
-            *cp = (char)apr_tolower(*cp);
+            *cp = apr_tolower(*cp);
           }
 
         if (!*cp)
@@ -1822,17 +1820,9 @@ parse_querystring(request_rec *r, const char *query,
   apr_table_t *pairs = querystring_to_table(query, pool);
   const char *prevstr = apr_table_get(pairs, "p");
   const char *wrevstr;
-  const char *keyword_subst;
-
-  /* Will we be doing keyword substitution? */
-  keyword_subst = apr_table_get(pairs, "kw");
-  if (keyword_subst && (strcmp(keyword_subst, "1") == 0))
-    comb->priv.keyword_subst = TRUE;
 
   if (prevstr)
     {
-      while (*prevstr == 'r')
-        prevstr++;
       peg_rev = SVN_STR_TO_REV(prevstr);
       if (!SVN_IS_VALID_REVNUM(peg_rev))
         return dav_svn__new_error(pool, HTTP_BAD_REQUEST, 0,
@@ -1850,8 +1840,6 @@ parse_querystring(request_rec *r, const char *query,
   wrevstr = apr_table_get(pairs, "r");
   if (wrevstr)
     {
-      while (*wrevstr == 'r')
-        wrevstr++;
       working_rev = SVN_STR_TO_REV(wrevstr);
       if (!SVN_IS_VALID_REVNUM(working_rev))
         return dav_svn__new_error(pool, HTTP_BAD_REQUEST, 0,
@@ -1887,7 +1875,7 @@ parse_querystring(request_rec *r, const char *query,
     }
   else
     {
-      const char *newpath, *location;
+      const char *newpath;
       apr_hash_t *locations;
       apr_array_header_t *loc_revs = apr_array_make(pool, 1,
                                                     sizeof(svn_revnum_t));
@@ -1916,17 +1904,15 @@ parse_querystring(request_rec *r, const char *query,
       /* Redirect folks to a canonical, peg-revision-only location.
          If they used a peg revision in this request, we can use a
          permanent redirect.  If they didn't (peg-rev is HEAD), we can
-         only use a temporary redirect.  In either case, preserve the
-         "keyword_subst" state in the redirected location, too.  */
-      location = ap_construct_url(r->pool,
-                                  apr_psprintf(r->pool, "%s%s?p=%ld%s",
+         only use a temporary redirect. */
+      apr_table_setn(r->headers_out, "Location",
+                     ap_construct_url(r->pool,
+                                  apr_psprintf(r->pool, "%s%s?p=%ld",
                                                (comb->priv.repos->root_path[1]
                                                 ? comb->priv.repos->root_path
                                                 : ""),
-                                               newpath, working_rev,
-                                               keyword_subst ? "&kw=1" : ""),
-                                  r);
-      apr_table_setn(r->headers_out, "Location", location);
+                                               newpath, working_rev),
+                                      r));
       return dav_svn__new_error(r->pool,
                                 prevstr ? HTTP_MOVED_PERMANENTLY
                                         : HTTP_MOVED_TEMPORARILY,
@@ -1935,6 +1921,8 @@ parse_querystring(request_rec *r, const char *query,
 
   return NULL;
 }
+
+
 
 static dav_error *
 get_resource(request_rec *r,
@@ -1969,26 +1957,12 @@ get_resource(request_rec *r,
 
   /* Special case: detect and build the SVNParentPath as a unique type
      of private resource, iff the SVNListParentPath directive is 'on'. */
-  if (fs_parent_path && dav_svn__get_list_parentpath_flag(r))
+  if (dav_svn__is_parentpath_list(r))
     {
-      char *uri = apr_pstrdup(r->pool, r->uri);
-      char *parentpath = apr_pstrdup(r->pool, root_path);
-      apr_size_t uri_len = strlen(uri);
-      apr_size_t parentpath_len = strlen(parentpath);
-
-      if (uri[uri_len-1] == '/')
-        uri[uri_len-1] = '\0';
-
-      if (parentpath[parentpath_len-1] == '/')
-        parentpath[parentpath_len-1] = '\0';
-
-      if (strcmp(parentpath, uri) == 0)
-        {
-          err = get_parentpath_resource(r, resource);
-          if (err)
-            return err;
-          return NULL;
-        }
+      err = get_parentpath_resource(r, resource);
+      if (err)
+        return err;
+      return NULL;
     }
 
   /* This does all the work of interpreting/splitting the request uri. */
@@ -2092,7 +2066,7 @@ get_resource(request_rec *r,
   repos->bulk_updates = dav_svn__get_bulk_updates_flag(r);
 
   /* Are we advertising HTTP v2 protocol support? */
-  repos->v2_protocol = dav_svn__check_httpv2_support(r);
+  repos->v2_protocol = dav_svn__get_v2_protocol_flag(r);
 
   /* Path to activities database */
   repos->activities_db = dav_svn__get_activities_db(r);
@@ -2137,9 +2111,8 @@ get_resource(request_rec *r,
            more than that). */
 
         /* Start out assuming no capabilities. */
-        svn_hash_sets(repos->client_capabilities,
-                      SVN_RA_CAPABILITY_MERGEINFO,
-                      capability_no);
+        apr_hash_set(repos->client_capabilities, SVN_RA_CAPABILITY_MERGEINFO,
+                     APR_HASH_KEY_STRING, capability_no);
 
         /* Then see what we can find. */
         val = apr_table_get(r->headers_in, "DAV");
@@ -2150,8 +2123,9 @@ get_resource(request_rec *r,
 
             if (svn_cstring_match_list(SVN_DAV_NS_DAV_SVN_MERGEINFO, vals))
               {
-                svn_hash_sets(repos->client_capabilities,
-                              SVN_RA_CAPABILITY_MERGEINFO, capability_yes);
+                apr_hash_set(repos->client_capabilities,
+                             SVN_RA_CAPABILITY_MERGEINFO,
+                             APR_HASH_KEY_STRING, capability_yes);
               }
           }
       }
@@ -2167,12 +2141,14 @@ get_resource(request_rec *r,
 
       /* construct FS configuration parameters */
       fs_config = apr_hash_make(r->connection->pool);
-      svn_hash_sets(fs_config, SVN_FS_CONFIG_FSFS_CACHE_DELTAS,
-                    dav_svn__get_txdelta_cache_flag(r) ? "1" :"0");
-      svn_hash_sets(fs_config, SVN_FS_CONFIG_FSFS_CACHE_FULLTEXTS,
-                    dav_svn__get_fulltext_cache_flag(r) ? "1" :"0");
-      svn_hash_sets(fs_config, SVN_FS_CONFIG_FSFS_CACHE_REVPROPS,
-                    dav_svn__get_revprop_cache_flag(r) ? "1" :"0");
+      apr_hash_set(fs_config,
+                   SVN_FS_CONFIG_FSFS_CACHE_DELTAS,
+                   APR_HASH_KEY_STRING,
+                   dav_svn__get_txdelta_cache_flag(r) ? "1" : "0");
+      apr_hash_set(fs_config,
+                   SVN_FS_CONFIG_FSFS_CACHE_FULLTEXTS,
+                   APR_HASH_KEY_STRING,
+                   dav_svn__get_fulltext_cache_flag(r) ? "1" : "0");
 
       /* Disallow BDB/event until issue 4157 is fixed. */
       if (!strcmp(ap_show_mpm(), "event"))
@@ -2225,14 +2201,6 @@ get_resource(request_rec *r,
                                          "in repos object",
                                          HTTP_INTERNAL_SERVER_ERROR, r);
         }
-
-      /* Configure hook script environment variables. */
-      serr = svn_repos_hooks_setenv(repos->repos, dav_svn__get_hooks_env(r),
-                                    r->pool);
-      if (serr)
-        return dav_svn__sanitize_error(serr,
-                                       "Error settings hooks environment",
-                                       HTTP_INTERNAL_SERVER_ERROR, r);
     }
 
   /* cache the filesystem object */
@@ -2455,9 +2423,12 @@ get_parent_resource(const dav_resource *resource,
       parent->info = parentinfo;
 
       parentinfo->uri_path =
-        svn_stringbuf_create(get_parent_path(resource->info->uri_path->data,
-                                             TRUE, resource->pool),
-                             resource->pool);
+        svn_stringbuf_create(
+               get_parent_path(
+                   svn_urlpath__canonicalize(resource->info->uri_path->data,
+                                            resource->pool),
+                   TRUE, resource->pool),
+               resource->pool);
       parentinfo->repos = resource->info->repos;
       parentinfo->root = resource->info->root;
       parentinfo->r = resource->info->r;
@@ -2593,6 +2564,121 @@ is_parent_resource(const dav_resource *res1, const dav_resource *res2)
 }
 
 
+#if 0
+/* Given an apache request R and a ROOT_PATH to the svn location
+   block, set *KIND to the node-kind of the URI's associated
+   (revision, path) pair, if possible.
+
+   Public uris, baseline collections, version resources, and working
+   (non-baseline) resources all have associated (revision, path)
+   pairs, and thus one of {svn_node_file, svn_node_dir, svn_node_none}
+   will be returned.
+
+   If URI is something more abstract, then set *KIND to
+   svn_node_unknown.  This is true for baselines, working baselines,
+   version controled configurations, activities, histories, and other
+   private resources.
+*/
+static dav_error *
+resource_kind(request_rec *r,
+              const char *uri,
+              const char *root_path,
+              svn_node_kind_t *kind)
+{
+  dav_error *derr;
+  svn_error_t *serr;
+  dav_resource *resource;
+  svn_revnum_t base_rev;
+  svn_fs_root_t *base_rev_root;
+  char *saved_uri;
+
+  /* Temporarily insert the uri that the user actually wants us to
+     convert into a resource.  Typically, this is already r->uri, so
+     this is usually a no-op.  But sometimes the caller may pass in
+     the Destination: header uri.
+
+     ### WHAT WE REALLY WANT here is to refactor get_resource,
+     so that some alternate interface actually allows us to specify
+     the URI to process, i.e. not always process r->uri.
+  */
+  saved_uri = r->uri;
+  r->uri = apr_pstrdup(r->pool, uri);
+
+  /* parse the uri and prep the associated resource. */
+  derr = get_resource(r, root_path,
+                      /* ### I can't believe that every single
+                         parser ignores the LABEL and USE_CHECKED_IN
+                         args below!! */
+                      "ignored_label", 1,
+                      &resource);
+  /* Restore r back to normal. */
+  r->uri = saved_uri;
+
+  if (derr)
+    return derr;
+
+  if (resource->type == DAV_RESOURCE_TYPE_REGULAR)
+    {
+      /* Either a public URI or a bc.  In both cases, prep_regular()
+         has already set the 'exists' and 'collection' flags by
+         querying the appropriate revision root and path.  */
+      if (! resource->exists)
+        *kind = svn_node_none;
+      else
+        *kind = resource->collection ? svn_node_dir : svn_node_file;
+    }
+
+  else if (resource->type == DAV_RESOURCE_TYPE_VERSION)
+    {
+      if (resource->baselined)  /* bln */
+        *kind = svn_node_unknown;
+
+      else /* ver */
+        {
+          derr = fs_check_path(kind, resource->info->root.root,
+                               resource->info->repos_path, r->pool);
+          if (derr != NULL)
+            return derr;
+        }
+    }
+
+  else if (resource->type == DAV_RESOURCE_TYPE_WORKING)
+    {
+      if (resource->baselined) /* wbl */
+        *kind = svn_node_unknown;
+
+      else /* wrk */
+        {
+          /* don't call fs_check_path on the txn, but on the original
+             revision that the txn is based on. */
+          base_rev = svn_fs_txn_base_revision(resource->info->root.txn);
+          serr = svn_fs_revision_root(&base_rev_root,
+                                      resource->info->repos->fs,
+                                      base_rev, r->pool);
+          if (serr)
+            return dav_svn__convert_err
+              (serr, HTTP_INTERNAL_SERVER_ERROR,
+               apr_psprintf(r->pool,
+                            "Could not open root of revision %ld",
+                            base_rev),
+               r->pool);
+
+          derr = fs_check_path(kind, base_rev_root,
+                               resource->info->repos_path, r->pool);
+          if (derr != NULL)
+            return derr;
+        }
+    }
+
+  else
+    /* act, his, vcc, or some other private resource */
+    *kind = svn_node_unknown;
+
+  return NULL;
+}
+#endif
+
+
 static dav_error *
 open_stream(const dav_resource *resource,
             dav_stream_mode mode,
@@ -2612,13 +2698,14 @@ open_stream(const dav_resource *resource,
         }
     }
 
-  /* ### TODO:  Can we support range writes someday? */
+#if 1
   if (mode == DAV_MODE_WRITE_SEEKABLE)
     {
       return dav_svn__new_error(resource->pool, HTTP_NOT_IMPLEMENTED, 0,
                                 "Resource body writes cannot use ranges "
                                 "(at this time).");
     }
+#endif
 
   /* start building the stream structure */
   *stream = apr_pcalloc(resource->pool, sizeof(**stream));
@@ -2934,12 +3021,14 @@ set_headers(request_rec *r, const dav_resource *resource)
   apr_table_setn(r->headers_out, "ETag",
                  dav_svn__getetag(resource, resource->pool));
 
+#if 0
   /* As version resources don't change, encourage caching. */
-  if ((resource->type == DAV_RESOURCE_TYPE_REGULAR
-       && resource->versioned && !resource->collection)
-      || resource->type == DAV_RESOURCE_TYPE_VERSION)
+  /* ### FIXME: This conditional is wrong -- type is often REGULAR,
+     ### and the resource doesn't seem to be baselined. */
+  if (resource->type == DAV_RESOURCE_TYPE_VERSION)
     /* Cache resource for one week (specified in seconds). */
     apr_table_setn(r->headers_out, "Cache-Control", "max-age=604800");
+#endif
 
   /* we accept byte-ranges */
   apr_table_setn(r->headers_out, "Accept-Ranges", "bytes");
@@ -3027,23 +3116,19 @@ set_headers(request_rec *r, const dav_resource *resource)
         mimetype = "text/plain";
 
 
-      /* if we aren't sending a diff and aren't expanding keywords,
-         then we know the exact length of the file, so set up the
-         Content-Length header. */
-      if (! resource->info->keyword_subst)
+      /* if we aren't sending a diff, then we know the length of the file,
+         so set up the Content-Length header */
+      serr = svn_fs_file_length(&length,
+                                resource->info->root.root,
+                                resource->info->repos_path,
+                                resource->pool);
+      if (serr != NULL)
         {
-          serr = svn_fs_file_length(&length,
-                                    resource->info->root.root,
-                                    resource->info->repos_path,
-                                    resource->pool);
-          if (serr != NULL)
-            {
-              return dav_svn__convert_err(serr, HTTP_INTERNAL_SERVER_ERROR,
-                                          "could not fetch the resource length",
-                                          resource->pool);
-            }
-          ap_set_content_length(r, (apr_off_t) length);
+          return dav_svn__convert_err(serr, HTTP_INTERNAL_SERVER_ERROR,
+                                      "could not fetch the resource length",
+                                      resource->pool);
         }
+      ap_set_content_length(r, (apr_off_t) length);
     }
 
   /* set the discovered MIME type */
@@ -3060,7 +3145,7 @@ typedef struct diff_ctx_t {
 } diff_ctx_t;
 
 
-static svn_error_t *  __attribute__((warn_unused_result))
+static svn_error_t *
 write_to_filter(void *baton, const char *buffer, apr_size_t *len)
 {
   diff_ctx_t *dc = baton;
@@ -3081,7 +3166,7 @@ write_to_filter(void *baton, const char *buffer, apr_size_t *len)
 }
 
 
-static svn_error_t *  __attribute__((warn_unused_result))
+static svn_error_t *
 close_filter(void *baton)
 {
   diff_ctx_t *dc = baton;
@@ -3194,7 +3279,7 @@ deliver(const dav_resource *resource, ap_filter_t *output)
               if (dirent->kind == svn_node_file && dirent->special)
                 {
                   svn_node_kind_t resolved_kind;
-                  const char *link_path =
+                  const char *link_path = 
                     svn_dirent_join(fs_parent_path, key, resource->pool);
 
                   serr = svn_io_check_resolved_path(link_path, &resolved_kind,
@@ -3207,7 +3292,7 @@ deliver(const dav_resource *resource, ap_filter_t *output)
                                                 resource->pool);
                   if (resolved_kind != svn_node_dir)
                     continue;
-
+                  
                   dirent->kind = svn_node_dir;
                 }
               else if (dirent->kind != svn_node_dir)
@@ -3217,7 +3302,7 @@ deliver(const dav_resource *resource, ap_filter_t *output)
               ent->id = NULL;     /* ### does it matter? */
               ent->kind = dirent->kind;
 
-              svn_hash_sets(entries, key, ent);
+              apr_hash_set(entries, key, APR_HASH_KEY_STRING, ent);
             }
 
         }
@@ -3354,9 +3439,9 @@ deliver(const dav_resource *resource, ap_filter_t *output)
             }
           else
             {
-                if (! dav_svn__allow_list_repos(resource->info->r,
-                                                entry->name, entry_pool))
-                  continue;
+              /* ### TODO:  We could test for readability of the root
+                     directory of each repository and hide those that
+                     the user can't see. */
             }
 
           /* append a trailing slash onto the name for directories. we NEED
@@ -3531,7 +3616,7 @@ deliver(const dav_resource *resource, ap_filter_t *output)
           /* get a handler/baton for writing into the output stream */
           svn_txdelta_to_svndiff3(&handler, &h_baton,
                                   o_stream, resource->info->svndiff_version,
-                                  dav_svn__get_compression_level(resource->info->r),
+                                  dav_svn__get_compression_level(),
                                   resource->pool);
 
           /* got everything set up. read in delta windows and shove them into
@@ -3567,77 +3652,6 @@ deliver(const dav_resource *resource, ap_filter_t *output)
           return dav_svn__convert_err(serr, HTTP_INTERNAL_SERVER_ERROR,
                                       "could not prepare to read the file",
                                       resource->pool);
-        }
-
-      /* Perform keywords substitution if requested by client */
-      if (resource->info->keyword_subst)
-        {
-          svn_string_t *keywords;
-
-          serr = svn_fs_node_prop(&keywords,
-                                  resource->info->root.root,
-                                  resource->info->repos_path,
-                                  SVN_PROP_KEYWORDS,
-                                  resource->pool);
-          if (serr != NULL)
-            return dav_svn__convert_err(serr, HTTP_INTERNAL_SERVER_ERROR,
-                                        "could not get fetch '"
-                                        SVN_PROP_KEYWORDS "' property for "
-                                        "for keywords substitution",
-                                        resource->pool);
-
-          if (keywords)
-            {
-              apr_hash_t *kw;
-              svn_revnum_t cmt_rev;
-              const char *str_cmt_rev, *str_uri, *str_root;
-              const char *cmt_date, *cmt_author;
-              apr_time_t when = 0;
-
-              serr = svn_repos_get_committed_info(&cmt_rev,
-                                                  &cmt_date,
-                                                  &cmt_author,
-                                                  resource->info->root.root,
-                                                  resource->info->repos_path,
-                                                  resource->pool);
-              if (serr != NULL)
-                return dav_svn__convert_err(serr, HTTP_INTERNAL_SERVER_ERROR,
-                                            "could not fetch committed info "
-                                            "for keywords substitution",
-                                            resource->pool);
-
-              serr = svn_time_from_cstring(&when, cmt_date, resource->pool);
-              if (serr != NULL)
-                return dav_svn__convert_err(serr, HTTP_INTERNAL_SERVER_ERROR,
-                                            "could not parse committed date "
-                                            "for keywords substitution",
-                                            resource->pool);
-              str_cmt_rev = apr_psprintf(resource->pool, "%ld", cmt_rev);
-              str_uri = apr_pstrcat(resource->pool,
-                                    resource->info->repos->base_url,
-                                    ap_escape_uri(resource->pool,
-                                                  resource->info->r->uri),
-                                    NULL);
-              str_root = apr_pstrcat(resource->pool,
-                                     resource->info->repos->base_url,
-                                     resource->info->repos->root_path,
-                                     NULL);
-
-              serr = svn_subst_build_keywords3(&kw, keywords->data,
-                                               str_cmt_rev, str_uri, str_root,
-                                               when, cmt_author,
-                                               resource->pool);
-              if (serr != NULL)
-                return dav_svn__convert_err(serr, HTTP_INTERNAL_SERVER_ERROR,
-                                            "could not perform keywords "
-                                            "substitution", resource->pool);
-
-              /* Replace the raw file STREAM with a wrapper that
-                 handles keyword translation. */
-              stream = svn_subst_stream_translated(
-                           svn_stream_disown(stream, resource->pool),
-                           NULL, FALSE, kw, TRUE, resource->pool);
-            }
         }
 
       /* ### one day in the future, we can create a custom bucket type
@@ -4420,7 +4434,7 @@ handle_post_request(request_rec *r,
                     dav_resource *resource,
                     ap_filter_t *output)
 {
-  svn_skel_t *request_skel, *post_skel;
+  svn_skel_t *request_skel;
   int status;
   apr_pool_t *pool = resource->pool;
 
@@ -4437,50 +4451,17 @@ handle_post_request(request_rec *r,
     return dav_svn__new_error(pool, HTTP_BAD_REQUEST, 0,
                               "Unable to identify skel POST request flavor.");
 
-  post_skel = request_skel->children;
-
-  /* NOTE: If you add POST handlers here, you'll want to advertise
-     that the server supports them, too.  See version.c:get_option(). */
-
-  if (svn_skel__matches_atom(post_skel, "create-txn"))
+  if (svn_skel__matches_atom(request_skel->children, "create-txn"))
     {
       return dav_svn__post_create_txn(resource, request_skel, output);
     }
-  else if (svn_skel__matches_atom(post_skel, "create-txn-with-props"))
+  else
     {
-      return dav_svn__post_create_txn_with_props(resource,
-                                                 request_skel, output);
+      return dav_svn__new_error(pool, HTTP_BAD_REQUEST, 0,
+                                "Unsupported skel POST request flavor.");
     }
-
-  return dav_svn__new_error(pool, HTTP_BAD_REQUEST, 0,
-                            "Unsupported skel POST request flavor.");
+  /* NOTREACHED */
 }
-
-
-/* A stripped down version of mod_dav's dav_handle_err so that POST
-   errors, which are not passed via mod_dav, are handled in the same
-   way as errors for requests that are passed via mod_dav. */
-static int
-handle_err(request_rec *r, dav_error *err)
-{
-  dav_error *stackerr = err;
-
-  dav_svn__log_err(r, err, APLOG_ERR);
-
-  /* our error messages are safe; tell Apache this */
-  apr_table_setn(r->notes, "verbose-error-to", "*");
-
-  /* We might be able to generate a standard <D:error> response.
-     Search the error stack for an errortag. */
-  while (stackerr != NULL && stackerr->tagname == NULL)
-    stackerr = stackerr->prev;
-
-  if (stackerr != NULL && stackerr->tagname != NULL)
-    return dav_svn__error_response_tag(r, stackerr);
-
-  return err->status;
-}
-
 
 int dav_svn__method_post(request_rec *r)
 {
@@ -4514,8 +4495,9 @@ int dav_svn__method_post(request_rec *r)
   if (derr)
     {
       /* POST is not a DAV method and so mod_dav isn't involved and
-         won't handle this error.  Do it explicitly. */
-      return handle_err(r, derr);
+         won't log this error.  Do it explicitly. */
+      dav_svn__log_err(r, derr, APLOG_ERR);
+      return dav_svn__error_response_tag(r, derr);
     }
 
   return OK;
