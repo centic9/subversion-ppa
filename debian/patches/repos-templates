@@ -3,8 +3,10 @@ scripts that get installed as .tmpl files in new repositories.  Use
 $REPOS/hooks/ as the path, to encourage repository admins to copy the
 hooks, not just use them in place.
 
---- a/subversion/libsvn_repos/repos.c
-+++ b/subversion/libsvn_repos/repos.c
+Index: git/subversion/libsvn_repos/repos.c
+===================================================================
+--- git.orig/subversion/libsvn_repos/repos.c	2012-10-15 22:11:40.000000000 +0200
++++ git/subversion/libsvn_repos/repos.c	2012-10-15 22:12:05.000000000 +0200
 @@ -275,7 +275,7 @@
  
  #define PREWRITTEN_HOOKS_TEXT                                                 \

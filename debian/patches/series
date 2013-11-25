@@ -20,5 +20,3 @@ apache_module_dependency
 workaround_EINVAL_on_kfreebsd
 java-osgi-metadata
 chunksize-integer.patch
-CVE-2013-1968.patch
-CVE-2013-2112.patch
