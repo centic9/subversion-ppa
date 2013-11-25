@@ -61,7 +61,7 @@ PYVERSIONS := $(shell pyversions -vi)
 
 allpy = \
 	set -e; for v in $(PYVERSIONS); do \
-		$(RM) $(PY_DIR); \
+		$(RM) -r $(PY_DIR); \
 		ln -fs python$$v $(PY_DIR); \
 		pylib=$$(python$$v -c 'from distutils import sysconfig; print sysconfig.get_python_lib()'); \
 		$1; \
@@ -76,6 +76,7 @@ confflags := \
 		--with-apr=/usr \
 		--with-apr-util=/usr \
 		--with-neon=/usr \
+		--disable-neon-version-check \
 		--with-serf=/usr \
 		--with-berkeley-db=:::db \
 		--with-sasl=/usr \
@@ -164,7 +165,7 @@ debian/stamp-configure: $(QUILT_STAMPFN) debian/stamp-autogen
 	# files, which may interact badly with the build if Debian swig
 	# is not version 1.3.25 - particularly with swig 1.3.24.
 	# Thus we unconditionally delete the pregenerated files.
-	+$(MAKE_B) extraclean-swig
+	+$(MAKE_B) extraclean-bindings
 	for v in $(PYVERSIONS); do \
 		cp -la $(PY_DIR) $(PY_DIR)$$v; \
 	done
@@ -250,7 +251,7 @@ clean: unpatch
 	dh_testdir
 	dh_clean
 	$(RM) patches
-	! [ -f $(DEB_BUILDDIR)/Makefile ] || $(MAKE_B) extraclean-swig distclean
+	! [ -f $(DEB_BUILDDIR)/Makefile ] || $(MAKE_B) extraclean-bindings distclean
 	$(RM) -r $(DEB_BUILDDIR)
 	$(RM) -r subversion/bindings/swig/ruby/test/.test-result
 	$(RM) build-outputs.mk gen-make.opts subversion/svn_private_config.h.in

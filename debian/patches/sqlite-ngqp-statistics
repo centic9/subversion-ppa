@@ -1,0 +1,31 @@
+--- subversion-1.8.4-orig/subversion/tests/libsvn_wc/wc-queries-test.c	2013-05-27 08:01:42.000000000 +0400
++++ subversion-1.8.4/subversion/tests/libsvn_wc/wc-queries-test.c	2013-11-08 01:08:49.158581875 +0400
+@@ -98,6 +98,9 @@ static const int slow_statements[] =
+   /* Is there a record? ### Can we somehow check for LIMIT 1? */
+   STMT_LOOK_FOR_WORK,
+ 
++  /* Ordered table scan is also reported as just SCAN TABLE WORK_QUEUE */
++  STMT_SELECT_WORK_ITEM,
++
+   /* Full temporary table read */
+   STMT_INSERT_ACTUAL_EMPTIES,
+   STMT_SELECT_REVERT_LIST_RECURSIVE,
+--- subversion-1.8.4-orig/subversion/libsvn_wc/wc-metadata.sql	2013-04-30 08:01:16.000000000 +0400
++++ subversion-1.8.4/subversion/libsvn_wc/wc-metadata.sql	2013-11-08 01:00:32.666566102 +0400
+@@ -481,6 +481,16 @@ CREATE UNIQUE INDEX I_NODES_PARENT ON NO
+ /* I_NODES_MOVED is introduced in format 30 */
+ CREATE UNIQUE INDEX I_NODES_MOVED ON NODES (wc_id, moved_to, op_depth);
+ 
++/* Load statistics into optimizer */
++ANALYZE sqlite_master;
++INSERT INTO "sqlite_stat1" VALUES('NODES','I_NODES_MOVED','1000 800 1 1');
++INSERT INTO "sqlite_stat1" VALUES('NODES','I_NODES_PARENT','1000 800 6 1 1');
++INSERT INTO "sqlite_stat1" VALUES('NODES','sqlite_autoindex_NODES_1','1000 800 1 1');
++INSERT INTO "sqlite_stat1" VALUES('WC_LOCK','sqlite_autoindex_WC_LOCK_1','1000 800 1');
++INSERT INTO "sqlite_stat1" VALUES('ACTUAL_NODE','I_ACTUAL_PARENT','1000 800 10 1');
++INSERT INTO "sqlite_stat1" VALUES('ACTUAL_NODE','sqlite_autoindex_ACTUAL_NODE_1','1000 800 1');
++ANALYZE sqlite_master;
++
+ /* Many queries have to filter the nodes table to pick only that version
+    of each node with the highest (most "current") op_depth.  This view
+    does the heavy lifting for such queries.

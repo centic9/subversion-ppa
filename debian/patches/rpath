@@ -73,14 +73,14 @@ patch by David Kimdon <dwhedon@debian.org>.  The basic theory is:
  
      self.manpages = options.get('manpages', '')
      self.testing = options.get('testing')
---- a/build/generator/templates/makefile.ezt
-+++ b/build/generator/templates/makefile.ezt
+--- a/build/generator/templates/build-outputs.mk.ezt
++++ b/build/generator/templates/build-outputs.mk.ezt
 @@ -126,7 +126,7 @@
  ########################################
  [for areas]
- [is areas.type "apache-mod"]install-mods-shared:[for areas.files] [areas.files.fullname][end][for areas.files]
--	cd [areas.files.dirname] ; $(MKDIR) "$(APACHE_LIBEXECDIR)" ; $(INSTALL_MOD_SHARED) -n [areas.files.name] [areas.files.filename][end]
-+	cd [areas.files.dirname] ; $(MKDIR) "$(APACHE_LIBEXECDIR)" ; $(INSTALL_LIB) [areas.files.filename] $(APACHE_LIBEXECDIR)[end]
- [else]install-[areas.type]: [for areas.files][if-index areas.files first][else] [end][areas.files.fullname][end] [for areas.apache_files] [areas.apache_files.fullname][end]
- 	$(MKDIR) $(DESTDIR)$([areas.varname]dir)[for areas.files][is areas.type "locale"]
- 	$(MKDIR) [areas.files.installdir]
+ install-[areas.type]: [for areas.files][if-index areas.files first][else] [end][areas.files.fullname][end]
+-[if-any areas.files][for areas.files]	[is areas.files.mode "apache-mod"][if-any areas.files.when]if $([areas.files.when]) ; then [else][end]cd [areas.files.dirname] ; $(MKDIR) "$(APACHE_LIBEXECDIR)" ; $(INSTALL_MOD_SHARED) -n [areas.files.name] [areas.files.filename][if-any areas.files.when] ; fi[else][end][else][if-index areas.files first]$(MKDIR) $(DESTDIR)$([areas.varname]dir)
++[if-any areas.files][for areas.files]	[is areas.files.mode "apache-mod"][if-any areas.files.when]if $([areas.files.when]) ; then [else][end]cd [areas.files.dirname] ; $(MKDIR) "$(APACHE_LIBEXECDIR)" ; $(INSTALL_LIB) [areas.files.filename] $(APACHE_LIBEXECDIR)[if-any areas.files.when] ; fi[else][end][else][if-index areas.files first]$(MKDIR) $(DESTDIR)$([areas.varname]dir)
+ 	[else][end][is areas.type "locale"]$(MKDIR) [areas.files.installdir]
+ 	[if-any areas.files.when]if $([areas.files.when]) ; then [else][end]cd [areas.files.dirname] ; $(INSTALL_[areas.uppervar]) [areas.files.filename] [areas.files.installdir]/$(PACKAGE_NAME)[areas.files.objext][if-any areas.files.when] ; fi[else][end][else][if-any areas.files.when]if $([areas.files.when]) ; then [else][end]cd [areas.files.dirname] ; $(INSTALL_[areas.uppervar]) [areas.files.filename] $(DESTDIR)[areas.files.install_fname][if-any areas.files.when] ; fi[else][end][end][end]
+ [end][else]	$(MKDIR) $(DESTDIR)$([areas.varname]dir)

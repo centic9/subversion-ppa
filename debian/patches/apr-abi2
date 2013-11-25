@@ -9,10 +9,10 @@ be ABI-compatible again if and when we move to apr-2.x.
 
 --- a/configure.ac
 +++ b/configure.ac
-@@ -106,9 +106,13 @@
+@@ -111,9 +111,13 @@
+   AC_SUBST(SVN_APRUTIL_INCLUDES)
    AC_SUBST(SVN_APRUTIL_CONFIG, ["$apu_config"])
    AC_SUBST(SVN_APRUTIL_LIBS)
-   AC_SUBST(SVN_APRUTIL_PREFIX)
 +elif test `expr $apr_version : 1` -ne 0; then
 +  svn_lib_ver=1
 +  APU_VER_REGEXES=["1\."]

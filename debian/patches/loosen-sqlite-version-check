@@ -11,8 +11,8 @@ slightly more liberal shlibs file than the library version itself.
  static svn_error_t *
  init_sqlite(void *baton, apr_pool_t *pool)
  {
--  if (sqlite3_libversion_number() < SQLITE_VERSION_NUMBER)
-+  if (sqlite3_libversion_number()/1000 < SQLITE_VERSION_NUMBER/1000)
+-  if (sqlite3_libversion_number() < SVN_SQLITE_MIN_VERSION_NUMBER)
++  if (sqlite3_libversion_number()/1000 < SVN_SQLITE_MIN_VERSION_NUMBER/1000)
      {
        return svn_error_createf(
                      SVN_ERR_SQLITE_ERROR, NULL,

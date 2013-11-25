@@ -1,0 +1,12 @@
+#/bin/sh
+
+set -e
+
+pkgdir=/usr/share/doc/libsvn-ruby1.8
+if [ -d $pkgdir ] && [ ! -L $pkgdir ]; then
+    if rmdir $pkgdir; then
+        ln -sf /usr/share/doc/ruby-svn $pkgdir
+    fi
+fi
+
+#DEBHELPER#

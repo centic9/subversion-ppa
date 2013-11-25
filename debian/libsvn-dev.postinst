@@ -1,0 +1,12 @@
+#/bin/sh
+
+set -e
+
+pkgdir=/usr/share/doc/libsvn-dev
+if [ -d $pkgdir ] && [ ! -L $pkgdir ]; then
+    if rmdir $pkgdir; then
+        ln -sf /usr/share/doc/libsvn1 $pkgdir
+    fi
+fi
+
+#DEBHELPER#
