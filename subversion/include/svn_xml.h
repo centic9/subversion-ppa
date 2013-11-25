@@ -228,7 +228,7 @@ svn_xml_signal_bailout(svn_error_t *error,
  */
 const char *
 svn_xml_get_attr_value(const char *name,
-                       const char *const *atts);
+                       const char **atts);
 
 
 
@@ -297,10 +297,7 @@ svn_xml_make_header2(svn_stringbuf_t **str,
                      const char *encoding,
                      apr_pool_t *pool);
 
-/** Like svn_xml_make_header2(), but does not emit encoding information.
- *
- * @deprecated Provided for backward compatibility with the 1.6 API.
- */
+/* Like svn_xml_make_header2, but does not emit encoding information. */
 SVN_DEPRECATED
 void
 svn_xml_make_header(svn_stringbuf_t **str,

@@ -62,7 +62,6 @@ SVN::Repos::dir_delta($fs->revision_root(0), '/', '',
                       MyEditor->new(crap => bless {}, 'something'),
                       undef, 1, 1, 0, 0);
 };
-# TEST
 ok($main::something_destroyed, 'editor');
 
 package something;
