@@ -1,1 +1,3 @@
 tools/dev/gnuify-changelog.pl
+tools/dev/merge-graph.py
+tools/dev/mergegraph

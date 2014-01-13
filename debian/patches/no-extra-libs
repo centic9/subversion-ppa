@@ -5,7 +5,7 @@ libexpat2, libxml2, zlib1g.
 
 --- a/build/ac-macros/apr.m4
 +++ b/build/ac-macros/apr.m4
-@@ -99,9 +99,9 @@
+@@ -94,9 +94,9 @@
        AC_MSG_ERROR([apr-config --link-ld --libs failed])
      fi
    else
@@ -19,7 +19,7 @@ libexpat2, libxml2, zlib1g.
    SVN_APR_LIBS="`SVN_REMOVE_STANDARD_LIB_DIRS($SVN_APR_LIBS)`"
 --- a/build/ac-macros/aprutil.m4
 +++ b/build/ac-macros/aprutil.m4
-@@ -103,9 +103,9 @@
+@@ -98,9 +98,9 @@
        AC_MSG_ERROR([apu-config --link-ld --libs failed])
      fi
    else

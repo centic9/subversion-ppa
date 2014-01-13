@@ -1,0 +1,15 @@
+libapache2-mod-svn (1.8.5-1) unstable; urgency=low
+
+  Prior to Subversion 1.8, hook scripts run on a mod_dav_svn-based Subversion
+  server had problems with non-ASCII input and output because Apache HTTPD
+  modules always run in the "C" locale.
+
+  Subversion 1.8 addresses these problems with a new SVNUseUTF8 option for
+  mod_dav_svn. If this option is set, mod_dav_svn assumes that all hook script
+  input/output is encoded in UTF-8. If this option is set, hook scripts must
+  write error messages to stderr in UTF-8.
+
+  Hook scripts should use a UTF-8 locale if the SVNUseUTF8 option is active,
+  which can be configured in the new hooks-env configuration file.
+
+ -- James McCoy <jamessan@debian.org>  Sat, 04 Jan 2014 19:33:40 -0500

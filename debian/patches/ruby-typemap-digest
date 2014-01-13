@@ -17,7 +17,7 @@ Sent upstream: http://svn.haxx.se/dev/archive-2006-09/0536.shtml
 
 --- a/subversion/bindings/swig/include/svn_types.swg
 +++ b/subversion/bindings/swig/include/svn_types.swg
-@@ -1066,7 +1066,7 @@
+@@ -1093,7 +1093,7 @@
  #ifdef SWIGRUBY
  %typemap(argout) unsigned char digest[ANY] {
    char *digest_string = (char *)svn_md5_digest_to_cstring($1, _global_pool);

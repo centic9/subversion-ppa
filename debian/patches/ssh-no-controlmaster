@@ -16,7 +16,7 @@ connection sharing, but only if a ControlMaster is already present.
 
 --- a/subversion/libsvn_subr/config_file.c
 +++ b/subversion/libsvn_subr/config_file.c
-@@ -1027,7 +1027,7 @@
+@@ -1134,7 +1134,7 @@
          "### passed to the tunnel agent as <user>@<hostname>.)  If the"      NL
          "### built-in ssh scheme were not predefined, it could be defined"   NL
          "### as:"                                                            NL
@@ -27,7 +27,7 @@ connection sharing, but only if a ControlMaster is already present.
          "# rsh = rsh"                                                        NL
 --- a/subversion/libsvn_ra_svn/client.c
 +++ b/subversion/libsvn_ra_svn/client.c
-@@ -391,7 +391,7 @@
+@@ -395,7 +395,7 @@
         * versions have it too. If the user is using some other ssh
         * implementation that doesn't accept it, they can override it
         * in the [tunnels] section of the config. */

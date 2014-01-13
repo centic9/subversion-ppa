@@ -1,60 +1,11 @@
-More link pruning, which eliminates one package dependency: subversion
--> libneon; nobody but libsvn_ra_neon should link neon directly.  Also
-hack the apriconv library declaration not to pull in aprutil.  (It
+Hack the apriconv library declaration not to pull in aprutil.  (It
 might be correct on Windows, I don't know, but we don't need apriconv
 _at all_, so we don't want it to pull in aprutil for us.)
 
---- a/build.conf
-+++ b/build.conf
-@@ -109,7 +109,7 @@
- type = exe
- path = subversion/svn
- libs = libsvn_client libsvn_wc libsvn_ra libsvn_delta libsvn_diff libsvn_subr
--       apriconv apr neon
-+       apriconv apr
- manpages = subversion/svn/svn.1
- install = bin
- 
-@@ -154,7 +154,7 @@
- description = Subversion repository replicator
- type = exe
- path = subversion/svnsync
--libs = libsvn_ra libsvn_delta libsvn_subr apr neon
-+libs = libsvn_ra libsvn_delta libsvn_subr apr
- install = bin
- manpages = subversion/svnsync/svnsync.1
- 
-@@ -606,7 +606,7 @@
- type = lib
- path = subversion/bindings/javahl/native
- libs = libsvn_repos libsvn_client libsvn_wc libsvn_ra libsvn_delta libsvn_diff 
--       libsvn_subr libsvn_fs aprutil apriconv apr neon
-+       libsvn_subr libsvn_fs apriconv apr
- sources = *.cpp *.c
- add-deps = $(javahl_javah_DEPS) $(javahl_java_DEPS) $(javahl_callback_javah_DEPS) $(javahl_types_javah_DEPS)
- install = javahl-lib
-@@ -1040,7 +1040,7 @@
- 
- [apriconv]
- type = lib
--external-lib = $(SVN_APRUTIL_LIBS)
-+external-lib = $(SVN_APR_LIBS)
- 
- [bdb]
- type = lib
-@@ -1188,7 +1188,7 @@
- path = tools/client-side/svnmucc
- sources = svnmucc.c
- install = tools
--libs = libsvn_client libsvn_ra libsvn_subr libsvn_delta apriconv apr neon
-+libs = libsvn_client libsvn_ra libsvn_subr libsvn_delta apriconv apr
- 
- [diff]
- type = exe
 --- a/subversion/bindings/swig/perl/native/Makefile.PL.in
 +++ b/subversion/bindings/swig/perl/native/Makefile.PL.in
 @@ -43,6 +43,12 @@
-                                 ra_serf fs_base fs_util fs_fs/);
+                                 fs_base fs_util fs_fs/);
  
  my @ldmodules = map {"-lsvn_$_-1"} (@modules, qw/diff subr/);
 +sub libs_line {
@@ -66,7 +17,7 @@ _at all_, so we don't want it to pull in aprutil for us.)
  
  my $apr_shlib_path_var = '@SVN_APR_SHLIB_PATH_VAR@';
  my $cppflags = '@CPPFLAGS@';
-@@ -67,10 +73,6 @@
+@@ -79,10 +85,6 @@
                   " -I$svnlib_builddir",
                   " -I$swig_srcdir -g"),
      OBJECT => q/$(O_FILES)/,
@@ -77,7 +28,7 @@ _at all_, so we don't want it to pull in aprutil for us.)
      test => { TESTS => "$swig_srcdir/perl/native/t/*.t" }
  );
  
-@@ -80,6 +82,7 @@
+@@ -92,6 +94,7 @@
      $_;
  }
  
@@ -85,7 +36,7 @@ _at all_, so we don't want it to pull in aprutil for us.)
  WriteMakefile(%config, NAME => 'SVN::_Core', C => ['core.c'],
          PM => {map { ("$swig_srcdir/perl/native/$_.pm" =>
                        "\$(INST_LIBDIR)/$_.pm") }
-@@ -94,6 +97,7 @@
+@@ -106,6 +109,7 @@
         );
  
  for (@modules) {
@@ -93,3 +44,14 @@ _at all_, so we don't want it to pull in aprutil for us.)
      WriteMakefile(%config,
        MAKEFILE=> "Makefile.$_",
        NAME    => "SVN::_".perlish($_),
+--- a/build.conf
++++ b/build.conf
+@@ -1149,7 +1149,7 @@
+ 
+ [apriconv]
+ type = lib
+-external-lib = $(SVN_APRUTIL_LIBS)
++external-lib = $(SVN_APR_LIBS)
+ 
+ [bdb]
+ type = lib

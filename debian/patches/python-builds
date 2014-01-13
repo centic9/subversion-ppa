@@ -6,7 +6,7 @@ Submitted upstream: http://svn.haxx.se/dev/archive-2008-05/0361.shtml
 
 --- a/Makefile.in
 +++ b/Makefile.in
-@@ -132,6 +132,7 @@
+@@ -133,6 +133,7 @@
  APACHE_LDFLAGS = @APACHE_LDFLAGS@
  
  SWIG = @SWIG@
@@ -26,7 +26,7 @@ Submitted upstream: http://svn.haxx.se/dev/archive-2008-05/0361.shtml
  
      if test "$ac_cv_python_includes" = "none"; then
        AC_MSG_WARN([python bindings cannot be built without distutils module])
-@@ -282,6 +283,7 @@
+@@ -289,6 +290,7 @@
        AC_MSG_RESULT([$SWIG_RB_TEST_VERBOSE])
    fi
    AC_SUBST(SWIG)
@@ -36,7 +36,7 @@ Submitted upstream: http://svn.haxx.se/dev/archive-2008-05/0361.shtml
    AC_SUBST(SWIG_PY_LINK)
 --- a/build.conf
 +++ b/build.conf
-@@ -413,7 +413,7 @@
+@@ -427,7 +427,7 @@
  type = swig
  path = subversion/bindings/swig
  sources = core.i
@@ -45,7 +45,7 @@ Submitted upstream: http://svn.haxx.se/dev/archive-2008-05/0361.shtml
         libsvn_diff libsvn_subr apr
  description = Subversion core library bindings
  include-runtime = yes
-@@ -422,7 +422,7 @@
+@@ -436,7 +436,7 @@
  type = swig
  path = subversion/bindings/swig
  sources = svn_client.i
@@ -54,7 +54,7 @@ Submitted upstream: http://svn.haxx.se/dev/archive-2008-05/0361.shtml
         libsvn_client libsvn_subr apr
  nonlibs = swig_core
  description = Subversion client library bindings
-@@ -431,7 +431,7 @@
+@@ -445,7 +445,7 @@
  type = swig
  path = subversion/bindings/swig
  sources = svn_delta.i
@@ -63,7 +63,7 @@ Submitted upstream: http://svn.haxx.se/dev/archive-2008-05/0361.shtml
         libsvn_delta libsvn_subr apr
  nonlibs = swig_core
  description = Subversion delta library bindings
-@@ -440,7 +440,7 @@
+@@ -454,7 +454,7 @@
  type = swig
  path = subversion/bindings/swig
  sources = svn_diff.i
@@ -72,7 +72,7 @@ Submitted upstream: http://svn.haxx.se/dev/archive-2008-05/0361.shtml
         libsvn_diff libsvn_subr apr
  nonlibs = swig_core
  description = Subversion diff library bindings
-@@ -449,7 +449,7 @@
+@@ -463,7 +463,7 @@
  type = swig
  path = subversion/bindings/swig
  sources = svn_fs.i
@@ -81,7 +81,7 @@ Submitted upstream: http://svn.haxx.se/dev/archive-2008-05/0361.shtml
         libsvn_fs libsvn_subr apr
  nonlibs = swig_core
  description = Subversion FS library bindings
-@@ -458,7 +458,7 @@
+@@ -472,7 +472,7 @@
  type = swig
  path = subversion/bindings/swig
  sources = svn_ra.i
@@ -90,7 +90,7 @@ Submitted upstream: http://svn.haxx.se/dev/archive-2008-05/0361.shtml
         libsvn_ra libsvn_subr apr
  nonlibs = swig_core
  description = Subversion RA library bindings
-@@ -467,7 +467,7 @@
+@@ -481,7 +481,7 @@
  type = swig
  path = subversion/bindings/swig
  sources = svn_repos.i
@@ -99,7 +99,7 @@ Submitted upstream: http://svn.haxx.se/dev/archive-2008-05/0361.shtml
         libsvn_repos libsvn_subr apr
  nonlibs = swig_core
  description = Subversion repository library bindings
-@@ -476,13 +476,13 @@
+@@ -490,13 +490,13 @@
  type = swig
  path = subversion/bindings/swig
  sources = svn_wc.i

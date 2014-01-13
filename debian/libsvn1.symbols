@@ -2,9 +2,11 @@ libsvn_client-1.so.1 libsvn1 #MINVER#
 | libsvn-private
 * Build-Depends-Package: libsvn-dev
  (regex)__ 0 1
+ arbitrary_diff_walker_baton@Base 1.8
  svn_client_add2@Base 1.4
  svn_client_add3@Base 1.4
  svn_client_add4@Base 1.5
+ svn_client_add5@Base 1.8
  svn_client_add@Base 1.4
  svn_client_add_to_changelist@Base 1.5
  svn_client_args_to_target_array2@Base 1.7
@@ -24,6 +26,7 @@ libsvn_client-1.so.1 libsvn1 #MINVER#
  svn_client_commit3@Base 1.4
  svn_client_commit4@Base 1.5
  svn_client_commit5@Base 1.7
+ svn_client_commit6@Base 1.8
  svn_client_commit@Base 1.4
  svn_client_commit_item2_dup@Base 1.4
  svn_client_commit_item3_create@Base 1.6
@@ -35,6 +38,7 @@ libsvn_client-1.so.1 libsvn1 #MINVER#
  svn_client_copy5@Base 1.6
  svn_client_copy6@Base 1.7
  svn_client_copy@Base 1.4
+ svn_client_create_context2@Base 1.8
  svn_client_create_context@Base 1.4
  svn_client_delete2@Base 1.4
  svn_client_delete3@Base 1.5
@@ -44,11 +48,13 @@ libsvn_client-1.so.1 libsvn1 #MINVER#
  svn_client_diff3@Base 1.4
  svn_client_diff4@Base 1.5
  svn_client_diff5@Base 1.7
+ svn_client_diff6@Base 1.8
  svn_client_diff@Base 1.4
  svn_client_diff_peg2@Base 1.4
  svn_client_diff_peg3@Base 1.4
  svn_client_diff_peg4@Base 1.5
  svn_client_diff_peg5@Base 1.7
+ svn_client_diff_peg6@Base 1.8
  svn_client_diff_peg@Base 1.4
  svn_client_diff_summarize2@Base 1.5
  svn_client_diff_summarize@Base 1.4
@@ -61,6 +67,8 @@ libsvn_client-1.so.1 libsvn1 #MINVER#
  svn_client_export5@Base 1.7
  svn_client_export@Base 1.4
  svn_client_get_changelists@Base 1.5
+ svn_client_get_merging_summary@Base 1.8
+ svn_client_get_repos_root@Base 1.8
  svn_client_get_simple_prompt_provider@Base 1.4
  svn_client_get_simple_provider@Base 1.4
  svn_client_get_ssl_client_cert_file_provider@Base 1.4
@@ -75,12 +83,14 @@ libsvn_client-1.so.1 libsvn1 #MINVER#
  svn_client_import2@Base 1.4
  svn_client_import3@Base 1.5
  svn_client_import4@Base 1.7
+ svn_client_import5@Base 1.8
  svn_client_import@Base 1.4
  svn_client_info2@Base 1.5
  svn_client_info2_dup@Base 1.7
  svn_client_info3@Base 1.7
  svn_client_info@Base 1.4
  svn_client_list2@Base 1.5
+ svn_client_list3@Base 1.8
  svn_client_list@Base 1.4
  svn_client_lock@Base 1.4
  svn_client_log2@Base 1.4
@@ -94,13 +104,16 @@ libsvn_client-1.so.1 libsvn1 #MINVER#
  svn_client_merge2@Base 1.4
  svn_client_merge3@Base 1.5
  svn_client_merge4@Base 1.7
+ svn_client_merge5@Base 1.8
  svn_client_merge@Base 1.4
  svn_client_merge_peg2@Base 1.4
  svn_client_merge_peg3@Base 1.5
  svn_client_merge_peg4@Base 1.7
+ svn_client_merge_peg5@Base 1.8
  svn_client_merge_peg@Base 1.4
  svn_client_merge_reintegrate@Base 1.5
  svn_client_mergeinfo_get_merged@Base 1.5
+ svn_client_mergeinfo_log2@Base 1.8
  svn_client_mergeinfo_log@Base 1.7
  svn_client_mergeinfo_log_eligible@Base 1.5
  svn_client_mergeinfo_log_merged@Base 1.5
@@ -114,15 +127,19 @@ libsvn_client-1.so.1 libsvn1 #MINVER#
  svn_client_move4@Base 1.4
  svn_client_move5@Base 1.5
  svn_client_move6@Base 1.7
+ svn_client_move7@Base 1.8
  svn_client_move@Base 1.4
+ svn_client_open_ra_session2@Base 1.8
  svn_client_open_ra_session@Base 1.4
  svn_client_patch@Base 1.7
  svn_client_propget2@Base 1.4
  svn_client_propget3@Base 1.5
  svn_client_propget4@Base 1.7
+ svn_client_propget5@Base 1.8
  svn_client_propget@Base 1.4
  svn_client_proplist2@Base 1.4
  svn_client_proplist3@Base 1.5
+ svn_client_proplist4@Base 1.8
  svn_client_proplist@Base 1.4
  svn_client_proplist_item_dup@Base 1.4
  svn_client_propset2@Base 1.4
@@ -174,34 +191,40 @@ libsvn_delta-1.so.1 libsvn1 #MINVER#
  svn_delta_depth_filter_editor@Base 1.5
  svn_delta_get_cancellation_editor@Base 1.4
  svn_delta_noop_window_handler@Base 1.4
+ svn_delta_path_driver2@Base 1.8
  svn_delta_path_driver@Base 1.4
+ svn_delta_shim_callbacks_default@Base 1.8
  svn_delta_version@Base 1.4
  svn_editor_abort@Base 1.7
  svn_editor_add_absent@Base 1.7
  svn_editor_add_directory@Base 1.7
  svn_editor_add_file@Base 1.7
  svn_editor_add_symlink@Base 1.7
+ svn_editor_alter_directory@Base 1.8
+ svn_editor_alter_file@Base 1.8
+ svn_editor_alter_symlink@Base 1.8
  svn_editor_complete@Base 1.7
  svn_editor_copy@Base 1.7
  svn_editor_create@Base 1.7
  svn_editor_delete@Base 1.7
+ svn_editor_get_baton@Base 1.8
  svn_editor_move@Base 1.7
- svn_editor_set_props@Base 1.7
- svn_editor_set_target@Base 1.7
- svn_editor_set_text@Base 1.7
+ svn_editor_rotate@Base 1.8
  svn_editor_setcb_abort@Base 1.7
  svn_editor_setcb_add_absent@Base 1.7
  svn_editor_setcb_add_directory@Base 1.7
  svn_editor_setcb_add_file@Base 1.7
  svn_editor_setcb_add_symlink@Base 1.7
+ svn_editor_setcb_alter_directory@Base 1.8
+ svn_editor_setcb_alter_file@Base 1.8
+ svn_editor_setcb_alter_symlink@Base 1.8
  svn_editor_setcb_complete@Base 1.7
  svn_editor_setcb_copy@Base 1.7
  svn_editor_setcb_delete@Base 1.7
  svn_editor_setcb_many@Base 1.7
  svn_editor_setcb_move@Base 1.7
- svn_editor_setcb_set_props@Base 1.7
- svn_editor_setcb_set_target@Base 1.7
- svn_editor_setcb_set_text@Base 1.7
+ svn_editor_setcb_rotate@Base 1.8
+ svn_txdelta2@Base 1.8
  svn_txdelta@Base 1.4
  svn_txdelta_apply@Base 1.4
  svn_txdelta_apply_instructions@Base 1.4
@@ -211,6 +234,7 @@ libsvn_delta-1.so.1 libsvn1 #MINVER#
  svn_txdelta_parse_svndiff@Base 1.4
  svn_txdelta_read_svndiff_window@Base 1.4
  svn_txdelta_run@Base 1.6
+ svn_txdelta_send_contents@Base 1.8
  svn_txdelta_send_stream@Base 1.4
  svn_txdelta_send_string@Base 1.4
  svn_txdelta_send_txstream@Base 1.4
@@ -274,6 +298,7 @@ libsvn_fs-1.so.1 libsvn1 #MINVER#
 | libsvn-private
 * Build-Depends-Package: libsvn-dev
  (regex)__ 0 1
+ common_pool_lock@Base 1.8
  svn_fs_abort_txn@Base 1.4
  svn_fs_access_add_lock_token2@Base 1.6
  svn_fs_access_add_lock_token@Base 1.4
@@ -296,6 +321,7 @@ libsvn_fs-1.so.1 libsvn1 #MINVER#
  svn_fs_closest_copy@Base 1.4
  svn_fs_commit_txn@Base 1.4
  svn_fs_compare_ids@Base 1.4
+ svn_fs_config@Base 1.8
  svn_fs_contents_changed@Base 1.4
  svn_fs_copied_from@Base 1.4
  svn_fs_copy@Base 1.4
@@ -311,16 +337,19 @@ libsvn_fs-1.so.1 libsvn1 #MINVER#
  svn_fs_file_contents@Base 1.4
  svn_fs_file_length@Base 1.4
  svn_fs_file_md5_checksum@Base 1.4
+ svn_fs_freeze@Base 1.8
  svn_fs_generate_lock_token@Base 1.4
  svn_fs_get_access@Base 1.4
  svn_fs_get_file_delta_stream@Base 1.4
  svn_fs_get_lock@Base 1.4
  svn_fs_get_locks2@Base 1.7
  svn_fs_get_locks@Base 1.4
+ svn_fs_get_mergeinfo2@Base 1.8
  svn_fs_get_mergeinfo@Base 1.5
  svn_fs_get_uuid@Base 1.4
  svn_fs_history_location@Base 1.4
  svn_fs_history_prev@Base 1.4
+ svn_fs_hotcopy2@Base 1.8
  svn_fs_hotcopy@Base 1.4
  svn_fs_hotcopy_berkeley@Base 1.4
  svn_fs_initialize@Base 1.4
@@ -364,6 +393,7 @@ libsvn_fs-1.so.1 libsvn1 #MINVER#
  svn_fs_set_berkeley_errcall@Base 1.4
  svn_fs_set_uuid@Base 1.4
  svn_fs_set_warning_func@Base 1.4
+ svn_fs_try_process_file_contents@Base 1.8
  svn_fs_txn_base_revision@Base 1.4
  svn_fs_txn_name@Base 1.4
  svn_fs_txn_prop@Base 1.4
@@ -375,6 +405,8 @@ libsvn_fs-1.so.1 libsvn1 #MINVER#
  svn_fs_unlock@Base 1.4
  svn_fs_unparse_id@Base 1.4
  svn_fs_upgrade@Base 1.5
+ svn_fs_verify@Base 1.8
+ svn_fs_verify_root@Base 1.8
  svn_fs_version@Base 1.4
  svn_fs_youngest_rev@Base 1.4
 libsvn_ra-1.so.1 libsvn1 #MINVER#
@@ -385,14 +417,17 @@ libsvn_ra-1.so.1 libsvn1 #MINVER#
  svn_ra_change_rev_prop@Base 1.4
  svn_ra_check_path@Base 1.4
  svn_ra_create_callbacks@Base 1.4
+ svn_ra_dav_init@Base 1.8
  svn_ra_do_diff2@Base 1.4
  svn_ra_do_diff3@Base 1.5
  svn_ra_do_diff@Base 1.4
  svn_ra_do_status2@Base 1.5
  svn_ra_do_status@Base 1.4
  svn_ra_do_switch2@Base 1.5
+ svn_ra_do_switch3@Base 1.8
  svn_ra_do_switch@Base 1.4
  svn_ra_do_update2@Base 1.5
+ svn_ra_do_update3@Base 1.8
  svn_ra_do_update@Base 1.4
  svn_ra_get_commit_editor2@Base 1.4
  svn_ra_get_commit_editor3@Base 1.5
@@ -404,6 +439,7 @@ libsvn_ra-1.so.1 libsvn1 #MINVER#
  svn_ra_get_file@Base 1.4
  svn_ra_get_file_revs2@Base 1.5
  svn_ra_get_file_revs@Base 1.4
+ svn_ra_get_inherited_props@Base 1.8
  svn_ra_get_latest_revnum@Base 1.4
  svn_ra_get_location_segments@Base 1.5
  svn_ra_get_locations@Base 1.4
@@ -447,6 +483,7 @@ libsvn_ra_svn-1.so.1 libsvn1 #MINVER#
  svn_ra_svn_conn_remote_host@Base 1.6
  svn_ra_svn_cram_server@Base 1.4
  svn_ra_svn_create_conn2@Base 1.7
+ svn_ra_svn_create_conn3@Base 1.8
  svn_ra_svn_create_conn@Base 1.4
  svn_ra_svn_drive_editor2@Base 1.4
  svn_ra_svn_drive_editor@Base 1.4
@@ -475,14 +512,20 @@ libsvn_ra_svn-1.so.1 libsvn1 #MINVER#
  svn_ra_svn_write_string@Base 1.4
  svn_ra_svn_write_tuple@Base 1.4
  svn_ra_svn_write_word@Base 1.4
+ svn_ra_svn_zero_copy_limit@Base 1.8
 libsvn_repos-1.so.1 libsvn1 #MINVER#
 | libsvn-private
 * Build-Depends-Package: libsvn-dev
  (regex)__ 0 1
+ parse_hooks_env_option_baton@Base 1.8
+ parse_hooks_env_section_baton@Base 1.8
  svn_repos_abort_report@Base 1.4
  svn_repos_authz_check_access@Base 1.4
+ svn_repos_authz_parse@Base 1.8
+ svn_repos_authz_read2@Base 1.8
  svn_repos_authz_read@Base 1.4
  svn_repos_begin_report2@Base 1.5
+ svn_repos_begin_report3@Base 1.8
  svn_repos_begin_report@Base 1.4
  svn_repos_check_revision_access@Base 1.5
  svn_repos_conf_dir@Base 1.4
@@ -502,6 +545,7 @@ libsvn_repos-1.so.1 libsvn1 #MINVER#
  svn_repos_dump_fs@Base 1.4
  svn_repos_find_root_path@Base 1.4
  svn_repos_finish_report@Base 1.4
+ svn_repos_freeze@Base 1.8
  svn_repos_fs@Base 1.4
  svn_repos_fs_begin_txn_for_commit2@Base 1.5
  svn_repos_fs_begin_txn_for_commit@Base 1.4
@@ -514,6 +558,7 @@ libsvn_repos-1.so.1 libsvn1 #MINVER#
  svn_repos_fs_change_txn_prop@Base 1.4
  svn_repos_fs_change_txn_props@Base 1.5
  svn_repos_fs_commit_txn@Base 1.4
+ svn_repos_fs_get_inherited_props@Base 1.8
  svn_repos_fs_get_locks2@Base 1.7
  svn_repos_fs_get_locks@Base 1.4
  svn_repos_fs_get_mergeinfo@Base 1.5
@@ -533,6 +578,7 @@ libsvn_repos-1.so.1 libsvn1 #MINVER#
  svn_repos_get_file_revs@Base 1.4
  svn_repos_get_fs_build_parser2@Base 1.4
  svn_repos_get_fs_build_parser3@Base 1.7
+ svn_repos_get_fs_build_parser4@Base 1.8
  svn_repos_get_fs_build_parser@Base 1.4
  svn_repos_get_logs2@Base 1.4
  svn_repos_get_logs3@Base 1.4
@@ -542,12 +588,15 @@ libsvn_repos-1.so.1 libsvn1 #MINVER#
  svn_repos_history2@Base 1.4
  svn_repos_history@Base 1.4
  svn_repos_hook_dir@Base 1.4
+ svn_repos_hooks_setenv@Base 1.8
+ svn_repos_hotcopy2@Base 1.8
  svn_repos_hotcopy@Base 1.4
  svn_repos_link_path2@Base 1.4
  svn_repos_link_path3@Base 1.5
  svn_repos_link_path@Base 1.4
  svn_repos_load_fs2@Base 1.4
  svn_repos_load_fs3@Base 1.7
+ svn_repos_load_fs4@Base 1.8
  svn_repos_load_fs@Base 1.4
  svn_repos_lock_dir@Base 1.4
  svn_repos_node_editor@Base 1.4
@@ -557,6 +606,7 @@ libsvn_repos-1.so.1 libsvn1 #MINVER#
  svn_repos_open2@Base 1.7
  svn_repos_open@Base 1.4
  svn_repos_parse_dumpstream2@Base 1.4
+ svn_repos_parse_dumpstream3@Base 1.8
  svn_repos_parse_dumpstream@Base 1.4
  svn_repos_path@Base 1.4
  svn_repos_post_commit_hook@Base 1.4
@@ -591,6 +641,8 @@ libsvn_subr-1.so.1 libsvn1 #MINVER#
 * Build-Depends-Package: libsvn-dev
  (regex)__ 0 1
  svn_auth_first_credentials@Base 1.4
+ svn_auth_forget_credentials@Base 1.8
+ svn_auth_get_gpg_agent_simple_provider@Base 1.8
  svn_auth_get_parameter@Base 1.4
  svn_auth_get_platform_specific_client_providers@Base 1.6
  svn_auth_get_platform_specific_provider@Base 1.6
@@ -628,6 +680,7 @@ libsvn_subr-1.so.1 libsvn1 #MINVER#
  svn_checksum_dup@Base 1.6
  svn_checksum_empty_checksum@Base 1.6
  svn_checksum_final@Base 1.6
+ svn_checksum_is_empty_checksum@Base 1.8
  svn_checksum_match@Base 1.6
  svn_checksum_mismatch_err@Base 1.7
  svn_checksum_parse_hex@Base 1.6
@@ -664,7 +717,10 @@ libsvn_subr-1.so.1 libsvn1 #MINVER#
  svn_compat_log_revprops_out@Base 1.5
  svn_compat_wrap_commit_callback@Base 1.4
  svn_compat_wrap_log_receiver@Base 1.5
+ svn_config_copy_config@Base 1.8
+ svn_config_create2@Base 1.8
  svn_config_create@Base 1.7
+ svn_config_dup@Base 1.8
  svn_config_ensure@Base 1.4
  svn_config_enumerate2@Base 1.4
  svn_config_enumerate@Base 1.4
@@ -674,18 +730,24 @@ libsvn_subr-1.so.1 libsvn1 #MINVER#
  svn_config_get@Base 1.4
  svn_config_get_bool@Base 1.4
  svn_config_get_config@Base 1.4
+ svn_config_get_int64@Base 1.8
  svn_config_get_server_setting@Base 1.4
  svn_config_get_server_setting_bool@Base 1.6
  svn_config_get_server_setting_int@Base 1.4
+ svn_config_get_tristate@Base 1.8
  svn_config_get_user_config_path@Base 1.6
  svn_config_get_yes_no_ask@Base 1.6
  svn_config_has_section@Base 1.4
  svn_config_merge@Base 1.4
+ svn_config_parse@Base 1.8
  svn_config_read2@Base 1.7
+ svn_config_read3@Base 1.8
  svn_config_read@Base 1.4
  svn_config_read_auth_data@Base 1.4
  svn_config_set@Base 1.4
  svn_config_set_bool@Base 1.4
+ svn_config_set_int64@Base 1.8
+ svn_config_walk_auth_data@Base 1.8
  svn_config_write_auth_data@Base 1.4
  svn_create_commit_info@Base 1.4
  svn_cstring_atoi64@Base 1.7
@@ -701,6 +763,7 @@ libsvn_subr-1.so.1 libsvn1 #MINVER#
  svn_cstring_split_append@Base 1.4
  svn_cstring_strtoi64@Base 1.7
  svn_cstring_strtoui64@Base 1.7
+ svn_cstring_tokenize@Base 1.8
  svn_ctype_casecmp@Base 1.5
  svn_ctype_table@Base 1.4
  svn_ctype_table_internal@Base 1.5
@@ -709,6 +772,7 @@ libsvn_subr-1.so.1 libsvn1 #MINVER#
  svn_dirent_basename@Base 1.7
  svn_dirent_canonicalize@Base 1.6
  svn_dirent_condense_targets@Base 1.7
+ svn_dirent_create@Base 1.8
  svn_dirent_dirname@Base 1.6
  svn_dirent_dup@Base 1.4
  svn_dirent_get_absolute@Base 1.6
@@ -743,6 +807,7 @@ libsvn_subr-1.so.1 libsvn1 #MINVER#
  svn_error_raise_on_malfunction@Base 1.6
  svn_error_root_cause@Base 1.5
  svn_error_set_malfunction_handler@Base 1.6
+ svn_error_symbolic_name@Base 1.8
  svn_error_wrap_apr@Base 1.4
  svn_handle_error2@Base 1.4
  svn_handle_error@Base 1.4
@@ -800,19 +865,23 @@ libsvn_subr-1.so.1 libsvn1 #MINVER#
  svn_io_file_read@Base 1.4
  svn_io_file_read_full2@Base 1.7
  svn_io_file_read_full@Base 1.4
+ svn_io_file_readline@Base 1.8
  svn_io_file_rename@Base 1.4
  svn_io_file_seek@Base 1.4
  svn_io_file_trunc@Base 1.6
  svn_io_file_write@Base 1.4
  svn_io_file_write_full@Base 1.4
  svn_io_files_contents_same_p@Base 1.4
+ svn_io_files_contents_three_same_p@Base 1.8
  svn_io_filesizes_different_p@Base 1.4
+ svn_io_filesizes_three_different_p@Base 1.8
  svn_io_get_dir_filenames@Base 1.4
  svn_io_get_dirents2@Base 1.4
  svn_io_get_dirents3@Base 1.7
  svn_io_get_dirents@Base 1.4
  svn_io_is_binary_data@Base 1.7
  svn_io_is_file_executable@Base 1.4
+ svn_io_lock_open_file@Base 1.8
  svn_io_make_dir_recursively@Base 1.4
  svn_io_open_unique_file2@Base 1.4
  svn_io_open_unique_file3@Base 1.6
@@ -839,10 +908,13 @@ libsvn_subr-1.so.1 libsvn1 #MINVER#
  svn_io_set_file_read_write_carefully@Base 1.4
  svn_io_sleep_for_timestamps@Base 1.6
  svn_io_start_cmd2@Base 1.7
+ svn_io_start_cmd3@Base 1.8
  svn_io_start_cmd@Base 1.4
  svn_io_stat@Base 1.4
+ svn_io_stat_dirent2@Base 1.8
  svn_io_stat_dirent@Base 1.7
  svn_io_temp_dir@Base 1.4
+ svn_io_unlock_open_file@Base 1.8
  svn_io_wait_for_cmd@Base 1.4
  svn_io_write_unique@Base 1.6
  svn_io_write_version_file@Base 1.4
@@ -865,12 +937,14 @@ libsvn_subr-1.so.1 libsvn1 #MINVER#
  svn_merge_range_dup@Base 1.5
  svn_mergeinfo_catalog_dup@Base 1.6
  svn_mergeinfo_catalog_merge@Base 1.7
+ svn_mergeinfo_diff2@Base 1.8
  svn_mergeinfo_diff@Base 1.5
  svn_mergeinfo_dup@Base 1.5
  svn_mergeinfo_inheritable2@Base 1.7
  svn_mergeinfo_inheritable@Base 1.5
  svn_mergeinfo_intersect2@Base 1.7
  svn_mergeinfo_intersect@Base 1.5
+ svn_mergeinfo_merge2@Base 1.8
  svn_mergeinfo_merge@Base 1.5
  svn_mergeinfo_parse@Base 1.5
  svn_mergeinfo_remove2@Base 1.7
@@ -900,6 +974,7 @@ libsvn_subr-1.so.1 libsvn1 #MINVER#
  svn_opt_print_generic_help@Base 1.4
  svn_opt_print_help2@Base 1.4
  svn_opt_print_help3@Base 1.5
+ svn_opt_print_help4@Base 1.8
  svn_opt_print_help@Base 1.4
  svn_opt_push_implicit_dot_target@Base 1.4
  svn_opt_resolve_revisions@Base 1.5
@@ -924,6 +999,7 @@ libsvn_subr-1.so.1 libsvn1 #MINVER#
  svn_path_dirname@Base 1.4
  svn_path_get_absolute@Base 1.4
  svn_path_get_longest_ancestor@Base 1.4
+ svn_path_illegal_path_escape@Base 1.8
  svn_path_internal_style@Base 1.4
  svn_path_is_ancestor@Base 1.4
  svn_path_is_backpath_present@Base 1.4
@@ -931,6 +1007,7 @@ libsvn_subr-1.so.1 libsvn1 #MINVER#
  svn_path_is_child@Base 1.4
  svn_path_is_dotpath_present@Base 1.6
  svn_path_is_empty@Base 1.4
+ svn_path_is_repos_relative_url@Base 1.8
  svn_path_is_single_path_component@Base 1.4
  svn_path_is_uri_safe@Base 1.4
  svn_path_is_url@Base 1.4
@@ -940,6 +1017,7 @@ libsvn_subr-1.so.1 libsvn1 #MINVER#
  svn_path_remove_component@Base 1.4
  svn_path_remove_components@Base 1.4
  svn_path_remove_redundancies@Base 1.4
+ svn_path_resolve_repos_relative_url@Base 1.8
  svn_path_split@Base 1.4
  svn_path_split_if_file@Base 1.4
  svn_path_splitext@Base 1.5
@@ -949,6 +1027,7 @@ libsvn_subr-1.so.1 libsvn1 #MINVER#
  svn_path_uri_from_iri@Base 1.4
  svn_path_url_add_component2@Base 1.6
  svn_path_url_add_component@Base 1.4
+ svn_pool_create_allocator@Base 1.8
  svn_pool_create_ex@Base 1.4
  svn_pool_create_ex_debug@Base 1.4
  svn_prop_array_dup@Base 1.4
@@ -960,9 +1039,14 @@ libsvn_subr-1.so.1 libsvn1 #MINVER#
  svn_prop_hash_dup@Base 1.6
  svn_prop_hash_to_array@Base 1.5
  svn_prop_is_boolean@Base 1.5
+ svn_prop_is_known_svn_dir_prop@Base 1.8
+ svn_prop_is_known_svn_file_prop@Base 1.8
+ svn_prop_is_known_svn_node_prop@Base 1.8
+ svn_prop_is_known_svn_rev_prop@Base 1.8
  svn_prop_is_svn_prop@Base 1.4
  svn_prop_name_is_valid@Base 1.5
  svn_prop_needs_translation@Base 1.4
+ svn_property_kind2@Base 1.8
  svn_property_kind@Base 1.4
  svn_quoprint_decode@Base 1.4
  svn_quoprint_decode_string@Base 1.4
@@ -973,6 +1057,7 @@ libsvn_subr-1.so.1 libsvn1 #MINVER#
  svn_rangelist_inheritable2@Base 1.7
  svn_rangelist_inheritable@Base 1.5
  svn_rangelist_intersect@Base 1.5
+ svn_rangelist_merge2@Base 1.8
  svn_rangelist_merge@Base 1.5
  svn_rangelist_remove@Base 1.5
  svn_rangelist_reverse@Base 1.5
@@ -994,6 +1079,7 @@ libsvn_subr-1.so.1 libsvn1 #MINVER#
  svn_sort_compare_paths@Base 1.4
  svn_sort_compare_ranges@Base 1.5
  svn_sort_compare_revisions@Base 1.4
+ svn_stream_buffered@Base 1.8
  svn_stream_checksummed2@Base 1.6
  svn_stream_checksummed@Base 1.4
  svn_stream_close@Base 1.4
@@ -1013,12 +1099,14 @@ libsvn_subr-1.so.1 libsvn1 #MINVER#
  svn_stream_from_aprfile@Base 1.4
  svn_stream_from_string@Base 1.6
  svn_stream_from_stringbuf@Base 1.4
+ svn_stream_lazyopen_create@Base 1.8
  svn_stream_mark@Base 1.7
  svn_stream_open_readonly@Base 1.6
  svn_stream_open_unique@Base 1.6
  svn_stream_open_writable@Base 1.6
  svn_stream_printf@Base 1.4
  svn_stream_printf_from_utf8@Base 1.4
+ svn_stream_puts@Base 1.8
  svn_stream_read@Base 1.4
  svn_stream_readline@Base 1.4
  svn_stream_reset@Base 1.7
@@ -1038,6 +1126,7 @@ libsvn_subr-1.so.1 libsvn1 #MINVER#
  svn_string_compare@Base 1.4
  svn_string_compare_stringbuf@Base 1.4
  svn_string_create@Base 1.4
+ svn_string_create_empty@Base 1.8
  svn_string_create_from_buf@Base 1.4
  svn_string_createf@Base 1.4
  svn_string_createv@Base 1.4
@@ -1054,6 +1143,7 @@ libsvn_subr-1.so.1 libsvn1 #MINVER#
  svn_stringbuf_chop@Base 1.4
  svn_stringbuf_compare@Base 1.4
  svn_stringbuf_create@Base 1.4
+ svn_stringbuf_create_empty@Base 1.8
  svn_stringbuf_create_ensure@Base 1.6
  svn_stringbuf_create_from_string@Base 1.4
  svn_stringbuf_createf@Base 1.4
@@ -1066,13 +1156,17 @@ libsvn_subr-1.so.1 libsvn1 #MINVER#
  svn_stringbuf_from_aprfile@Base 1.4
  svn_stringbuf_from_file2@Base 1.5
  svn_stringbuf_from_file@Base 1.4
+ svn_stringbuf_insert@Base 1.8
  svn_stringbuf_isempty@Base 1.4
  svn_stringbuf_ncreate@Base 1.4
+ svn_stringbuf_remove@Base 1.8
+ svn_stringbuf_replace@Base 1.8
  svn_stringbuf_set@Base 1.4
  svn_stringbuf_setempty@Base 1.4
  svn_stringbuf_strip_whitespace@Base 1.4
  svn_subr_version@Base 1.4
  svn_subst_build_keywords2@Base 1.4
+ svn_subst_build_keywords3@Base 1.8
  svn_subst_build_keywords@Base 1.4
  svn_subst_copy_and_translate2@Base 1.4
  svn_subst_copy_and_translate3@Base 1.4
@@ -1122,6 +1216,8 @@ libsvn_subr-1.so.1 libsvn1 #MINVER#
  svn_utf_cstring_to_utf8@Base 1.4
  svn_utf_cstring_to_utf8_ex2@Base 1.4
  svn_utf_cstring_to_utf8_ex@Base 1.4
+ svn_utf_cstring_utf8_width@Base 1.8
+ svn_utf_initialize2@Base 1.8
  svn_utf_initialize@Base 1.4
  svn_utf_string_from_utf8@Base 1.4
  svn_utf_string_to_utf8@Base 1.4
@@ -1131,6 +1227,15 @@ libsvn_subr-1.so.1 libsvn1 #MINVER#
  svn_ver_check_list@Base 1.4
  svn_ver_compatible@Base 1.4
  svn_ver_equal@Base 1.4
+ svn_version_ext_build_date@Base 1.8
+ svn_version_ext_build_host@Base 1.8
+ svn_version_ext_build_time@Base 1.8
+ svn_version_ext_copyright@Base 1.8
+ svn_version_ext_linked_libs@Base 1.8
+ svn_version_ext_loaded_libs@Base 1.8
+ svn_version_ext_runtime_host@Base 1.8
+ svn_version_ext_runtime_osname@Base 1.8
+ svn_version_extended@Base 1.8
  svn_xml_ap_to_hash@Base 1.4
  svn_xml_escape_attr_cstring@Base 1.4
  svn_xml_escape_attr_string@Base 1.4
@@ -1158,10 +1263,12 @@ libsvn_wc-1.so.1 libsvn1 #MINVER#
 | libsvn-private
 * Build-Depends-Package: libsvn-dev
  (regex)__ 0 1
+ op_delete_many_baton_t@Base 1.8
  svn_wc_add2@Base 1.4
  svn_wc_add3@Base 1.6
  svn_wc_add4@Base 1.7
  svn_wc_add@Base 1.4
+ svn_wc_add_from_disk2@Base 1.8
  svn_wc_add_from_disk@Base 1.7
  svn_wc_add_lock2@Base 1.7
  svn_wc_add_lock@Base 1.4
@@ -1187,6 +1294,7 @@ libsvn_wc-1.so.1 libsvn1 #MINVER#
  svn_wc_adm_probe_try@Base 1.4
  svn_wc_adm_retrieve@Base 1.4
  svn_wc_canonicalize_svn_prop@Base 1.5
+ svn_wc_check_root@Base 1.8
  svn_wc_check_wc2@Base 1.7
  svn_wc_check_wc@Base 1.4
  svn_wc_cleanup2@Base 1.4
@@ -1199,6 +1307,7 @@ libsvn_wc-1.so.1 libsvn1 #MINVER#
  svn_wc_conflict_description_create_text@Base 1.6
  svn_wc_conflict_description_create_tree2@Base 1.7
  svn_wc_conflict_description_create_tree@Base 1.6
+ svn_wc_conflict_version_create2@Base 1.8
  svn_wc_conflict_version_create@Base 1.6
  svn_wc_conflict_version_dup@Base 1.6
  svn_wc_conflicted_p2@Base 1.6
@@ -1244,6 +1353,7 @@ libsvn_wc-1.so.1 libsvn1 #MINVER#
  svn_wc_entry@Base 1.4
  svn_wc_entry_dup@Base 1.4
  svn_wc_exclude@Base 1.7
+ svn_wc_external_item2_create@Base 1.8
  svn_wc_external_item2_dup@Base 1.5
  svn_wc_external_item_create@Base 1.5
  svn_wc_external_item_dup@Base 1.4
@@ -1297,6 +1407,7 @@ libsvn_wc-1.so.1 libsvn1 #MINVER#
  svn_wc_merge2@Base 1.4
  svn_wc_merge3@Base 1.5
  svn_wc_merge4@Base 1.7
+ svn_wc_merge5@Base 1.8
  svn_wc_merge@Base 1.4
  svn_wc_merge_prop_diffs@Base 1.4
  svn_wc_merge_props2@Base 1.5
@@ -1325,6 +1436,7 @@ libsvn_wc-1.so.1 libsvn1 #MINVER#
  svn_wc_queue_committed2@Base 1.6
  svn_wc_queue_committed3@Base 1.7
  svn_wc_queue_committed@Base 1.5
+ svn_wc_read_kind2@Base 1.8
  svn_wc_read_kind@Base 1.7
  svn_wc_relocate2@Base 1.4
  svn_wc_relocate3@Base 1.5

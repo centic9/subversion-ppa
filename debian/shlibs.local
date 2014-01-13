@@ -1,0 +1,7 @@
+libsvn_auth_gnome_keyring-1 1 libsvn1 (>= 1)
+libsvn_auth_kwallet-1 1 libsvn1 (>= 1)
+libsvn_ra_local-1 1 libsvn1 (>= 1)
+libsvn_ra_serf-1 1 libsvn1 (>= 1)
+libsvn_fs_base-1 1 libsvn1 (>= 1)
+libsvn_fs_fs-1 1 libsvn1 (>= 1)
+libsvn_fs_util-1 1 libsvn1 (>= 1)

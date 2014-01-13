@@ -1,0 +1,9 @@
+#!/bin/sh
+set -e
+
+dpkg-maintscript-helper rm_conffile /etc/svn2cl/authors.xml 1.7.14-1~ subversion-tools -- "$@"
+dpkg-maintscript-helper rm_conffile /etc/svn2cl/svn2html.css 1.7.14-1~ subversion-tools -- "$@"
+dpkg-maintscript-helper rm_conffile /etc/svn2cl/svn2html.xsl 1.7.14-1~ subversion-tools -- "$@"
+dpkg-maintscript-helper rm_conffile /etc/svn2cl/svn2cl.xsl 1.7.14-1~ subversion-tools -- "$@"
+
+#DEBHELPER#
