@@ -1,3 +1,9 @@
+subversion (1.8.8-0ubuntu0~ppa1) precise; urgency=low
+
+  * Update to latest upstream version.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Thu, 20 Feb 2014 20:07:50 +0100
+
 subversion (1.8.5-1ubuntu0~ppa2) precise; urgency=low
 
   * Fix building on precise, remove call to dh-apache2 and use -r for rm.
