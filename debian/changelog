@@ -1,3 +1,15 @@
+subversion (1.8.5-1ubuntu0~ppa2) precise; urgency=low
+
+  * Fix building on precise, remove call to dh-apache2 and use -r for rm.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Fri, 17 Jan 2014 20:32:19 +0100
+
+subversion (1.8.5-1ubuntu0~ppa1) precise; urgency=low
+
+  * Backport to Precise.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Fri, 17 Jan 2014 19:13:37 +0100
+
 subversion (1.8.5-1) unstable; urgency=low
 
   [ Peter Samuelson ]
@@ -38,6 +50,24 @@ subversion (1.8.5-1) unstable; urgency=low
   * Build against the default ruby version.  (Closes: #722393)
 
  -- James McCoy <jamessan@debian.org>  Sun, 12 Jan 2014 19:48:33 -0500
+
+subversion (1.8.5-0ubuntu0~ppa1) precise; urgency=low
+
+  * New upstream release.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Mon, 25 Nov 2013 20:51:25 +0100
+
+subversion (1.8.4-0ubuntu0~ppa1) precise; urgency=low
+
+  * Backport to precise.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Mon, 11 Nov 2013 20:44:43 +0100
+
+subversion (1.8.4) unstable; urgency=low
+
+  * Non-maintainer upload
+
+ -- Vitaliy Filippov <vitalif@mail.ru>  Thu, 07 Nov 2013 18:24:00 +0400
 
 subversion (1.7.14-1) unstable; urgency=medium
 
