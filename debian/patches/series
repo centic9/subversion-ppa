@@ -15,4 +15,4 @@ python-builds
 examples-compile-instructions
 apache_module_dependency
 workaround_EINVAL_on_kfreebsd
-sqlite_3.8.x_workaround
+# applied upstream: sqlite_3.8.x_workaround
