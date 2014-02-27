@@ -1,3 +1,2 @@
 # nobody but us will ever link to this, so we don't ship a shlibs file
 no-shlibs-control-file usr/lib/*/libsvn_swig_ruby-1.so.*
-no-symbols-control-file usr/lib/*/libsvn_swig_ruby-1.so.*
