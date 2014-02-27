@@ -28,7 +28,6 @@
 /*** Includes. ***/
 
 #include <apr_pools.h>
-#include "svn_hash.h"
 #include "svn_client.h"
 #include "svn_error.h"
 
@@ -77,12 +76,9 @@ call_conflict_func(svn_wc_conflict_result_t **result,
 }
 
 svn_error_t *
-svn_client_create_context2(svn_client_ctx_t **ctx,
-                           apr_hash_t *cfg_hash,
-                           apr_pool_t *pool)
+svn_client_create_context(svn_client_ctx_t **ctx,
+                          apr_pool_t *pool)
 {
-  svn_config_t *cfg_config;
-
   *ctx = apr_pcalloc(pool, sizeof(svn_client_ctx_t));
 
   (*ctx)->notify_func2 = call_notify_func;
@@ -91,22 +87,8 @@ svn_client_create_context2(svn_client_ctx_t **ctx,
   (*ctx)->conflict_func2 = call_conflict_func;
   (*ctx)->conflict_baton2 = *ctx;
 
-  (*ctx)->config = cfg_hash;
-
-  if (cfg_hash)
-    cfg_config = svn_hash_gets(cfg_hash, SVN_CONFIG_CATEGORY_CONFIG);
-  else
-    cfg_config = NULL;
-
-  SVN_ERR(svn_wc_context_create(&(*ctx)->wc_ctx, cfg_config, pool,
+  SVN_ERR(svn_wc_context_create(&(*ctx)->wc_ctx, NULL /* config */, pool,
                                 pool));
 
   return SVN_NO_ERROR;
-}
-
-svn_error_t *
-svn_client_create_context(svn_client_ctx_t **ctx,
-                          apr_pool_t *pool)
-{
-  return svn_client_create_context2(ctx, NULL, pool);
 }

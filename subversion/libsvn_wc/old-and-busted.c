@@ -26,7 +26,6 @@
 #include "svn_time.h"
 #include "svn_xml.h"
 #include "svn_dirent_uri.h"
-#include "svn_hash.h"
 #include "svn_path.h"
 #include "svn_ctype.h"
 #include "svn_pools.h"
@@ -383,7 +382,7 @@ opt_revision_to_string(const char **str,
       *str = apr_pstrmemdup(pool, "HEAD", 4);
       break;
     case svn_opt_revision_number:
-      *str = apr_ltoa(pool, rev->value.number);
+      *str = apr_itoa(pool, rev->value.number);
       break;
     default:
       return svn_error_createf
@@ -717,7 +716,7 @@ do_bool_attr(svn_boolean_t *entry_flag,
              apr_hash_t *atts, const char *attr_name,
              const char *entry_name)
 {
-  const char *str = svn_hash_gets(atts, attr_name);
+  const char *str = apr_hash_get(atts, attr_name, APR_HASH_KEY_STRING);
 
   *entry_flag = FALSE;
   if (str)
@@ -742,7 +741,7 @@ extract_string(apr_hash_t *atts,
                const char *att_name,
                apr_pool_t *result_pool)
 {
-  const char *value = svn_hash_gets(atts, att_name);
+  const char *value = apr_hash_get(atts, att_name, APR_HASH_KEY_STRING);
 
   if (value == NULL)
     return NULL;
@@ -757,7 +756,7 @@ extract_string_normalize(apr_hash_t *atts,
                          const char *att_name,
                          apr_pool_t *result_pool)
 {
-  const char *value = svn_hash_gets(atts, att_name);
+  const char *value = apr_hash_get(atts, att_name, APR_HASH_KEY_STRING);
 
   if (value == NULL)
     return NULL;
@@ -791,7 +790,7 @@ atts_to_entry(svn_wc_entry_t **new_entry,
   const char *name;
 
   /* Find the name and set up the entry under that name. */
-  name = svn_hash_gets(atts, ENTRIES_ATTR_NAME);
+  name = apr_hash_get(atts, ENTRIES_ATTR_NAME, APR_HASH_KEY_STRING);
   entry->name = name ? apr_pstrdup(pool, name) : SVN_WC_ENTRY_THIS_DIR;
 
   /* Attempt to set revision (resolve_to_defaults may do it later, too)
@@ -799,7 +798,7 @@ atts_to_entry(svn_wc_entry_t **new_entry,
      ### not used by loggy; no need to set MODIFY_FLAGS  */
   {
     const char *revision_str
-      = svn_hash_gets(atts, ENTRIES_ATTR_REVISION);
+      = apr_hash_get(atts, ENTRIES_ATTR_REVISION, APR_HASH_KEY_STRING);
 
     if (revision_str)
       entry->revision = SVN_STR_TO_REV(revision_str);
@@ -832,7 +831,7 @@ atts_to_entry(svn_wc_entry_t **new_entry,
   /* ### not used by loggy; no need to set MODIFY_FLAGS  */
   {
     const char *kindstr
-      = svn_hash_gets(atts, ENTRIES_ATTR_KIND);
+      = apr_hash_get(atts, ENTRIES_ATTR_KIND, APR_HASH_KEY_STRING);
 
     entry->kind = svn_node_none;
     if (kindstr)
@@ -853,7 +852,7 @@ atts_to_entry(svn_wc_entry_t **new_entry,
   /* ### not used by loggy; no need to set MODIFY_FLAGS  */
   {
     const char *schedulestr
-      = svn_hash_gets(atts, ENTRIES_ATTR_SCHEDULE);
+      = apr_hash_get(atts, ENTRIES_ATTR_SCHEDULE, APR_HASH_KEY_STRING);
 
     entry->schedule = svn_wc_schedule_normal;
     if (schedulestr)
@@ -899,7 +898,8 @@ atts_to_entry(svn_wc_entry_t **new_entry,
   {
     const char *revstr;
 
-    revstr = svn_hash_gets(atts, ENTRIES_ATTR_COPYFROM_REV);
+    revstr = apr_hash_get(atts, ENTRIES_ATTR_COPYFROM_REV,
+                          APR_HASH_KEY_STRING);
     if (revstr)
       entry->copyfrom_rev = SVN_STR_TO_REV(revstr);
   }
@@ -925,7 +925,8 @@ atts_to_entry(svn_wc_entry_t **new_entry,
   {
     const char *text_timestr;
 
-    text_timestr = svn_hash_gets(atts, ENTRIES_ATTR_TEXT_TIME);
+    text_timestr = apr_hash_get(atts, ENTRIES_ATTR_TEXT_TIME,
+                                APR_HASH_KEY_STRING);
     if (text_timestr)
       SVN_ERR(svn_time_from_cstring(&entry->text_time, text_timestr, pool));
 
@@ -948,7 +949,8 @@ atts_to_entry(svn_wc_entry_t **new_entry,
   {
     const char *cmt_datestr, *cmt_revstr;
 
-    cmt_datestr = svn_hash_gets(atts, ENTRIES_ATTR_CMT_DATE);
+    cmt_datestr = apr_hash_get(atts, ENTRIES_ATTR_CMT_DATE,
+                               APR_HASH_KEY_STRING);
     if (cmt_datestr)
       {
         SVN_ERR(svn_time_from_cstring(&entry->cmt_date, cmt_datestr, pool));
@@ -956,7 +958,7 @@ atts_to_entry(svn_wc_entry_t **new_entry,
     else
       entry->cmt_date = 0;
 
-    cmt_revstr = svn_hash_gets(atts, ENTRIES_ATTR_CMT_REV);
+    cmt_revstr = apr_hash_get(atts, ENTRIES_ATTR_CMT_REV, APR_HASH_KEY_STRING);
     if (cmt_revstr)
       {
         entry->cmt_rev = SVN_STR_TO_REV(cmt_revstr);
@@ -973,7 +975,7 @@ atts_to_entry(svn_wc_entry_t **new_entry,
   entry->lock_comment = extract_string(atts, ENTRIES_ATTR_LOCK_COMMENT, pool);
   {
     const char *cdate_str =
-      svn_hash_gets(atts, ENTRIES_ATTR_LOCK_CREATION_DATE);
+      apr_hash_get(atts, ENTRIES_ATTR_LOCK_CREATION_DATE, APR_HASH_KEY_STRING);
     if (cdate_str)
       {
         SVN_ERR(svn_time_from_cstring(&entry->lock_creation_date,
@@ -989,7 +991,8 @@ atts_to_entry(svn_wc_entry_t **new_entry,
   /* Translated size */
   /* ### not used by loggy; no need to set MODIFY_FLAGS  */
   {
-    const char *val = svn_hash_gets(atts, ENTRIES_ATTR_WORKING_SIZE);
+    const char *val = apr_hash_get(atts, ENTRIES_ATTR_WORKING_SIZE,
+                                   APR_HASH_KEY_STRING);
     if (val)
       {
         /* Cast to off_t; it's safe: we put in an off_t to start with... */
@@ -1046,7 +1049,7 @@ handle_start_tag(void *userData, const char *tagname, const char **atts)
   /* Find the name and set up the entry under that name.  This
      should *NOT* be NULL, since svn_wc__atts_to_entry() should
      have made it into SVN_WC_ENTRY_THIS_DIR. */
-  svn_hash_sets(accum->entries, entry->name, entry);
+  apr_hash_set(accum->entries, entry->name, APR_HASH_KEY_STRING, entry);
 }
 
 /* Parse BUF of size SIZE as an entries file in XML format, storing the parsed
@@ -1132,7 +1135,7 @@ resolve_to_defaults(apr_hash_t *entries,
 {
   apr_hash_index_t *hi;
   svn_wc_entry_t *default_entry
-    = svn_hash_gets(entries, SVN_WC_ENTRY_THIS_DIR);
+    = apr_hash_get(entries, SVN_WC_ENTRY_THIS_DIR, APR_HASH_KEY_STRING);
 
   /* First check the dir's own entry for consistency. */
   if (! default_entry)
@@ -1260,12 +1263,12 @@ svn_wc__read_entries_old(apr_hash_t **entries,
           ++curp;
           ++entryno;
 
-          svn_hash_sets(*entries, entry->name, entry);
+          apr_hash_set(*entries, entry->name, APR_HASH_KEY_STRING, entry);
         }
     }
 
   /* Fill in any implied fields. */
-  return svn_error_trace(resolve_to_defaults(*entries, result_pool));
+  return resolve_to_defaults(*entries, result_pool);
 }
 
 
@@ -1328,8 +1331,8 @@ svn_wc_entry(const svn_wc_entry_t **entry,
   /* Load an entries hash, and cache it into DIR_ACCESS. Go ahead and
      fetch all entries here (optimization) since we know how to filter
      out a "hidden" node.  */
-  SVN_ERR(svn_wc__entries_read_internal(&entries, dir_access, TRUE, pool));
-  *entry = svn_hash_gets(entries, entry_name);
+  SVN_ERR(svn_wc_entries_read(&entries, dir_access, TRUE, pool));
+  *entry = apr_hash_get(entries, entry_name, APR_HASH_KEY_STRING);
 
   if (!show_hidden && *entry != NULL)
     {

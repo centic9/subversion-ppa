@@ -49,7 +49,13 @@
 %apply const char *MAY_BE_NULL {
     const char *native_eol,
     const char *comment,
-    const char *relative_to_dir
+    const char *relative_to_dir,
+    apr_hash_t *revprop_table,
+    apr_array_header_t *changelists
+};
+
+%apply apr_hash_t *PROPHASH {
+    apr_hash_t *revprop_table
 };
 
 #ifdef SWIGRUBY
@@ -64,10 +70,12 @@
 }
 #endif
 
+#if defined(SWIGRUBY) || defined(SWIGPYTHON)
 %apply apr_array_header_t *REVISION_RANGE_LIST {
   const apr_array_header_t *ranges_to_merge,
   const apr_array_header_t *revision_ranges
 }
+#endif
 
 #ifdef SWIGRUBY
 %apply const char *NOT_NULL {

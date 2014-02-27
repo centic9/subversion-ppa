@@ -179,7 +179,7 @@ module Test
         apply_priority
         !@tests.empty?
       end
-    end if RUBY_VERSION < '1.9.3'
+    end
 
     class AutoRunner
       alias_method :original_options, :options

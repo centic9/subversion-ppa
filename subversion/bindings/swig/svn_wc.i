@@ -45,7 +45,6 @@
 
 #ifdef SWIGRUBY
 %ignore svn_wc_external_item_create;
-%ignore svn_wc_external_item2_create;
 %ignore svn_wc_external_item_dup;
 %ignore svn_wc_external_item2_dup;
 %ignore svn_wc_revision_status;
@@ -155,16 +154,11 @@
                   )
 #endif
 
+#ifndef SWIGPERL
 %callback_typemap(svn_wc_status_func2_t status_func, void *status_baton,
                   svn_swig_py_status_func2,
-                  svn_swig_pl_status_func2,
-                  svn_swig_rb_wc_status_func)
-
-#ifdef SWIGPERL
-%callback_typemap(svn_wc_status_func3_t status_func, void *status_baton,
                   ,
-                  svn_swig_pl_status_func3,
-                  ) 
+                  svn_swig_rb_wc_status_func)
 #endif
 
 #ifndef SWIGPERL
@@ -274,11 +268,11 @@ svn_wc_swig_init_asp_dot_net_hack (apr_pool_t *pool)
 {
   svn_wc_external_item2_t(apr_pool_t *pool) {
     svn_error_t *err;
-    svn_wc_external_item2_t *self;
-    err = svn_wc_external_item2_create(&self, pool);
+    const svn_wc_external_item2_t *self;
+    err = svn_wc_external_item_create(&self, pool);
     if (err)
       svn_swig_rb_handle_svn_error(err);
-    return self;
+    return (svn_wc_external_item2_t *)self;
   };
 
   ~svn_wc_external_item2_t() {

@@ -56,7 +56,7 @@ static const char default_adm_dir_name[] = ".svn";
 
 /* The name that is actually used for the WC admin directory.  The
    commonest case where this won't be the default is in Windows
-   ASP.NET development environments, which used to choke on ".svn". */
+   ASP.NET development environments, which choke on ".svn". */
 static const char *adm_dir_name = default_adm_dir_name;
 
 
@@ -108,16 +108,40 @@ svn_wc_set_adm_dir(const char *name, apr_pool_t *pool)
 }
 
 
-const char *
-svn_wc__adm_child(const char *path,
-                  const char *child,
-                  apr_pool_t *result_pool)
+static const char *
+simple_extend(const char *adm_path,  /* ### adm_abspath?  */
+              svn_boolean_t use_tmp,
+              const char *subdir,
+              const char *child,
+              const char *extension,
+              apr_pool_t *result_pool)
 {
+  if (subdir)
+    child = svn_dirent_join(subdir, child, result_pool);
+  if (extension)
+    child = apr_pstrcat(result_pool, child, extension, (char *)NULL);
+
+  if (use_tmp)
+    return svn_dirent_join_many(result_pool,
+                                adm_path,
+                                adm_dir_name,
+                                SVN_WC__ADM_TMP,
+                                child,
+                                NULL);
+
   return svn_dirent_join_many(result_pool,
-                              path,
+                              adm_path,
                               adm_dir_name,
                               child,
                               NULL);
+}
+
+
+const char *svn_wc__adm_child(const char *path,
+                              const char *child,
+                              apr_pool_t *result_pool)
+{
+  return simple_extend(path, FALSE, NULL, child, NULL, result_pool);
 }
 
 
@@ -149,11 +173,12 @@ svn_wc__adm_area_exists(const char *adm_abspath,
 static svn_error_t *
 make_adm_subdir(const char *path,
                 const char *subdir,
+                svn_boolean_t tmp,
                 apr_pool_t *pool)
 {
   const char *fullpath;
 
-  fullpath = svn_wc__adm_child(path, subdir, pool);
+  fullpath = simple_extend(path, tmp, NULL, subdir, NULL, pool);
 
   return svn_io_dir_make(fullpath, APR_OS_DEFAULT, pool);
 }
@@ -171,16 +196,16 @@ svn_wc__text_base_path_to_read(const char **result_abspath,
                                apr_pool_t *scratch_pool)
 {
   svn_wc__db_status_t status;
-  svn_node_kind_t kind;
+  svn_wc__db_kind_t kind;
   const svn_checksum_t *checksum;
 
   SVN_ERR(svn_wc__db_read_pristine_info(&status, &kind, NULL, NULL, NULL, NULL,
-                                        &checksum, NULL, NULL, NULL,
+                                        &checksum, NULL, NULL,
                                         db, local_abspath,
                                         scratch_pool, scratch_pool));
 
   /* Sanity */
-  if (kind != svn_node_file)
+  if (kind != svn_wc__db_kind_file)
     return svn_error_createf(SVN_ERR_NODE_UNEXPECTED_KIND, NULL,
                              _("Can only get the pristine contents of files; "
                                "'%s' is not a file"),
@@ -224,19 +249,19 @@ svn_wc__get_pristine_contents(svn_stream_t **contents,
                               apr_pool_t *scratch_pool)
 {
   svn_wc__db_status_t status;
-  svn_node_kind_t kind;
+  svn_wc__db_kind_t kind;
   const svn_checksum_t *sha1_checksum;
 
   if (size)
     *size = SVN_INVALID_FILESIZE;
 
   SVN_ERR(svn_wc__db_read_pristine_info(&status, &kind, NULL, NULL, NULL, NULL,
-                                        &sha1_checksum, NULL, NULL, NULL,
+                                        &sha1_checksum, NULL, NULL,
                                         db, local_abspath,
                                         scratch_pool, scratch_pool));
 
   /* Sanity */
-  if (kind != svn_node_file)
+  if (kind != svn_wc__db_kind_file)
     return svn_error_createf(SVN_ERR_NODE_UNEXPECTED_KIND, NULL,
                              _("Can only get the pristine contents of files; "
                                "'%s' is not a file"),
@@ -335,7 +360,7 @@ static svn_error_t *
 init_adm_tmp_area(const char *path, apr_pool_t *pool)
 {
   /* SVN_WC__ADM_TMP */
-  SVN_ERR(make_adm_subdir(path, SVN_WC__ADM_TMP, pool));
+  SVN_ERR(make_adm_subdir(path, SVN_WC__ADM_TMP, FALSE, pool));
 
   return SVN_NO_ERROR;
 }
@@ -362,7 +387,7 @@ init_adm(svn_wc__db_t *db,
   /** Make subdirectories. ***/
 
   /* SVN_WC__ADM_PRISTINE */
-  SVN_ERR(make_adm_subdir(local_abspath, SVN_WC__ADM_PRISTINE, pool));
+  SVN_ERR(make_adm_subdir(local_abspath, SVN_WC__ADM_PRISTINE, FALSE, pool));
 
   /* ### want to add another directory? do a format bump to ensure that
      ### all existing working copies get the new directories. or maybe
@@ -403,11 +428,7 @@ svn_wc__internal_ensure_adm(svn_wc__db_t *db,
                             apr_pool_t *scratch_pool)
 {
   int format;
-  const char *original_repos_relpath;
-  const char *original_root_url;
-  svn_boolean_t is_op_root;
-  const char *repos_relpath = svn_uri_skip_ancestor(repos_root_url, url,
-                                                    scratch_pool);
+  const char *repos_relpath;
   svn_wc__db_status_t status;
   const char *db_repos_relpath, *db_repos_root_url, *db_repos_uuid;
   svn_revnum_t db_revision;
@@ -416,10 +437,14 @@ svn_wc__internal_ensure_adm(svn_wc__db_t *db,
   SVN_ERR_ASSERT(url != NULL);
   SVN_ERR_ASSERT(repos_root_url != NULL);
   SVN_ERR_ASSERT(repos_uuid != NULL);
-  SVN_ERR_ASSERT(repos_relpath != NULL);
+  SVN_ERR_ASSERT(svn_uri__is_ancestor(repos_root_url, url));
 
   SVN_ERR(svn_wc__internal_check_wc(&format, db, local_abspath, TRUE,
                                     scratch_pool));
+
+  repos_relpath = svn_uri__is_child(repos_root_url, url, scratch_pool);
+  if (repos_relpath == NULL)
+    repos_relpath = "";
 
   /* Early out: we know we're not dealing with an existing wc, so
      just create one. */
@@ -431,10 +456,9 @@ svn_wc__internal_ensure_adm(svn_wc__db_t *db,
   SVN_ERR(svn_wc__db_read_info(&status, NULL,
                                &db_revision, &db_repos_relpath,
                                &db_repos_root_url, &db_repos_uuid,
-                               NULL, NULL, NULL, NULL, NULL, NULL,
-                               &original_repos_relpath, &original_root_url,
-                               NULL, NULL, NULL, NULL, NULL, NULL,
-                               NULL, &is_op_root, NULL, NULL,
+                               NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                               NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                               NULL, NULL, NULL, NULL,
                                NULL, NULL, NULL,
                                db, local_abspath, scratch_pool, scratch_pool));
 
@@ -473,17 +497,26 @@ svn_wc__internal_ensure_adm(svn_wc__db_t *db,
 
       /* The caller gives us a URL which should match the entry. However,
          some callers compensate for an old problem in entry->url and pass
-         the copyfrom_url instead. See ^/notes/api-errata/1.7/wc002.txt. As
+         the copyfrom_url instead. See ^/notes/api-errata/wc002.txt. As
          a result, we allow the passed URL to match copyfrom_url if it
          does not match the entry's primary URL.  */
+      /* ### comparing URLs, should they be canonicalized first? */
       if (strcmp(db_repos_uuid, repos_uuid)
           || strcmp(db_repos_root_url, repos_root_url)
-          || !svn_relpath_skip_ancestor(db_repos_relpath, repos_relpath))
+          || !svn_relpath__is_ancestor(db_repos_relpath, repos_relpath))
         {
-          if (!is_op_root /* copy_from was set on op-roots only */
-              || original_root_url == NULL
-              || strcmp(original_root_url, repos_root_url)
-              || strcmp(original_repos_relpath, repos_relpath))
+          const char *copyfrom_root_url, *copyfrom_repos_relpath;
+
+          SVN_ERR(svn_wc__internal_get_copyfrom_info(&copyfrom_root_url,
+                                                     &copyfrom_repos_relpath,
+                                                     NULL, NULL, NULL,
+                                                     db, local_abspath,
+                                                     scratch_pool,
+                                                     scratch_pool));
+
+          if (copyfrom_root_url == NULL
+              || strcmp(copyfrom_root_url, repos_root_url)
+              || strcmp(copyfrom_repos_relpath, repos_relpath))
             return
               svn_error_createf(SVN_ERR_WC_OBSTRUCTED_UPDATE, NULL,
                                 _("URL '%s' (uuid: '%s') doesn't match existing "
@@ -523,22 +556,23 @@ svn_wc__adm_destroy(svn_wc__db_t *db,
                     void *cancel_baton,
                     apr_pool_t *scratch_pool)
 {
-  svn_boolean_t is_wcroot;
+  const char *adm_abspath;
 
   SVN_ERR_ASSERT(svn_dirent_is_absolute(dir_abspath));
 
   SVN_ERR(svn_wc__write_check(db, dir_abspath, scratch_pool));
 
-  SVN_ERR(svn_wc__db_is_wcroot(&is_wcroot, db, dir_abspath, scratch_pool));
+  SVN_ERR(svn_wc__db_get_wcroot(&adm_abspath, db, dir_abspath,
+                                scratch_pool, scratch_pool));
 
   /* Well, the coast is clear for blowing away the administrative
      directory, which also removes remaining locks */
 
   /* Now close the DB, and we can delete the working copy */
-  if (is_wcroot)
+  if (strcmp(adm_abspath, dir_abspath) == 0)
     {
-      SVN_ERR(svn_wc__db_drop_root(db, dir_abspath, scratch_pool));
-      SVN_ERR(svn_io_remove_dir2(svn_wc__adm_child(dir_abspath, NULL,
+      SVN_ERR(svn_wc__db_drop_root(db, adm_abspath, scratch_pool));
+      SVN_ERR(svn_io_remove_dir2(svn_wc__adm_child(adm_abspath, NULL,
                                                    scratch_pool),
                                  FALSE,
                                  cancel_func, cancel_baton,
@@ -570,15 +604,36 @@ svn_wc__adm_cleanup_tmp_area(svn_wc__db_t *db,
 }
 
 
+
 svn_error_t *
-svn_wc__get_tmpdir(const char **tmpdir_abspath,
-                   svn_wc_context_t *wc_ctx,
-                   const char *wri_abspath,
-                   apr_pool_t *result_pool,
-                   apr_pool_t *scratch_pool)
+svn_wc_create_tmp_file2(apr_file_t **fp,
+                        const char **new_name,
+                        const char *path,
+                        svn_io_file_del_t delete_when,
+                        apr_pool_t *pool)
 {
-  SVN_ERR(svn_wc__db_temp_wcroot_tempdir(tmpdir_abspath,
-                                         wc_ctx->db, wri_abspath,
-                                         result_pool, scratch_pool));
+  svn_wc__db_t *db;
+  const char *local_abspath;
+  const char *temp_dir;
+  svn_error_t *err;
+
+  SVN_ERR_ASSERT(fp || new_name);
+
+  SVN_ERR(svn_wc__db_open(&db,
+                          NULL /* config */,
+                          TRUE /* auto_upgrade */,
+                          TRUE /* enforce_empty_wq */,
+                          pool, pool));
+
+  SVN_ERR(svn_dirent_get_absolute(&local_abspath, path, pool));
+  err = svn_wc__db_temp_wcroot_tempdir(&temp_dir, db, local_abspath,
+                                       pool, pool);
+  err = svn_error_compose_create(err, svn_wc__db_close(db));
+  if (err)
+    return svn_error_trace(err);
+
+  SVN_ERR(svn_io_open_unique_file3(fp, new_name, temp_dir,
+                                   delete_when, pool, pool));
+
   return SVN_NO_ERROR;
 }
