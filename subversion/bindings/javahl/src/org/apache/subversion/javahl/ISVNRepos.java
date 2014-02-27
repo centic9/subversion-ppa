@@ -29,7 +29,6 @@ import java.io.InputStream;
 import java.io.File;
 
 import org.apache.subversion.javahl.callback.ReposNotifyCallback;
-import org.apache.subversion.javahl.callback.ReposFreezeAction;
 import org.apache.subversion.javahl.types.*;
 
 public interface ISVNRepos {
@@ -114,9 +113,6 @@ public interface ISVNRepos {
 	 * @throws ClientException  throw in case of problem
 	 */
 	public abstract void hotcopy(File path, File targetPath,
-			boolean cleanLogs, boolean incremental) throws ClientException;
-
-	public abstract void hotcopy(File path, File targetPath,
 			boolean cleanLogs) throws ClientException;
 
 	/**
@@ -137,35 +133,8 @@ public interface ISVNRepos {
 	public abstract void listUnusedDBLogs(File path, MessageReceiver receiver)
 			throws ClientException;
 
-
 	/**
-	 * load the data of a dump into a repository
-	 * @param path              the path to the repository
-	 * @param dataInput         the data input source
-         * @param start             the first revision to load
-         * @param end               the last revision to load
-	 * @param ignoreUUID        ignore any UUID found in the input stream
-	 * @param forceUUID         set the repository UUID to any found in the
-	 *                          stream
-	 * @param usePreCommitHook  use the pre-commit hook when processing commits
-	 * @param usePostCommitHook use the post-commit hook when processing commits
-	 * @param relativePath      the directory in the repository, where the data
-	 *                          in put optional.
-	 * @param callback          the target for processing messages
-	 * @throws ClientException  throw in case of problem
-         * @since 1.8
-	 */
-	public abstract void load(File path, InputStream dataInput,
-                                  Revision start, Revision end,
-                                  boolean ignoreUUID, boolean forceUUID,
-                                  boolean usePreCommitHook,
-                                  boolean usePostCommitHook,
-                                  String relativePath,
-                                  ReposNotifyCallback callback)
-        throws ClientException;
-
-	/**
-	 * load the data of a dump into a repository
+	 * load the data of a dump into a repository,
 	 * @param path              the path to the repository
 	 * @param dataInput         the data input source
 	 * @param ignoreUUID        ignore any UUID found in the input stream
@@ -177,8 +146,6 @@ public interface ISVNRepos {
 	 *                          in put optional.
 	 * @param callback          the target for processing messages
 	 * @throws ClientException  throw in case of problem
-         * @note behaves like the 1.8 vesion with the revision
-         *       parameters set to Revision.START and Revision.HEAD.
 	 */
 	public abstract void load(File path, InputStream dataInput,
 			boolean ignoreUUID, boolean forceUUID, boolean usePreCommitHook,
@@ -196,32 +163,12 @@ public interface ISVNRepos {
 			throws ClientException;
 
 	/**
-	 * recover the filesystem backend of a repository
+	 * recover the berkeley db of a repository, returns youngest revision
 	 * @param path              the path to the repository
-         * @return youngest revision
 	 * @throws ClientException  throw in case of problem
 	 */
 	public abstract long recover(File path, ReposNotifyCallback callback)
             throws ClientException;
-
-	/**
-	 * Take an exclusive lock on each of the listed repositories
-	 * to prevent commits; then, while holding all the locks, call
-	 * the action.invoke().
-	 *
-	 * The repositories may or may not be readable by Subversion
-	 * while frozen, depending on implementation details of the
-	 * repository's filesystem backend.
-	 *
-	 * Repositories are locked in the listed order.
-	 * @param action     describes the action to perform
-	 * @param paths	     the set of repository paths
-	 * @throws ClientException
-         * @since 1.8
-	 */
-	public abstract void freeze(ReposFreezeAction action,
-				    File... paths)
-	    throws ClientException;
 
 	/**
 	 * remove open transaction in a repository

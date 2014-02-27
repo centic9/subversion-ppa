@@ -511,13 +511,8 @@ class LogMessage(object):
 log_separator = '-' * 72 + '\n'
 log_header_re = re.compile\
                 ('^(r[0-9]+) \| ([^|]+) \| ([^|]+) \| ([0-9]+)[^0-9]')
-field_re = re.compile(
-           '^(Patch|Review(ed)?|Suggested|Found|Inspired|Tested|Reported) by:'
-           '\s*\S.*$')
-field_aliases = {
-  'Reviewed' : 'Review',
-  'Reported' : 'Found',
-}
+field_re = re.compile('^(Patch|Review(ed)?|Suggested|Found|Inspired) by:\s*\S.*$')
+field_aliases = { 'Reviewed' : 'Review' }
 parenthetical_aside_re = re.compile('^\s*\(.*\)\s*$')
 
 def graze(input):

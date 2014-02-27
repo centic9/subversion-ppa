@@ -28,7 +28,6 @@
 #include <http_log.h>
 #include <mod_dav.h>
 
-#include "svn_hash.h"
 #include "svn_fs.h"
 #include "svn_repos.h"
 #include "svn_dav.h"
@@ -143,8 +142,6 @@ unescape_xml(const char **output,
   if (apr_err)
     {
       char errbuf[1024];
-
-      errbuf[0] = '\0';
       (void)apr_xml_parser_geterror(xml_parser, errbuf, sizeof(errbuf));
       return dav_svn__new_error(pool, HTTP_INTERNAL_SERVER_ERROR,
                                 DAV_ERR_LOCK_SAVE_LOCK, errbuf);
@@ -152,7 +149,7 @@ unescape_xml(const char **output,
 
   apr_xml_to_text(pool, xml_doc->root, APR_XML_X2T_INNER,
                   xml_doc->namespaces, NULL, output, NULL);
-  return NULL;
+  return SVN_NO_ERROR;
 }
 
 
@@ -644,10 +641,10 @@ append_locks(dav_lockdb *lockdb,
   svn_error_t *serr;
   dav_error *derr;
   dav_svn_repos *repos = resource->info->repos;
-
+      
   /* We don't allow anonymous locks */
   if (! repos->username)
-    return dav_svn__new_error(resource->pool, HTTP_NOT_IMPLEMENTED,
+    return dav_svn__new_error(resource->pool, HTTP_UNAUTHORIZED,
                               DAV_ERR_LOCK_SAVE_LOCK,
                               "Anonymous lock creation is not allowed.");
 
@@ -680,9 +677,9 @@ append_locks(dav_lockdb *lockdb,
       svn_fs_root_t *txn_root;
       const char *conflict_msg;
       apr_hash_t *revprop_table = apr_hash_make(resource->pool);
-      svn_hash_sets(revprop_table,
-                    SVN_PROP_REVISION_AUTHOR,
-                    svn_string_create(repos->username, resource->pool));
+      apr_hash_set(revprop_table, SVN_PROP_REVISION_AUTHOR,
+                   APR_HASH_KEY_STRING, svn_string_create(repos->username,
+                                                          resource->pool));
 
       if (resource->info->repos->is_svn_client)
         return dav_svn__new_error(resource->pool, HTTP_METHOD_NOT_ALLOWED,
@@ -776,21 +773,14 @@ append_locks(dav_lockdb *lockdb,
   if (serr && serr->apr_err == SVN_ERR_FS_NO_USER)
     {
       svn_error_clear(serr);
-      return dav_svn__new_error(resource->pool, HTTP_NOT_IMPLEMENTED,
+      return dav_svn__new_error(resource->pool, HTTP_UNAUTHORIZED,
                                 DAV_ERR_LOCK_SAVE_LOCK,
                                 "Anonymous lock creation is not allowed.");
     }
-  else if (serr && (serr->apr_err == SVN_ERR_REPOS_HOOK_FAILURE ||
-                    serr->apr_err == SVN_ERR_FS_NO_SUCH_LOCK ||
-                    serr->apr_err == SVN_ERR_FS_LOCK_EXPIRED ||
-                    SVN_ERR_IS_LOCK_ERROR(serr)))
-     return dav_svn__convert_err(serr, HTTP_INTERNAL_SERVER_ERROR,
-                                 "Failed to create new lock.",
-                                 resource->pool);
   else if (serr)
-    return dav_svn__sanitize_error(serr, "Failed to create new lock.",
-                                   HTTP_INTERNAL_SERVER_ERROR,
-                                   resource->info->r);
+    return dav_svn__convert_err(serr, HTTP_INTERNAL_SERVER_ERROR,
+                                "Failed to create new lock.",
+                                resource->pool);
 
 
   /* A standard webdav LOCK response doesn't include any information
@@ -886,7 +876,7 @@ remove_lock(dav_lockdb *lockdb,
       if (serr && serr->apr_err == SVN_ERR_FS_NO_USER)
         {
           svn_error_clear(serr);
-          return dav_svn__new_error(resource->pool, HTTP_NOT_IMPLEMENTED,
+          return dav_svn__new_error(resource->pool, HTTP_UNAUTHORIZED,
                                     DAV_ERR_LOCK_SAVE_LOCK,
                                     "Anonymous lock removal is not allowed.");
         }
@@ -953,7 +943,7 @@ refresh_locks(dav_lockdb *lockdb,
      current lock on the incoming resource? */
   if ((! slock)
       || (strcmp(token->uuid_str, slock->token) != 0))
-    return dav_svn__new_error(resource->pool, HTTP_PRECONDITION_FAILED,
+    return dav_svn__new_error(resource->pool, HTTP_UNAUTHORIZED,
                               DAV_ERR_LOCK_SAVE_LOCK,
                               "Lock refresh request doesn't match existing "
                               "lock.");
@@ -974,21 +964,14 @@ refresh_locks(dav_lockdb *lockdb,
   if (serr && serr->apr_err == SVN_ERR_FS_NO_USER)
     {
       svn_error_clear(serr);
-      return dav_svn__new_error(resource->pool, HTTP_NOT_IMPLEMENTED,
+      return dav_svn__new_error(resource->pool, HTTP_UNAUTHORIZED,
                                 DAV_ERR_LOCK_SAVE_LOCK,
                                 "Anonymous lock refreshing is not allowed.");
     }
-  else if (serr && (serr->apr_err == SVN_ERR_REPOS_HOOK_FAILURE ||
-                    serr->apr_err == SVN_ERR_FS_NO_SUCH_LOCK ||
-                    serr->apr_err == SVN_ERR_FS_LOCK_EXPIRED ||
-                    SVN_ERR_IS_LOCK_ERROR(serr)))
-     return dav_svn__convert_err(serr, HTTP_INTERNAL_SERVER_ERROR,
-                                 "Failed to refresh existing lock.",
-                                 resource->pool);
   else if (serr)
-    return dav_svn__sanitize_error(serr, "Failed to refresh existing lock.",
-                                   HTTP_INTERNAL_SERVER_ERROR,
-                                   resource->info->r);
+    return dav_svn__convert_err(serr, HTTP_INTERNAL_SERVER_ERROR,
+                                "Failed to refresh existing lock.",
+                                resource->pool);
 
   /* Convert the refreshed lock into a dav_lock and return it. */
   svn_lock_to_dav_lock(&dlock, slock, FALSE, resource->exists, resource->pool);

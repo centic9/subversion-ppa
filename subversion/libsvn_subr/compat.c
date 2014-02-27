@@ -24,7 +24,6 @@
 #include <apr_pools.h>
 #include <apr_strings.h>
 
-#include "svn_hash.h"
 #include "svn_types.h"
 #include "svn_error.h"
 #include "svn_compat.h"
@@ -76,9 +75,12 @@ svn_compat_log_revprops_clear(apr_hash_t *revprops)
 {
   if (revprops)
     {
-      svn_hash_sets(revprops, SVN_PROP_REVISION_AUTHOR, NULL);
-      svn_hash_sets(revprops, SVN_PROP_REVISION_DATE, NULL);
-      svn_hash_sets(revprops, SVN_PROP_REVISION_LOG, NULL);
+      apr_hash_set(revprops, SVN_PROP_REVISION_AUTHOR,
+                   APR_HASH_KEY_STRING, NULL);
+      apr_hash_set(revprops, SVN_PROP_REVISION_DATE,
+                   APR_HASH_KEY_STRING, NULL);
+      apr_hash_set(revprops, SVN_PROP_REVISION_LOG,
+                   APR_HASH_KEY_STRING, NULL);
     }
 }
 
@@ -103,11 +105,14 @@ svn_compat_log_revprops_out(const char **author, const char **date,
   *author = *date = *message = NULL;
   if (revprops)
     {
-      if ((author_s = svn_hash_gets(revprops, SVN_PROP_REVISION_AUTHOR)))
+      if ((author_s = apr_hash_get(revprops, SVN_PROP_REVISION_AUTHOR,
+                                   APR_HASH_KEY_STRING)))
         *author = author_s->data;
-      if ((date_s = svn_hash_gets(revprops, SVN_PROP_REVISION_DATE)))
+      if ((date_s = apr_hash_get(revprops, SVN_PROP_REVISION_DATE,
+                                 APR_HASH_KEY_STRING)))
         *date = date_s->data;
-      if ((message_s = svn_hash_gets(revprops, SVN_PROP_REVISION_LOG)))
+      if ((message_s = apr_hash_get(revprops, SVN_PROP_REVISION_LOG,
+                                    APR_HASH_KEY_STRING)))
         *message = message_s->data;
     }
 }

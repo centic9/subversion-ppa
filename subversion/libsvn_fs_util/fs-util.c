@@ -26,7 +26,6 @@
 #include <apr_pools.h>
 #include <apr_strings.h>
 
-#include "svn_hash.h"
 #include "svn_fs.h"
 #include "svn_dirent_uri.h"
 #include "svn_path.h"
@@ -35,48 +34,6 @@
 #include "private/svn_fs_util.h"
 #include "private/svn_fspath.h"
 #include "../libsvn_fs/fs-loader.h"
-
-/* Return TRUE, if PATH of PATH_LEN > 0 chars starts with a '/' and does
- * not end with a '/' and does not contain duplicate '/'.
- */
-static svn_boolean_t
-is_canonical_abspath(const char *path, size_t path_len)
-{
-  const char *end;
-
-  /* check for leading '/' */
-  if (path[0] != '/')
-    return FALSE;
-
-  /* check for trailing '/' */
-  if (path_len == 1)
-    return TRUE;
-  if (path[path_len - 1] == '/')
-    return FALSE;
-
-  /* check for "//" */
-  end = path + path_len - 1;
-  for (; path != end; ++path)
-    if ((path[0] == '/') && (path[1] == '/'))
-      return FALSE;
-
-  return TRUE;
-}
-
-svn_boolean_t
-svn_fs__is_canonical_abspath(const char *path)
-{
-  /* No PATH?  No problem. */
-  if (! path)
-    return TRUE;
-
-  /* Empty PATH?  That's just "/". */
-  if (! *path)
-    return FALSE;
-
-  /* detailed checks */
-  return is_canonical_abspath(path, strlen(path));
-}
 
 const char *
 svn_fs__canonicalize_abspath(const char *path, apr_pool_t *pool)
@@ -92,16 +49,12 @@ svn_fs__canonicalize_abspath(const char *path, apr_pool_t *pool)
 
   /* Empty PATH?  That's just "/". */
   if (! *path)
-    return "/";
-
-  /* Non-trivial cases.  Maybe, the path already is canonical after all? */
-  path_len = strlen(path);
-  if (is_canonical_abspath(path, path_len))
-    return apr_pstrmemdup(pool, path, path_len);
+    return apr_pstrdup(pool, "/");
 
   /* Now, the fun begins.  Alloc enough room to hold PATH with an
      added leading '/'. */
-  newpath = apr_palloc(pool, path_len + 2);
+  path_len = strlen(path);
+  newpath = apr_pcalloc(pool, path_len + 2);
 
   /* No leading slash?  Fix that. */
   if (*path != '/')
@@ -136,8 +89,6 @@ svn_fs__canonicalize_abspath(const char *path, apr_pool_t *pool)
      the root directory case)? */
   if ((newpath[newpath_i - 1] == '/') && (newpath_i > 1))
     newpath[newpath_i - 1] = '\0';
-  else
-    newpath[newpath_i] = '\0';
 
   return newpath;
 }
@@ -212,11 +163,10 @@ svn_fs__append_to_merged_froms(svn_mergeinfo_t *output,
   for (hi = apr_hash_first(pool, input); hi; hi = apr_hash_next(hi))
     {
       const char *path = svn__apr_hash_index_key(hi);
-      svn_rangelist_t *rangelist = svn__apr_hash_index_val(hi);
+      apr_array_header_t *rangelist = svn__apr_hash_index_val(hi);
 
-      svn_hash_sets(*output,
-                    svn_fspath__join(path, rel_path, pool),
-                    svn_rangelist_dup(rangelist, pool));
+      apr_hash_set(*output, svn_fspath__join(path, rel_path, pool),
+                   APR_HASH_KEY_STRING, svn_rangelist_dup(rangelist, pool));
     }
 
   return SVN_NO_ERROR;
