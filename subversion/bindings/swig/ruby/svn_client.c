@@ -2052,7 +2052,7 @@ SWIG_ruby_failed(void)
 } 
 
 
-/*@SWIG:/home/breser/wandisco/rm/1.8.9/prefix/share/swig/2.0.9/ruby/rubyprimtypes.swg,19,%ruby_aux_method@*/
+/*@SWIG:/home/breser/wandisco/rm/1.8.8/prefix/share/swig/2.0.9/ruby/rubyprimtypes.swg,19,%ruby_aux_method@*/
 SWIGINTERN VALUE SWIG_AUX_NUM2LONG(VALUE *args)
 {
   VALUE obj = args[0];
@@ -2157,7 +2157,7 @@ SWIG_From_int  (int value)
 }
 
 
-/*@SWIG:/home/breser/wandisco/rm/1.8.9/prefix/share/swig/2.0.9/ruby/rubyprimtypes.swg,19,%ruby_aux_method@*/
+/*@SWIG:/home/breser/wandisco/rm/1.8.8/prefix/share/swig/2.0.9/ruby/rubyprimtypes.swg,19,%ruby_aux_method@*/
 SWIGINTERN VALUE SWIG_AUX_NUM2ULONG(VALUE *args)
 {
   VALUE obj = args[0];
@@ -2206,13 +2206,7 @@ SWIGINTERN svn_client_commit_item3_t *svn_client_commit_item3_t_dup(struct svn_c
 SWIGINTERN struct svn_client_ctx_t *new_svn_client_ctx_t(apr_pool_t *pool){
     svn_error_t *err;
     svn_client_ctx_t *self;
-    apr_hash_t *cfg_hash;
-
-    err = svn_config_get_config(&cfg_hash, NULL, pool);
-    if (err)
-      svn_swig_rb_handle_svn_error(err);
-
-    err = svn_client_create_context2(&self, cfg_hash, pool);
+    err = svn_client_create_context(&self, pool);
     if (err)
       svn_swig_rb_handle_svn_error(err);
     return self;
@@ -2394,13 +2388,7 @@ svn_client_set_config(svn_client_ctx_t *ctx,
                       apr_hash_t *config,
                       apr_pool_t *pool)
 {
-  svn_error_t *err;
-
-  apr_hash_clear(ctx->config);
-  err = svn_config_copy_config(&ctx->config, config,
-                               apr_hash_pool_get(ctx->config));
-  if (err)
-    svn_swig_rb_handle_svn_error(err);
+  ctx->config = config;
   return Qnil;
 }
 

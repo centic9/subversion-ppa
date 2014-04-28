@@ -1,0 +1,3 @@
+Tests: libapache2-mod-svn
+Depends: libapache2-mod-svn, apache2, subversion, wget
+Restrictions: needs-root allow-stderr
