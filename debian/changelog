@@ -1,3 +1,9 @@
+subversion (1.8.8-0ubuntu0~ppa3) precise; urgency=low
+
+  * Try to fix dependencies of libapaches-mod-svn for precise.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Mon, 28 Apr 2014 22:28:57 +0200
+
 subversion (1.8.8-0ubuntu0~ppa2) precise; urgency=low
 
   * Remove patch for sqlite3 which is now applied upstream.
