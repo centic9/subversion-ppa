@@ -37,9 +37,13 @@
 #include <apr_lib.h>
 
 #include "svn_pools.h"
+#include "svn_fs.h"
+#include "svn_ra.h"
+#include "svn_utf.h"
 #include "svn_wc.h"
 #include "svn_dso.h"
 #include "svn_path.h"
+#include "svn_cache_config.h"
 #include <apr_file_info.h>
 #include "svn_private_config.h"
 #ifdef WIN32
@@ -175,6 +179,19 @@ bool JNIUtil::JNIGlobalInit(JNIEnv *env)
       apr_allocator_max_free_set(allocator, 1);
     }
 
+  svn_utf_initialize2(FALSE, g_pool); /* Optimize character conversions */
+  svn_fs_initialize(g_pool); /* Avoid some theoretical issues */
+  svn_ra_initialize(g_pool);
+
+  /* We shouldn't fill the JVMs memory with FS cache data unless explictly
+     requested. */
+  {
+    svn_cache_config_t settings = *svn_cache_config_get();
+    settings.cache_size = 0;
+    settings.file_handle_count = 0;
+    settings.single_threaded = FALSE;
+    svn_cache_config_set(&settings);
+  }
 
 #ifdef ENABLE_NLS
 #ifdef WIN32
@@ -194,7 +211,7 @@ bool JNIUtil::JNIGlobalInit(JNIEnv *env)
     GetModuleFileNameW(moduleHandle, ucs2_path, inwords);
     inwords = lstrlenW(ucs2_path);
     outbytes = outlength = 3 * (inwords + 1);
-    utf8_path = (char *)apr_palloc(pool, outlength);
+    utf8_path = reinterpret_cast<char *>(apr_palloc(pool, outlength));
     apr_err = apr_conv_ucs2_to_utf8((const apr_wchar_t *) ucs2_path,
                                     &inwords, utf8_path, &outbytes);
     if (!apr_err && (inwords > 0 || outbytes == 0))
@@ -223,7 +240,7 @@ bool JNIUtil::JNIGlobalInit(JNIEnv *env)
   /* See http://svn.apache.org/repos/asf/subversion/trunk/notes/asp-dot-net-hack.txt */
   /* ### This code really only needs to be invoked by consumers of
      ### the libsvn_wc library, which basically means SVNClient. */
-  if (getenv ("SVN_ASP_DOT_NET_HACK"))
+  if (getenv("SVN_ASP_DOT_NET_HACK"))
     {
       err = svn_wc_set_adm_dir("_svn", g_pool);
       if (err)
@@ -239,6 +256,8 @@ bool JNIUtil::JNIGlobalInit(JNIEnv *env)
         }
     }
 #endif
+
+  svn_error_set_malfunction_handler(svn_error_raise_on_malfunction);
 
   // Build all mutexes.
   g_finalizedObjectsMutex = new JNIMutex(g_pool);
@@ -377,7 +396,7 @@ JNIUtil::putErrorsInTrace(svn_error_t *err,
 
   char *tmp_path;
   char *path = svn_dirent_dirname(err->file, err->pool);
-  while (tmp_path = strchr(path, '/'))
+  while ((tmp_path = strchr(path, '/')))
     *tmp_path = '.';
 
   jstring jmethodName = makeJString(path);
@@ -399,7 +418,7 @@ JNIUtil::putErrorsInTrace(svn_error_t *err,
   env->DeleteLocalRef(jfileName);
 }
 
-void JNIUtil::handleSVNError(svn_error_t *err)
+void JNIUtil::wrappedHandleSVNError(svn_error_t *err)
 {
   std::string msg;
   assembleErrorMessage(svn_error_purge_tracing(err), 0, APR_SUCCESS, msg);
@@ -493,8 +512,14 @@ void JNIUtil::handleSVNError(svn_error_t *err)
   if (isJavaExceptionThrown())
     POP_AND_RETURN_NOTHING();
 
-  jobjectArray jStackTrace = env->NewObjectArray(newStackTrace.size(), stClazz,
-                                                 NULL);
+  const jsize stSize = static_cast<jsize>(newStackTrace.size());
+  if (stSize != newStackTrace.size())
+    {
+      env->ThrowNew(env->FindClass("java.lang.ArithmeticException"),
+                    "Overflow converting C size_t to JNI jsize");
+      POP_AND_RETURN_NOTHING();
+    }
+  jobjectArray jStackTrace = env->NewObjectArray(stSize, stClazz, NULL);
   if (isJavaExceptionThrown())
     POP_AND_RETURN_NOTHING();
 
@@ -521,7 +546,16 @@ void JNIUtil::handleSVNError(svn_error_t *err)
 #endif
 
   env->Throw(static_cast<jthrowable>(env->PopLocalFrame(nativeException)));
+}
 
+void JNIUtil::handleSVNError(svn_error_t *err)
+{
+  try {
+    wrappedHandleSVNError(err);
+  } catch (...) {
+    svn_error_clear(err);
+    throw;
+  }
   svn_error_clear(err);
 }
 
@@ -621,27 +655,41 @@ bool JNIUtil::isJavaExceptionThrown()
 const char *
 JNIUtil::thrownExceptionToCString(SVN::Pool &in_pool)
 {
-  const char *msg;
+  const char *msg = NULL;
   JNIEnv *env = getEnv();
+  apr_pool_t *pool = in_pool.getPool();
   if (env->ExceptionCheck())
     {
       jthrowable t = env->ExceptionOccurred();
-      static jmethodID getMessage = 0;
-      if (getMessage == 0)
+      jclass cls = env->GetObjectClass(t);
+
+      jstring jclass_name;
+      {
+        jmethodID mid = env->GetMethodID(cls, "getClass", "()Ljava/lang/Class;");
+        jobject clsobj = env->CallObjectMethod(t, mid);
+        jclass basecls = env->GetObjectClass(clsobj);
+        mid = env->GetMethodID(basecls, "getName", "()Ljava/lang/String;");
+        jclass_name = (jstring) env->CallObjectMethod(clsobj, mid);
+      }
+
+      jstring jmessage;
+      {
+        jmethodID mid = env->GetMethodID(cls, "getMessage",
+                                         "()Ljava/lang/String;");
+        jmessage = (jstring) env->CallObjectMethod(t, mid);
+      }
+
+      JNIStringHolder class_name(jclass_name);
+      if (jmessage)
         {
-          jclass clazz = env->FindClass("java/lang/Throwable");
-          getMessage = env->GetMethodID(clazz, "getMessage",
-                                        "(V)Ljava/lang/String;");
-          env->DeleteLocalRef(clazz);
+          JNIStringHolder message(jmessage);
+          msg = apr_pstrcat(pool,
+                            static_cast<const char*>(class_name), ": ",
+                            static_cast<const char*>(message), NULL);
         }
-      jstring jmsg = (jstring) env->CallObjectMethod(t, getMessage);
-      JNIStringHolder tmp(jmsg);
-      msg = tmp.pstrdup(in_pool.getPool());
+      else
+        msg = class_name.pstrdup(pool);
       // ### Conditionally add t.printStackTrace() to msg?
-    }
-  else
-    {
-      msg = NULL;
     }
   return msg;
 }
@@ -776,7 +824,7 @@ jobject JNIUtil::createDate(apr_time_t time)
  * @param data      the character array
  * @param length    the number of characters in the array
  */
-jbyteArray JNIUtil::makeJByteArray(const signed char *data, int length)
+jbyteArray JNIUtil::makeJByteArray(const void *data, int length)
 {
   if (data == NULL)
     {
@@ -805,6 +853,15 @@ jbyteArray JNIUtil::makeJByteArray(const signed char *data, int length)
     return NULL;
 
   return ret;
+}
+
+/**
+ * Create a Java byte array from an svn_string_t.
+ * @param str       the string
+ */
+jbyteArray JNIUtil::makeJByteArray(const svn_string_t *str)
+{
+  return JNIUtil::makeJByteArray(str->data, static_cast<int>(str->len));
 }
 
 /**
@@ -837,7 +894,21 @@ void JNIUtil::assembleErrorMessage(svn_error_t *err, int depth,
         buffer.append(svn_strerror(err->apr_err, errbuf, sizeof(errbuf)));
       /* Otherwise, this must be an APR error code. */
       else
-        buffer.append(apr_strerror(err->apr_err, errbuf, sizeof(errbuf)));
+        {
+          /* Messages coming from apr_strerror are in the native
+             encoding, it's a good idea to convert them to UTF-8. */
+          const char* utf8_message;
+          apr_strerror(err->apr_err, errbuf, sizeof(errbuf));
+          svn_error_t* utf8_err = svn_utf_cstring_to_utf8(
+              &utf8_message, errbuf, err->pool);
+          if (utf8_err)
+            {
+              /* Use fuzzy transliteration instead. */
+              svn_error_clear(utf8_err);
+              utf8_message = svn_utf_cstring_from_utf8_fuzzy(errbuf, err->pool);
+            }
+          buffer.append(utf8_message);
+        }
       buffer.append("\n");
     }
   if (err->message)
