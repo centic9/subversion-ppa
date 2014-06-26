@@ -1,5 +1,5 @@
 build-fixes
-java-build
+#java-build
 last-changed-date-charset
 no-extra-libs
 no-extra-libs-2
@@ -15,4 +15,6 @@ python-builds
 examples-compile-instructions
 apache_module_dependency
 workaround_EINVAL_on_kfreebsd
-# applied upstream: sqlite_3.8.x_workaround
+ruby2.0-build-fixes
+libtool-check.diff
+verbose-tests.diff

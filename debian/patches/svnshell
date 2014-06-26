@@ -4,8 +4,10 @@ error message.  Upstream says we have no sense of humor.  (:
 
 Patch from Roland Illig <roland.illig@gmx.de>.
 
---- a/tools/examples/svnshell.py
-+++ b/tools/examples/svnshell.py
+Index: git/tools/examples/svnshell.py
+===================================================================
+--- git.orig/tools/examples/svnshell.py	2014-06-26 21:52:27.356997098 +0200
++++ git/tools/examples/svnshell.py	2014-06-26 21:52:27.352997056 +0200
 @@ -56,14 +56,8 @@
    def postcmd(self, stop, line):
      self._setup_prompt()
