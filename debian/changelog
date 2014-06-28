@@ -1,3 +1,9 @@
+subversion (1.8.9-0ubuntu0~ppa3) trusty; urgency=medium
+
+  * Revert some changes to successfully compile the package.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Sat, 28 Jun 2014 13:59:08 +0200
+
 subversion (1.8.9-0ubuntu0~ppa2) trusty; urgency=medium
 
   * Rebase to 1.8.8-2ubuntu1, only few changes remain

@@ -388,7 +388,7 @@ endif
 ifdef DEB_OPT_WITH_RUBY
 	$(MAKE_B) install-swig-rb $(rb_defs) \
 		DESTDIR=$(CURDIR)/debian/tmp
-	find debian/tmp/$(libdir)/ruby \( -name \*.a -o -name \*.la \) -exec $(RM) {} +
+	find debian/tmp/usr/lib/ruby \( -name \*.a -o -name \*.la \) -exec $(RM) {} +
 endif
 
 	cd debian/tmp/$(libdir); for lib in ra fs auth swig; do \
