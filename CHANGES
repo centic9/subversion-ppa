@@ -1,3 +1,30 @@
+Version 1.7.17
+(07 May 2014, from /branches/1.7.x)
+http://svn.apache.org/repos/asf/subversion/tags/1.7.17
+
+ User-visible changes:
+  - Client-side bugfixes:
+    * log: use proper peg revision over DAV (r1568872)
+    * move: fix errors when moving files between an external and the parent
+      working copy (r1551579)
+    * copy: fix 'svn copy URL WC' on relocated working copies
+      (r1580626, r1580650)
+
+  - Server-side bugfixes:
+    * mod_dav_svn: blacklist building with broken versions of httpd; 2.2.25,
+      2.4.5 and 2.4.6 (r1545835)
+    * mod_dav_svn: detect out of dateness correctly during commit (issue #4480)
+
+ Developer-visible changes:
+  - General:
+    * fix libmagic detection with custom LDFLAGS (r1577200)
+    * fix a missing null byte when handling old pre-1.4 deltas (r1587968)
+    * support building with Serf 1.3.x (r1517123, r1535139)
+
+  - Bindings:
+    * javahl: fix crash from resolve callback throwing an exception (r1586439)
+
+
 Version 1.7.16
 (26 Feb 2014, from /branches/1.7.x)
 http://svn.apache.org/repos/asf/subversion/tags/1.7.16
@@ -266,7 +293,7 @@ http://svn.apache.org/repos/asf/subversion/tags/1.7.6
     * fix ra_serf against Subversion 1.2 servers (r1349367)
     * fix 'svn upgrade' on working copies with certain tree conflicts (r1345482)
     * avoid workqueue references to system temp dir (r1367854)
-    * allow non-existant canonical paths (r1367853)
+    * allow non-existent canonical paths (r1367853)
     * fix 'svn revert --depth files' to operate on files (r1365554)
     * fix ra_serf XML namespace handling against malicious server (r1337441)
     * fix relocate with server-relative externals (issue 4216)
@@ -618,7 +645,7 @@ the 1.6 release:  http://subversion.apache.org/docs/release-notes/1.7.html
     * fixed: rm -> ci -> cp = missing directory (issue #2763)
     * fixed: 'svn info' returns parent info on missing dirs (issue #3178)
     * fixed: spurious prop conflict with 'merge --reintegrate' (issue #3919)
-    * fixed: 'svn --version' fails with non-existant $HOME (issue #3947)
+    * fixed: 'svn --version' fails with non-existent $HOME (issue #3947)
     * fixed: unforced export silently overwites existing file (issue #3799)
     * fixed: reverse merge which adds subtree mergeinfo fails (issue #3978)
     * fixed: 'svn up -r{R>HEAD}' hangs client over ra_svn (issue #3963)
@@ -793,7 +820,7 @@ http://svn.apache.org/repos/asf/subversion/tags/1.6.17
     * fix crash in mod_dav_svn with GETs of baselined resources (r1104126)
             See CVE-2011-1752, and descriptive advisory at
             http://subversion.apache.org/security/CVE-2011-1752-advisory.txt
-    * fixed: write-through proxy could direcly commit to slave (r917523)
+    * fixed: write-through proxy could directly commit to slave (r917523)
     * detect a particular corruption condition in FSFS (r1100213)
     * improve error message when clients refer to unknown revisions (r939000)
     * bugfixes and optimizations to the DAV mirroring code (r878607)
