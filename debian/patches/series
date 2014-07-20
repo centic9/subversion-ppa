@@ -10,9 +10,13 @@ ruby-test-svnserve-race
 ruby-typemap-digest
 ssh-no-controlmaster
 svnshell
-apr-abi
+apr-abi1
+apr-abi2
+fix-bdb-version-detection
 python-builds
 examples-compile-instructions
+loosen-sqlite-version-check
 apache_module_dependency
 workaround_EINVAL_on_kfreebsd
-sqlite_3.8.x_workaround
+java-osgi-metadata
+chunksize-integer.patch

@@ -3,9 +3,11 @@ scripts that get installed as .tmpl files in new repositories.  Use
 $REPOS/hooks/ as the path, to encourage repository admins to copy the
 hooks, not just use them in place.
 
---- a/subversion/libsvn_repos/repos.c
-+++ b/subversion/libsvn_repos/repos.c
-@@ -276,7 +276,7 @@
+Index: git/subversion/libsvn_repos/repos.c
+===================================================================
+--- git.orig/subversion/libsvn_repos/repos.c	2012-10-15 22:11:40.000000000 +0200
++++ git/subversion/libsvn_repos/repos.c	2012-10-15 22:12:05.000000000 +0200
+@@ -275,7 +275,7 @@
  
  #define PREWRITTEN_HOOKS_TEXT                                                 \
    "# For more examples and pre-written hooks, see those in"                NL \
@@ -14,7 +16,7 @@ hooks, not just use them in place.
    "# http://svn.apache.org/repos/asf/subversion/trunk/tools/hook-scripts/ and"        NL \
    "# http://svn.apache.org/repos/asf/subversion/trunk/contrib/hook-scripts/"          NL
  
-@@ -361,8 +361,11 @@
+@@ -354,8 +354,11 @@
  "REPOS=\"$1\""                                                               NL
  "USER=\"$2\""                                                                NL
  ""                                                                           NL
@@ -28,7 +30,7 @@ hooks, not just use them in place.
  ""                                                                           NL
  "# All checks passed, so allow the commit."                                  NL
  "exit 0"                                                                     NL;
-@@ -451,10 +454,13 @@
+@@ -442,10 +445,13 @@
  "$SVNLOOK log -t \"$TXN\" \"$REPOS\" | \\"                                   NL
  "   grep \"[a-zA-Z0-9]\" > /dev/null || exit 1"                              NL
  ""                                                                           NL
@@ -44,16 +46,16 @@ hooks, not just use them in place.
  ""                                                                           NL
  "# All checks passed, so allow the commit."                                  NL
  "exit 0"                                                                     NL;
-@@ -775,7 +781,7 @@
+@@ -756,7 +762,7 @@
+ "REPOS=\"$1\""                                                               NL
  "REV=\"$2\""                                                                 NL
- "TXN_NAME=\"$3\""                                                            NL
                                                                               NL
 -"mailer.py commit \"$REPOS\" \"$REV\" /path/to/mailer.conf"                  NL;
 +"\"$REPOS\"/hooks/mailer.py commit \"$REPOS\" $REV \"$REPOS\"/mailer.conf"   NL;
  
  #undef SCRIPT_NAME
  
-@@ -838,7 +844,8 @@
+@@ -817,7 +823,8 @@
  "USER=\"$2\""                                                                NL
  ""                                                                           NL
  "# Send email to interested parties, let them know a lock was created:"      NL
@@ -63,7 +65,7 @@ hooks, not just use them in place.
  
  #undef SCRIPT_NAME
  
-@@ -899,7 +906,8 @@
+@@ -876,7 +883,8 @@
  "USER=\"$2\""                                                                NL
  ""                                                                           NL
  "# Send email to interested parties, let them know a lock was removed:"      NL
@@ -73,7 +75,7 @@ hooks, not just use them in place.
  
  #undef SCRIPT_NAME
  
-@@ -966,8 +974,8 @@
+@@ -941,8 +949,8 @@
  "PROPNAME=\"$4\""                                                            NL
  "ACTION=\"$5\""                                                              NL
  ""                                                                           NL

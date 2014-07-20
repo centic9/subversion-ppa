@@ -1,6 +1,6 @@
 --- a/subversion/bindings/swig/ruby/test/util.rb
 +++ b/subversion/bindings/swig/ruby/test/util.rb
-@@ -369,6 +369,8 @@
+@@ -332,6 +332,8 @@
  	TCPSocket.new(@svnserve_host, port).close
        rescue Errno::ECONNREFUSED
  	sleep(n < 10 ? 0.2 : 0.5)

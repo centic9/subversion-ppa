@@ -53,7 +53,7 @@ dependencies, mod_authz_svn is loaded first.
  
  #include <httpd.h>
  #include <http_config.h>
-@@ -67,6 +67,13 @@
+@@ -64,6 +64,13 @@
    const char *force_username_case;
  } authz_svn_config_rec;
  
@@ -67,7 +67,7 @@ dependencies, mod_authz_svn is loaded first.
  /*
   * Configuration
   */
-@@ -937,6 +944,16 @@
+@@ -777,6 +784,16 @@
    return OK;
  }
  
@@ -84,7 +84,7 @@ dependencies, mod_authz_svn is loaded first.
  /*
   * Module flesh
   */
-@@ -958,6 +975,9 @@
+@@ -798,6 +815,9 @@
                         AUTHZ_SVN__SUBREQ_BYPASS_PROV_NAME,
                         AUTHZ_SVN__SUBREQ_BYPASS_PROV_VER,
                         (void*)subreq_bypass);
@@ -96,7 +96,7 @@ dependencies, mod_authz_svn is loaded first.
  module AP_MODULE_DECLARE_DATA authz_svn_module =
 --- a/subversion/mod_dav_svn/mod_dav_svn.c
 +++ b/subversion/mod_dav_svn/mod_dav_svn.c
-@@ -1325,6 +1325,9 @@
+@@ -1040,6 +1040,9 @@
  static void
  register_hooks(apr_pool_t *pconf)
  {
