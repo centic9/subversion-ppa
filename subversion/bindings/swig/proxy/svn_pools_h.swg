@@ -1,6 +1,5 @@
 /* Proxy classes for svn_pools.h
- * DO NOT EDIT -- AUTOMATICALLY GENERATED
- * BY build/generator/swig/header_wrappers.py */
+ * DO NOT EDIT -- AUTOMATICALLY GENERATED */
 
 /* No default constructors for opaque structs */
 #ifdef SWIGPYTHON

@@ -1,6 +1,5 @@
 /* Proxy classes for svn_ra.h
- * DO NOT EDIT -- AUTOMATICALLY GENERATED
- * BY build/generator/swig/header_wrappers.py */
+ * DO NOT EDIT -- AUTOMATICALLY GENERATED */
 
 /* No default constructors for opaque structs */
 #ifdef SWIGPYTHON
@@ -14,7 +13,6 @@
   svn_ra_set_wc_prop_func_t,
   svn_ra_push_wc_prop_func_t,
   svn_ra_invalidate_wc_props_func_t,
-  svn_ra_get_wc_contents_func_t,
   svn_ra_get_latest_revnum_func_t,
   svn_ra_get_client_string_func_t,
   svn_ra_file_rev_handler_t,
@@ -29,7 +27,6 @@
   svn_ra_set_wc_prop_func_t *,
   svn_ra_push_wc_prop_func_t *,
   svn_ra_invalidate_wc_props_func_t *,
-  svn_ra_get_wc_contents_func_t *,
   svn_ra_get_latest_revnum_func_t *,
   svn_ra_get_client_string_func_t *,
   svn_ra_file_rev_handler_t *,
@@ -51,7 +48,6 @@
   void *report_baton,
   void *callback_baton,
   void *progress_baton,
-  void *commit_baton,
   void *update_baton,
   void *switch_baton,
   void *status_baton,
@@ -288,11 +284,6 @@ static svn_error_t * svn_ra_invoke_invalidate_wc_props_func(
   return _obj(baton, path, name, pool);
 }
 
-static svn_error_t * svn_ra_invoke_get_wc_contents_func(
-  svn_ra_get_wc_contents_func_t _obj, void *baton, svn_stream_t **contents, const svn_checksum_t *checksum, apr_pool_t *pool) {
-  return _obj(baton, contents, checksum, pool);
-}
-
 static svn_error_t * svn_ra_invoke_get_latest_revnum_func(
   svn_ra_get_latest_revnum_func_t _obj, void *session_baton, svn_revnum_t *latest_revnum) {
   return _obj(session_baton, latest_revnum);
@@ -377,7 +368,6 @@ static svn_error_t * svn_ra_invoke_init_func(
 %funcptr_proxy(svn_ra_set_wc_prop_func_t, svn_ra_invoke_set_wc_prop_func);
 %funcptr_proxy(svn_ra_push_wc_prop_func_t, svn_ra_invoke_push_wc_prop_func);
 %funcptr_proxy(svn_ra_invalidate_wc_props_func_t, svn_ra_invoke_invalidate_wc_props_func);
-%funcptr_proxy(svn_ra_get_wc_contents_func_t, svn_ra_invoke_get_wc_contents_func);
 %funcptr_proxy(svn_ra_get_latest_revnum_func_t, svn_ra_invoke_get_latest_revnum_func);
 %funcptr_proxy(svn_ra_get_client_string_func_t, svn_ra_invoke_get_client_string_func);
 %funcptr_proxy(svn_ra_file_rev_handler_t, svn_ra_invoke_file_rev_handler);

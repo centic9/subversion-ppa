@@ -74,16 +74,13 @@ class CreateJ
   CommitInfo(const svn_commit_info_t *info);
 
   static jobject
-  RevisionRangeList(svn_rangelist_t *ranges);
+  RevisionRangeList(apr_array_header_t *ranges);
 
   static jobject
   StringSet(apr_array_header_t *strings);
 
   static jobject
   PropertyMap(apr_hash_t *prop_hash);
-
-  static jobject
-  InheritedProps(apr_array_header_t *inherited_props);
 
   /* This creates a set of Objects.  It derefs the members of the vector
    * after putting them in the set, so they caller doesn't need to. */

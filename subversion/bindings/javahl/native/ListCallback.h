@@ -45,9 +45,7 @@ public:
                                const svn_dirent_t *dirent,
                                const svn_lock_t *lock,
                                const char *abs_path,
-                               const char *external_parent_url,
-                               const char *external_target,
-                               apr_pool_t *scratch_pool);
+                               apr_pool_t *pool);
 
 protected:
   svn_error_t *doList(const char *path,

@@ -244,27 +244,13 @@ public class ConflictDescriptor
 
         /**
          * Object is already added or schedule-add.
-         * @since 1.6
          */
         added,
 
         /**
          * Object is already replaced.
-         * @since 1.7
          */
-        replaced,
-
-        /**
-         * Object is moved away.
-         * @since 1.8
-         */
-        moved_away,
-
-        /**
-         * Object is moved here.
-         * @since 1.8
-         */
-        moved_here;
+        replaced;
     }
 
     public enum Operation

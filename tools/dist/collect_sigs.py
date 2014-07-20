@@ -75,12 +75,10 @@ def generate_asc_files(target_dir='.'):
 
   db = sqlite3.connect(os.path.join(target_dir, 'sigs.db'))
   curs = db.cursor()
-  like_filename = 'subversion-%s.%%' % config.version
-  curs.execute('''SELECT filename, signature FROM signatures
-                  WHERE filename LIKE ?''', (like_filename, ) )
+  curs.execute('SELECT filename, signature FROM signatures;')
   for filename, signature in curs:
     fd = _open(filename)
-    fd.write(signature)
+    fd.write(signature + "\n")
 
   for fd in fds.values():
     fd.flush()
@@ -183,11 +181,8 @@ def list_signatures():
 
   lines = ""
   curs = db.cursor()
-  like_filename = 'subversion-%s.%%' % config.version
   curs.execute('''SELECT filename, COUNT(*) FROM signatures
-                  WHERE filename LIKE ?
-                  GROUP BY filename ORDER BY filename''',
-               (like_filename, ) )
+                  GROUP BY filename ORDER BY filename''')
   for filename, count in curs:
     lines += '<a href="%s/%s.asc">%s.asc</a>: %d signature%s<br/>\n' \
              % (os.getenv('SCRIPT_NAME'), filename, filename,
