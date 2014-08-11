@@ -1,6 +1,8 @@
 Fix some build problems:
 
 - SWIG out-of-tree stuff
+- Disable auth-test.c, which tries to test things like gnome-keyring.
+  Unlikely to work in a build chroot.
 - Add aprutil as a direct dependency for libsvn_client and libsvn_ra.
 
 --- a/build/generator/swig/checkout_swig_header.py
@@ -27,19 +29,7 @@ Fix some build problems:
                     % " ".join(checkout_locations))
 --- a/Makefile.in
 +++ b/Makefile.in
-@@ -112,9 +112,9 @@
- EXEEXT = @EXEEXT@
- 
- SHELL = @SHELL@
- LIBTOOL = @SVN_LIBTOOL@
--LTFLAGS = --tag=CC --silent
--LTCXXFLAGS = --tag=CXX --silent
-+LTFLAGS = --tag=CC
-+LTCXXFLAGS = --tag=CXX
- LT_CFLAGS = @LT_CFLAGS@
- LT_LDFLAGS = @LT_LDFLAGS@
- LT_SO_VERSION = @SVN_LT_SOVERSION@
-@@ -301,14 +301,14 @@
+@@ -290,14 +290,14 @@
  
  # The path to generated and complementary source files for the SWIG
  # bindings.
@@ -59,7 +49,7 @@ Fix some build problems:
  
  ### Automate JAR creation using Makefile generator's javahl-java.jar
  ### property.  Enhance generator to support JAR installation.
-@@ -795,8 +795,7 @@
+@@ -770,8 +770,7 @@
  	fi
  	for d in $(SWIG_PL_DIR)/libsvn_swig_perl; \
  	do \
@@ -69,7 +59,7 @@ Fix some build problems:
  	done
  	if [ -f "$(SWIG_PL_DIR)/native/Makefile" ]; then \
  	  cd $(SWIG_PL_DIR)/native; $(MAKE) clean; \
-@@ -830,7 +829,7 @@
+@@ -804,7 +803,7 @@
  	fi
  	for d in $(SWIG_PY_DIR) $(SWIG_PY_DIR)/libsvn_swig_py; \
  	do \
@@ -78,7 +68,7 @@ Fix some build problems:
  	done
  	find $(SWIG_PY_SRC_DIR) $(SWIG_PY_DIR) -name "*.pyc" -exec rm {} ';'
  
-@@ -860,8 +859,7 @@
+@@ -828,8 +827,7 @@
  	fi
  	for d in $(SWIG_RB_DIR) $(SWIG_RB_DIR)/libsvn_swig_ruby; \
  	do \
@@ -90,7 +80,7 @@ Fix some build problems:
  extraclean-swig-rb: clean-swig-rb
 --- a/build/generator/gen_base.py
 +++ b/build/generator/gen_base.py
-@@ -335,7 +335,8 @@
+@@ -333,7 +333,8 @@
  
  class SWIGSource(SourceFile):
    def __init__(self, filename):
@@ -113,29 +103,29 @@ Fix some build problems:
      for fname in self.includes:
 --- a/configure.ac
 +++ b/configure.ac
-@@ -688,6 +688,7 @@
+@@ -668,6 +668,7 @@
  fi
  
- AH_BOTTOM([
+ AH_BOTTOM(
 +#undef /* */ _
- /* Indicate to translators that string X should be translated.  Do not look
-    up the translation at run time; just expand to X.  This macro is suitable
-    for use where a constant string is required at compile time. */
-@@ -1503,6 +1504,11 @@
-                    [Defined to the config.guess name of the build target])
+ #define N_(x) x
+ #define U_(x) x
+ #ifdef ENABLE_NLS
+@@ -1355,6 +1356,11 @@
+ rm -f .swig_checked
  
  AC_OUTPUT
 +if test "$abs_srcdir" != "$abs_builddir"
 +then
 +  AC_MSG_NOTICE([Creating build directories])
-+  (cd "$abs_srcdir"; find subversion tools -type d) | xargs $MKDIR
++  (cd "$abs_srcdir"; find subversion tools contrib -type d) | xargs $MKDIR
 +fi
  
  # ==== Print final messages to user ==========================================
  
 --- a/build.conf
 +++ b/build.conf
-@@ -213,7 +213,7 @@
+@@ -196,7 +196,7 @@
  description = Subversion Client Library
  type = lib
  path = subversion/libsvn_client
@@ -144,7 +134,7 @@ Fix some build problems:
  install = lib
  msvc-export = svn_client.h private/svn_client_private.h
  
-@@ -276,7 +276,7 @@
+@@ -259,7 +259,7 @@
  description = Subversion Repository Access Library
  type = lib
  path = subversion/libsvn_ra
@@ -153,26 +143,48 @@ Fix some build problems:
  # conditionally add more dependencies
  add-deps = $(SVN_RA_LIB_DEPS)
  add-install-deps = $(SVN_RA_LIB_INSTALL_DEPS)
+@@ -703,13 +703,14 @@
+ # ----------------------------------------------------------------------------
+ # Tests for libsvn_subr
+ 
+-[auth-test]
+-description = Test platform-specific auth provider access
+-type = exe
+-path = subversion/tests/libsvn_subr
+-sources = auth-test.c
+-install = test
+-libs = libsvn_test libsvn_subr
++# Fails because it assumes gnome-keyring facilities are available at test time
++#[auth-test]
++#description = Test platform-specific auth provider access
++#type = exe
++#path = subversion/tests/libsvn_subr
++#sources = auth-test.c
++#install = test
++#libs = libsvn_test libsvn_subr
+ 
+ [cache-test]
+ description = Test in-memory cache
 --- a/subversion/libsvn_ra_serf/update.c
 +++ b/subversion/libsvn_ra_serf/update.c
-@@ -3082,12 +3082,6 @@
-         SVN_ERR(svn_ra_serf__process_pending(parser_ctx,
-                                              &report->report_received,
-                                              iterpool_inner));
+@@ -2536,12 +2536,6 @@
+          then go process the pending content.  */
+       if (!parser_ctx->paused && parser_ctx->pending != NULL)
+         SVN_ERR(svn_ra_serf__process_pending(parser_ctx, iterpool_inner));
 -
 -      /* Debugging purposes only! */
 -      for (i = 0; i < sess->num_conns; i++)
 -        {
--          serf_debug__closed_conn(sess->conns[i]->bkt_alloc);
+-         serf_debug__closed_conn(sess->conns[i]->bkt_alloc);
 -        }
      }
  
-   /* If we got a complete report, close the edit.  Otherwise, abort it. */
+   /* Ensure that we opened and closed our root dir and that we closed
 --- a/subversion/libsvn_ra_serf/util.c
 +++ b/subversion/libsvn_ra_serf/util.c
-@@ -862,12 +862,6 @@
+@@ -716,12 +716,6 @@
  
-           return svn_ra_serf__wrap_err(status, _("Error running context"));
+           return svn_error_wrap_apr(status, _("Error running context"));
          }
 -
 -      /* Debugging purposes only! */

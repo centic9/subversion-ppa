@@ -3,9 +3,11 @@ to improve link stuff.  At the time this patch was originally deployed,
 it eliminated redundant dependencies on: libssl0.9.8, libldap2,
 libexpat2, libxml2, zlib1g.
 
---- a/build/ac-macros/apr.m4
-+++ b/build/ac-macros/apr.m4
-@@ -94,9 +94,9 @@
+Index: git/build/ac-macros/apr.m4
+===================================================================
+--- git.orig/build/ac-macros/apr.m4	2012-10-15 22:11:40.000000000 +0200
++++ git/build/ac-macros/apr.m4	2012-10-15 22:12:03.000000000 +0200
+@@ -99,9 +99,9 @@
        AC_MSG_ERROR([apr-config --link-ld --libs failed])
      fi
    else
@@ -17,9 +19,11 @@ libexpat2, libxml2, zlib1g.
      fi
    fi
    SVN_APR_LIBS="`SVN_REMOVE_STANDARD_LIB_DIRS($SVN_APR_LIBS)`"
---- a/build/ac-macros/aprutil.m4
-+++ b/build/ac-macros/aprutil.m4
-@@ -98,9 +98,9 @@
+Index: git/build/ac-macros/aprutil.m4
+===================================================================
+--- git.orig/build/ac-macros/aprutil.m4	2012-10-15 22:11:40.000000000 +0200
++++ git/build/ac-macros/aprutil.m4	2012-10-15 22:12:03.000000000 +0200
+@@ -103,9 +103,9 @@
        AC_MSG_ERROR([apu-config --link-ld --libs failed])
      fi
    else
