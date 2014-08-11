@@ -1,8 +1,10 @@
 Fix build instructions for libsvn-doc/examples/*.c.
 
 
---- a/tools/examples/getlocks_test.c
-+++ b/tools/examples/getlocks_test.c
+Index: git/tools/examples/getlocks_test.c
+===================================================================
+--- git.orig/tools/examples/getlocks_test.c	2014-06-26 21:52:28.625008325 +0200
++++ git/tools/examples/getlocks_test.c	2014-06-26 21:52:28.621008291 +0200
 @@ -20,13 +20,11 @@
   *    under the License.
   * ====================================================================
@@ -20,8 +22,10 @@ Fix build instructions for libsvn-doc/examples/*.c.
   *
   */
  
---- a/tools/examples/headrev.c
-+++ b/tools/examples/headrev.c
+Index: git/tools/examples/headrev.c
+===================================================================
+--- git.orig/tools/examples/headrev.c	2014-06-26 21:52:28.625008325 +0200
++++ git/tools/examples/headrev.c	2014-06-26 21:52:28.621008291 +0200
 @@ -20,13 +20,11 @@
   *    under the License.
   * ====================================================================
@@ -39,8 +43,10 @@ Fix build instructions for libsvn-doc/examples/*.c.
   *
   */
  
---- a/tools/examples/minimal_client.c
-+++ b/tools/examples/minimal_client.c
+Index: git/tools/examples/minimal_client.c
+===================================================================
+--- git.orig/tools/examples/minimal_client.c	2014-06-26 21:52:28.625008325 +0200
++++ git/tools/examples/minimal_client.c	2014-06-26 21:52:28.621008291 +0200
 @@ -30,12 +30,10 @@
   *  For a much more complex example, the svn cmdline client might be
   *  considered the 'reference implementation'.
@@ -56,8 +62,10 @@ Fix build instructions for libsvn-doc/examples/*.c.
   *
   */
  
---- a/tools/examples/svnput.c
-+++ b/tools/examples/svnput.c
+Index: git/tools/examples/svnput.c
+===================================================================
+--- git.orig/tools/examples/svnput.c	2014-06-26 21:52:28.625008325 +0200
++++ git/tools/examples/svnput.c	2014-06-26 21:52:28.621008291 +0200
 @@ -33,13 +33,10 @@
   *    under the License.
   * ====================================================================
@@ -74,8 +82,10 @@ Fix build instructions for libsvn-doc/examples/*.c.
   *
   */
  
---- a/tools/examples/testwrite.c
-+++ b/tools/examples/testwrite.c
+Index: git/tools/examples/testwrite.c
+===================================================================
+--- git.orig/tools/examples/testwrite.c	2014-06-26 21:52:28.625008325 +0200
++++ git/tools/examples/testwrite.c	2014-06-26 21:52:28.625008325 +0200
 @@ -20,13 +20,11 @@
   *    under the License.
   * ====================================================================
