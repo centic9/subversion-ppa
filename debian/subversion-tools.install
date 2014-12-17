@@ -6,6 +6,9 @@ debian/contrib/emacs/dsvn.el		usr/share/emacs/site-lisp
 debian/contrib/emacs/50psvn.el		etc/emacs/site-start.d
 
 tools/server-side/svn-backup-dumps.py		usr/bin
+debian/tmp/usr/bin/fsfs-*			usr/bin
+debian/tmp/usr/bin/svn-*			usr/bin
+debian/tmp/usr/bin/svnraisetreeconflict		usr/bin
 debian/contrib/svn_load_dirs/svn_load_dirs.pl	usr/bin
 debian/contrib/svn-fast-backup			usr/bin
 debian/contrib/svn-clean			usr/bin

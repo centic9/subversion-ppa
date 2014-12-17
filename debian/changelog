@@ -1,3 +1,106 @@
+subversion (1.8.10-5) unstable; urgency=medium
+
+  * patches/CVE-2014-8108: mod_dav_svn DoS vulnerability with invalid virtual
+    transaction names  (Closes: #773315)
+  * patches/CVE-2014-3580: mod_dav_svn DoS vulnerability with invalid REPORT
+    requests (Closes: #773263)
+
+ -- James McCoy <jamessan@debian.org>  Wed, 17 Dec 2014 00:11:03 -0500
+
+subversion (1.8.10-4) unstable; urgency=medium
+
+  * control: Use "dh_install --list-missing" instead of --fail-missing to
+    avoid a FTBFS with parallel builds.  (Closes: #768903)
+
+ -- James McCoy <jamessan@debian.org>  Mon, 10 Nov 2014 22:19:02 -0500
+
+subversion (1.8.10-3) unstable; urgency=medium
+
+  * Add a NEWS item describing that 1.7.x and later do not support having a
+    working copy which spans multiple filesystems.  (Closes: #766285)
+  * rules: Needs more MAN3EXT so generated swig-pl Makefile never installs
+    files to debian/tmp with wrong extensions.
+  * Move some less frequently used tools to subversion-tools and include the
+    fsfs-* tools.  (Closes: #764689)
+  * Switch from specifying gcj as the Java implementation to default-jdk.
+    (Closes: #737527, #421400)
+    - Remove patches/java-build
+
+ -- James McCoy <jamessan@debian.org>  Sat, 25 Oct 2014 21:47:16 -0400
+
+subversion (1.8.10-2) unstable; urgency=medium
+
+  * Add patches/test-failure-with-optimizations from upstream to fix test
+    failures with certain build configurations.  (Closes: #757773)
+  * Add patches/libtoolize from upstream to support the Multi-Arch libtool
+    packaging.  (Closes: #761789)
+
+ -- James McCoy <jamessan@debian.org>  Wed, 24 Sep 2014 20:54:34 -0400
+
+subversion (1.8.10-1) unstable; urgency=medium
+
+  * New upstream release.  Refresh patches.
+    - Includes security fixes:
+      + CVE-2014-3522: ra_serf improper validation of wildcards in SSL certs.
+      + CVE-2014-3528: credentials cached with svn may be sent to wrong
+        server.
+  * debian/rules: Avoid an unnecessary call to dpkg-buildflags.
+  * debian/control: Pre-Depend on ${misc:Pre-Depends} instead of hard-coding
+    multiarch-support, as suggested by Lintian.
+
+ -- James McCoy <jamessan@debian.org>  Tue, 12 Aug 2014 21:57:23 -0400
+
+subversion (1.8.9-2) unstable; urgency=medium
+
+  * Use Perl's $Config{vendorarch} to determine where libsvn-perl's files were
+    installed.  This enables being built against a Multi-Archified Perl.
+    (Closes: #752816)
+
+ -- James McCoy <jamessan@debian.org>  Wed, 16 Jul 2014 08:46:24 -0400
+
+subversion (1.8.9-1) unstable; urgency=medium
+
+  * New upstream release
+  * Merge changes from Ubuntu:
+    - Add DEB-8 test for Apache functionality
+    - debian/rules: Create pot file on build.
+    - debian/rules: Ensure the doxygen output directory exists
+    - Move svn2cl to subversion-tools' Suggests on Ubuntu.
+
+ -- James McCoy <jamessan@debian.org>  Tue, 20 May 2014 22:45:32 -0400
+
+subversion (1.8.8-2) unstable; urgency=medium
+
+  * Fix builds with ruby 2.x.  (Closes: #739772)
+
+ -- James McCoy <jamessan@debian.org>  Sun, 30 Mar 2014 22:46:58 -0400
+
+subversion (1.8.8-1) unstable; urgency=medium
+
+  * New upstream release.  Refresh patches.
+    - Remove backported patches sqlite_3.8.x_workaround & swig-pl_build_fix
+    - Fix integer overflows with 32-bit svnserv, which could cause an infinite
+      loop (Closes: #738840) or inaccurate statistics (Closes: #738841)
+    - Work around SQLite not honoring umask when creating rep-cache.db.
+      (Closes: #735446)
+    - Includes security fix:
+      + CVE-2014-0032: mod_dav_svn crash when handling certain requests with
+        SVNListParentPath on  (Closes: #737815)
+  * Add a subversion-dbg package.  (Closes: #508147)
+  * Bump libdb5.1-dev → libdb5.3-dev  (Closes: #738650)
+
+ -- James McCoy <jamessan@debian.org>  Thu, 20 Feb 2014 20:38:10 -0500
+
+subversion (1.8.5-2) unstable; urgency=medium
+
+  * rules: Move comment out of multi-line variable definition so configure is
+    run with the correct flags.  (Closes: #735609)
+  * control: Remove libsvn-ruby1.8 Provides from ruby-svn.
+  * Add patches/swig-pl_build_fix, from upstream, to fix a build failure when
+    configure is run with --enable-sqlite-compatibility.
+
+ -- James McCoy <jamessan@debian.org>  Fri, 17 Jan 2014 20:05:25 -0500
+
 subversion (1.8.5-1) unstable; urgency=low
 
   [ Peter Samuelson ]

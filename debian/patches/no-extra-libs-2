@@ -16,8 +16,8 @@ _at all_, so we don't want it to pull in aprutil for us.)
 +}
  
  my $apr_shlib_path_var = '@SVN_APR_SHLIB_PATH_VAR@';
- my $cppflags = '@CPPFLAGS@';
-@@ -79,10 +85,6 @@
+ my $cppflags = <<'EOT';
+@@ -86,10 +92,6 @@
                   " -I$svnlib_builddir",
                   " -I$swig_srcdir -g"),
      OBJECT => q/$(O_FILES)/,
@@ -28,7 +28,7 @@ _at all_, so we don't want it to pull in aprutil for us.)
      test => { TESTS => "$swig_srcdir/perl/native/t/*.t" }
  );
  
-@@ -92,6 +94,7 @@
+@@ -99,6 +101,7 @@
      $_;
  }
  
@@ -36,7 +36,7 @@ _at all_, so we don't want it to pull in aprutil for us.)
  WriteMakefile(%config, NAME => 'SVN::_Core', C => ['core.c'],
          PM => {map { ("$swig_srcdir/perl/native/$_.pm" =>
                        "\$(INST_LIBDIR)/$_.pm") }
-@@ -106,6 +109,7 @@
+@@ -113,6 +116,7 @@
         );
  
  for (@modules) {

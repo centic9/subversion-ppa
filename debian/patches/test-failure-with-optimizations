@@ -1,0 +1,102 @@
+------------------------------------------------------------------------
+r1485480 | stefan2 | 2013-05-22 19:05:40 -0400 (Wed, 22 May 2013) | 7 lines
+
+Fix a snafu that prevented the optimized code path to be executed in most
+cases. This affects legacy txdelta v1 data only - which is quite rare to
+find these days.
+
+* subversion/libsvn_delta/text_delta.c
+  (patterning_copy): there will be no overlap past the END ..
+
+
+Index: trunk/subversion/libsvn_delta/text_delta.c
+===================================================================
+--- trunk/subversion/libsvn_delta/text_delta.c	(revision 1485479)
++++ trunk/subversion/libsvn_delta/text_delta.c	(revision 1485480)
+@@ -669,7 +669,7 @@
+ 
+ #if SVN_UNALIGNED_ACCESS_IS_OK
+ 
+-  if (end + sizeof(apr_uint32_t) <= target)
++  if (source + sizeof(apr_uint32_t) <= target)
+     {
+       /* Source and target are at least 4 bytes apart, so we can copy in
+        * 4-byte chunks.  */
+
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r1618472 | brane | 2014-08-17 07:55:54 -0400 (Sun, 17 Aug 2014) | 12 lines
+
+Remove some code in libsvn_delta that assumes unaligned access is safe
+and therefore breaks GCC's vectorizer. The new code also attempts to
+make better use of the CPU data cache.
+
+* subversion/libsvn_delta/text_delta.c
+  (fast_memcpy): Simplify the short copy loop implementation.
+  (patterning_copy): Do not blindly use unaligned word-size access.
+   Keep the data cache hot when repeating a pattern.
+
+Found by: Alan Modra
+(Message-ID: <20140809135509.GC7047@bubble.grove.modra.org>)
+
+
+Index: trunk/subversion/libsvn_delta/text_delta.c
+===================================================================
+--- trunk/subversion/libsvn_delta/text_delta.c	(revision 1618471)
++++ trunk/subversion/libsvn_delta/text_delta.c	(revision 1618472)
+@@ -649,9 +649,8 @@
+     {
+       /* memcpy is not exactly fast for small block sizes.
+        * Since they are common, let's run optimized code for them. */
+-      const char *end = source + len;
+-      for (; source != end; source++)
+-        *(target++) = *source;
++      while (len--)
++        *target++ = *source++;
+     }
+ 
+   return target;
+@@ -663,29 +662,22 @@
+ static APR_INLINE char *
+ patterning_copy(char *target, const char *source, apr_size_t len)
+ {
+-  const char *end = source + len;
+-
+-  /* On many machines, we can do "chunky" copies. */
+-
+-#if SVN_UNALIGNED_ACCESS_IS_OK
+-
+-  if (source + sizeof(apr_uint32_t) <= target)
++  /* If the source and target overlap, repeat the overlapping pattern
++     in the target buffer. Always copy from the source buffer because
++     presumably it will be in the L1 cache after the first iteration
++     and doing this should avoid pipeline stalls due to write/read
++     dependencies. */
++  const apr_size_t overlap = target - source;
++  while (len > overlap)
+     {
+-      /* Source and target are at least 4 bytes apart, so we can copy in
+-       * 4-byte chunks.  */
+-      for (; source + sizeof(apr_uint32_t) <= end;
+-           source += sizeof(apr_uint32_t),
+-           target += sizeof(apr_uint32_t))
+-      *(apr_uint32_t *)(target) = *(apr_uint32_t *)(source);
++      target = fast_memcpy(target, source, overlap);
++      len -= overlap;
+     }
+ 
+-#endif
++  /* Copy any remaining source pattern. */
++  if (len)
++    target = fast_memcpy(target, source, len);
+ 
+-  /* fall through to byte-wise copy (either for the below-chunk-size tail
+-   * or the whole copy) */
+-  for (; source != end; source++)
+-    *(target++) = *source;
+-
+   return target;
+ }
+ 
+
+------------------------------------------------------------------------

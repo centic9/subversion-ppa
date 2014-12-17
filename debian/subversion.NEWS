@@ -1,9 +1,27 @@
+subversion (1.8.8-1) unstable; urgency=medium
+
+  If you are using BDB repositories, you will get “svn: E160029” errors
+  when you try to use them, due to the move to db5.3.  To fix this, just
+  run “svnadmin recover /path/to/repo” for each affected repository.
+
+  Note that BDB repositories have been deprecated upstream as of
+  Subversion 1.8.0, so it may also be an opportunity to switch to an
+  FSFS repository by using svnadmin dump/load.
+
+ -- James McCoy <jamessan@debian.org>  Thu, 20 Feb 2014 20:38:10 -0500
+
 subversion (1.8.5-1) unstable; urgency=low
 
   Subversion 1.8.x requires upgrading the format of a working copy.
   This can be performed by running "svn upgrade" in the working copy.
   Doing so will prevent use of older Subversion releases with that
   working copy.
+
+  Working copies which span multiple filesystems are unsupported[0] with
+  1.7.x or later due to the metadata being centralized in a single .svn
+  directory at the root of the working directory.
+
+  [0]: http://mail-archives.apache.org/mod_mbox/subversion-users/201402.mbox/%3C52F020B8.4020207@reser.org%3E
 
  -- James McCoy <jamessan@debian.org>  Sun, 05 Jan 2014 13:43:36 -0500
 

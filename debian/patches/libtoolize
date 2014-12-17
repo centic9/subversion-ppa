@@ -1,0 +1,49 @@
+------------------------------------------------------------------------
+r1627276 | philip | 2014-09-24 06:58:12 -0400 (Wed, 24 Sep 2014) | 8 lines
+
+* buildcheck.sh: Look for libtoolize rather than libtool, add some
+   more candidate names.
+
+* autogen.sh: Add more candidate names to match buildcheck.sh.
+
+Patch by: Helmut Grohne <helmut{_AT_}subdivi.de>
+          me
+
+
+Index: trunk/build/buildcheck.sh
+===================================================================
+--- trunk/build/buildcheck.sh	(revision 1627275)
++++ trunk/build/buildcheck.sh	(revision 1627276)
+@@ -97,14 +97,14 @@
+   esac
+ fi
+ 
+-libtool=${LIBTOOL:-`./build/PrintPath glibtool libtool libtool15`}
++libtoolize=${LIBTOOLIZE:-`./build/PrintPath glibtoolize libtoolize glibtoolize1 libtoolize15 libtoolize14`}
+ # Extract the libtool version number: everything from the first number in
+ # the version text until a hyphen or space.
+-lt_pversion=`$libtool --version 2>/dev/null |
++lt_pversion=`$libtoolize --version 2>/dev/null |
+   sed -e 's/^[^0-9]*//' -e 's/[- ].*//' -e '/^$/d' |
+   sed -e 1q`
+ if test -z "$lt_pversion"; then
+-  echo "buildcheck: libtool not found."
++  echo "buildcheck: libtoolize not found."
+   echo "            You need libtool version $LIBTOOL_WANTED_VERSION or newer installed"
+   exit 1
+ fi
+Index: trunk/autogen.sh
+===================================================================
+--- trunk/autogen.sh	(revision 1627275)
++++ trunk/autogen.sh	(revision 1627276)
+@@ -59,7 +59,7 @@
+ # ### APR's libtool. deferring to a second round of change...
+ #
+ 
+-libtoolize="`./build/PrintPath glibtoolize libtoolize libtoolize15`"
++libtoolize="`./build/PrintPath glibtoolize libtoolize glibtoolize1 libtoolize15 libtoolize14`"
+ lt_major_version=`$libtoolize --version 2>/dev/null | sed -e 's/^[^0-9]*//' -e 's/\..*//' -e '/^$/d' -e 1q`
+ 
+ if [ "x$libtoolize" = "x" ]; then
+
+------------------------------------------------------------------------

@@ -27,8 +27,7 @@ Fix some build problems:
                     % " ".join(checkout_locations))
 --- a/Makefile.in
 +++ b/Makefile.in
-@@ -112,9 +112,9 @@
- EXEEXT = @EXEEXT@
+@@ -113,8 +113,8 @@
  
  SHELL = @SHELL@
  LIBTOOL = @SVN_LIBTOOL@
@@ -39,7 +38,7 @@ Fix some build problems:
  LT_CFLAGS = @LT_CFLAGS@
  LT_LDFLAGS = @LT_LDFLAGS@
  LT_SO_VERSION = @SVN_LT_SOVERSION@
-@@ -301,14 +301,14 @@
+@@ -315,14 +315,14 @@
  
  # The path to generated and complementary source files for the SWIG
  # bindings.
@@ -59,7 +58,7 @@ Fix some build problems:
  
  ### Automate JAR creation using Makefile generator's javahl-java.jar
  ### property.  Enhance generator to support JAR installation.
-@@ -795,8 +795,7 @@
+@@ -811,8 +811,7 @@
  	fi
  	for d in $(SWIG_PL_DIR)/libsvn_swig_perl; \
  	do \
@@ -69,7 +68,7 @@ Fix some build problems:
  	done
  	if [ -f "$(SWIG_PL_DIR)/native/Makefile" ]; then \
  	  cd $(SWIG_PL_DIR)/native; $(MAKE) clean; \
-@@ -830,7 +829,7 @@
+@@ -846,7 +845,7 @@
  	fi
  	for d in $(SWIG_PY_DIR) $(SWIG_PY_DIR)/libsvn_swig_py; \
  	do \
@@ -78,7 +77,7 @@ Fix some build problems:
  	done
  	find $(SWIG_PY_SRC_DIR) $(SWIG_PY_DIR) -name "*.pyc" -exec rm {} ';'
  
-@@ -860,8 +859,7 @@
+@@ -876,8 +875,7 @@
  	fi
  	for d in $(SWIG_RB_DIR) $(SWIG_RB_DIR)/libsvn_swig_ruby; \
  	do \
@@ -90,7 +89,7 @@ Fix some build problems:
  extraclean-swig-rb: clean-swig-rb
 --- a/build/generator/gen_base.py
 +++ b/build/generator/gen_base.py
-@@ -335,7 +335,8 @@
+@@ -340,7 +340,8 @@
  
  class SWIGSource(SourceFile):
    def __init__(self, filename):
@@ -121,7 +120,7 @@ Fix some build problems:
  /* Indicate to translators that string X should be translated.  Do not look
     up the translation at run time; just expand to X.  This macro is suitable
     for use where a constant string is required at compile time. */
-@@ -1503,6 +1504,11 @@
+@@ -1504,6 +1505,11 @@
                     [Defined to the config.guess name of the build target])
  
  AC_OUTPUT
@@ -155,7 +154,7 @@ Fix some build problems:
  add-install-deps = $(SVN_RA_LIB_INSTALL_DEPS)
 --- a/subversion/libsvn_ra_serf/update.c
 +++ b/subversion/libsvn_ra_serf/update.c
-@@ -3082,12 +3082,6 @@
+@@ -3064,12 +3064,6 @@
          SVN_ERR(svn_ra_serf__process_pending(parser_ctx,
                                               &report->report_received,
                                               iterpool_inner));
@@ -170,7 +169,7 @@ Fix some build problems:
    /* If we got a complete report, close the edit.  Otherwise, abort it. */
 --- a/subversion/libsvn_ra_serf/util.c
 +++ b/subversion/libsvn_ra_serf/util.c
-@@ -862,12 +862,6 @@
+@@ -962,12 +962,6 @@
  
            return svn_ra_serf__wrap_err(status, _("Error running context"));
          }

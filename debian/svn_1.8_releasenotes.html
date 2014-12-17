@@ -678,7 +678,7 @@ only as of 1.8.0 does 'svnadmin verify'
 detect instances of that corruption in the history of a repository.</p>
 
 <p>The fix to these issues is simple: perform a <a
-href=http://svnbook.red-bean.com/en/1.8/svn.reposadmin.maint.html#svn.reposadmin.maint.migrate.svnadmin
+href="http://svnbook.red-bean.com/en/1.8/svn.reposadmin.maint.html#svn.reposadmin.maint.migrate.svnadmin"
 >dump/load cycle</a>.  (As usual, svnsync can be used instead of dump/load.)
 The cycle can be done with any version of Subversion, and after the cycle the
 repository should be served exclusively by Subversion 1.7.5 or newer to prevent
@@ -1180,7 +1180,7 @@ the <tt>--compatible-version 1.6</tt> parameter.</p>
 <p>You may use <tt>svnadmin upgrade</tt> to upgrade existing repositories.
 However, to fully benefit from the latest <a href="#fsfs-deltification">repository size reductions</a>,
 it is recommended to create a new repository, adjust its settings and then
-<a href=http://svnbook.red-bean.com/en/1.8/svn.reposadmin.maint.html#svn.reposadmin.maint.migrate.svnadmin
+<a href="http://svnbook.red-bean.com/en/1.8/svn.reposadmin.maint.html#svn.reposadmin.maint.migrate.svnadmin"
 >dump/load</a> or svnsync the contents into it.
 </p>
 
@@ -1287,7 +1287,7 @@ and properties. Hence, Subversion 1.6 and 1.7 will be able to read
 them but will always write new revisions without that optimization.
 It is therefore perfectly legal to create a pre-1.8-compatible
 repository in 1.8, to enable various deltification options, to <a 
-href=http://svnbook.red-bean.com/en/1.8/svn.reposadmin.maint.html#svn.reposadmin.maint.migrate.svnadmin
+href="http://svnbook.red-bean.com/en/1.8/svn.reposadmin.maint.html#svn.reposadmin.maint.migrate.svnadmin"
 >dump/load</a> into that new repository using 1.8 tooling and to
 finally use the repository with a 1.6 or 1.7 server.
 </p>
@@ -2608,7 +2608,7 @@ end in .gz if a configuration setting like <tt>AddEncoding x-gzip .gz</tt> is
 in their configuration file and applies to the locations that Subversion is
 being served from.  This happens because the setting now matches on the
 Subversion traffic and sets the Content-Encoding header to specify that the
-file has been gziped for transmport without changing the file content.  Since
+file has been gziped for transport without changing the file content.  Since
 the Subversion client supports gzip content-encoding it decompresses the file
 and ends up with the decompressed file which does not match the checksum of the
 file it expected.  It is possible that this change may cause other filters to

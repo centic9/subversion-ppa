@@ -1,4 +1,14 @@
-debian/tmp/usr/bin/svn*			usr/bin
+debian/tmp/usr/bin/svn			usr/bin
+debian/tmp/usr/bin/svnadmin		usr/bin
+debian/tmp/usr/bin/svnauthz		usr/bin
+debian/tmp/usr/bin/svnauthz-validate	usr/bin
+debian/tmp/usr/bin/svndumpfilter	usr/bin
+debian/tmp/usr/bin/svnlook		usr/bin
+debian/tmp/usr/bin/svnmucc		usr/bin
+debian/tmp/usr/bin/svnrdump		usr/bin
+debian/tmp/usr/bin/svnserve		usr/bin
+debian/tmp/usr/bin/svnsync		usr/bin
+debian/tmp/usr/bin/svnversion		usr/bin
 debian/tmp/usr/share/locale		usr/share
 debian/tmp/usr/share/man/man1		usr/share/man
 debian/tmp/usr/share/man/man5		usr/share/man

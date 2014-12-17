@@ -53,6 +53,7 @@ fix_shebangs_in = \
 			-e 's:^\#! */usr/bin/env pyth.*:\#!/usr/bin/python:' \
 			-e 's:^\#! */usr/bin/env ruby.*:\#!/usr/bin/$(RUBY):'
 
+PERL_VENDORARCH := $(shell perl -MConfig -e 'print $$Config{vendorarch}')
 PERL_DIR := $(DEB_BUILDDIR)/subversion/bindings/swig/perl/native
 PY_DIR := $(DEB_BUILDDIR)/subversion/bindings/swig/python
 PYVERSIONS := $(shell pyversions -vi)
@@ -67,6 +68,15 @@ allpy = \
 	done
 
 libdir := /usr/lib/$(DEB_HOST_MULTIARCH)
+# ~max(min required sqlite, stable's sqlite)
+MIN_SQLITE_VER := 3.7.12
+
+export EXTRA_CFLAGS := $(CFLAGS)
+export EXTRA_CXXFLAGS := $(CXXFLAGS)
+export EXTRA_CPPFLAGS := $(CPPFLAGS)
+export EXTRA_LDFLAGS := $(LDFLAGS)
+export EXTRA_SWIG_LDFLAGS := $(EXTRA_LDFLAGS)
+
 confflags := \
 		--prefix=/usr \
 		--libdir=$(libdir) \
@@ -74,31 +84,28 @@ confflags := \
 		--with-apr=/usr \
 		--with-apr-util=/usr \
 		--with-serf=/usr \
-# ~max(min required sqlite, stable's sqlite)
-		--enable-sqlite-compatibility-version=3.7.12 \
+		--enable-sqlite-compatibility-version=$(MIN_SQLITE_VER) \
 		--with-berkeley-db=:::db \
 		--with-sasl=/usr \
 		--with-editor=/usr/bin/editor \
 		--with-ruby-sitedir=/usr/lib/ruby \
 		--with-swig=/usr \
 		--with-kwallet \
-		$(shell dpkg-buildflags --export=configure) \
+		CFLAGS="$(EXTRA_CFLAGS)" \
+		CXXFLAGS="$(EXTRA_CXXFLAGS)" \
+		CPPFLAGS="$(EXTRA_CPPFLAGS)" \
+		LDFLAGS="$(EXTRA_LDFLAGS)" \
 		--with-gnome-keyring
 
 ifdef DEB_OPT_DEBUG
   confflags+= --enable-debug 
 endif
-export EXTRA_CFLAGS := $(CFLAGS)
-export EXTRA_CXXFLAGS := $(CXXFLAGS)
-export EXTRA_CPPFLAGS := $(CPPFLAGS)
-export EXTRA_LDFLAGS := $(LDFLAGS)
-export EXTRA_SWIG_LDFLAGS := $(EXTRA_LDFLAGS)
 
 export DH_OPTIONS
 ifdef DEB_OPT_WITH_JAVAHL
   # jikes 1.22 cannot compile javahl.
   confflags += --enable-javahl --without-jikes \
-               --with-jdk=/usr/lib/jvm/java-gcj \
+               --with-jdk=/usr/lib/jvm/default-java \
                --with-junit=/usr/share/java/junit.jar
 else
   DH_OPTIONS += -Nlibsvn-java
@@ -185,8 +192,8 @@ check check-swig-rb check-javahl: debian/stamp-build-arch
 	+$(MAKE_B) $@ $(check_defs)
 
 check-swig-pl: debian/stamp-build-arch
-	+$(MAKE_B) $@ $(check_defs)
-	$(MAKE) -C $(PERL_DIR) test LC_ALL=C
+	+$(MAKE_B) $@ MAN3EXT=3perl $(check_defs)
+	$(MAKE) -C $(PERL_DIR) test MAN3EXT=3perl LC_ALL=C
 
 check-swig-py: debian/stamp-build-arch
 	$(call allpy, \
@@ -207,9 +214,9 @@ debian/stamp-build-arch: debian/stamp-configure
 	            PYTHON_INCLUDES="$$pyinc" \
 	            swig_pydir=$$pylib/libsvn swig_pydir_extra=$$pylib/svn)
 	# note: swig-pl seems to have trouble with -jN
-	+$(MAKE_B) -j1 swig-pl
+	+$(MAKE_B) -j1 swig-pl MAN3EXT=3perl
 	$(MAKE) -C $(PERL_DIR) all \
-		OPTIMIZE="-g -Wall $(EXTRA_CFLAGS)"
+		MAN3EXT=3perl OPTIMIZE="-g -Wall $(EXTRA_CFLAGS)"
 ifdef DEB_OPT_WITH_RUBY
 	+$(MAKE_B) swig-rb $(rb_defs)
 endif
@@ -244,7 +251,9 @@ endif
 
 build-indep: debian/stamp-build-indep
 debian/stamp-build-indep: debian/stamp-configure
+	mkdir -p $(DEB_BUILDDIR)/doc/doxygen
 	+$(MAKE_B) doc-api
+	+$(MAKE_B) locale-gnu-pot
 	touch $@
 
 clean: unpatch
@@ -264,7 +273,9 @@ clean: unpatch
 	$(RM) subversion/bindings/swig/proxy/*.swg
 	$(RM) configure build/ltmain.sh build/libtool.m4 build/lt*.m4
 	$(RM) build/config.sub build/config.guess
+	$(RM) subversion/po/subversion.pot
 	$(RM) debian/stamp-*
+	$(RM) debian/libsvn-perl.install
 
 debian/stamp-install-indep: debian/stamp-build-indep
 	dh_prep -i
@@ -277,7 +288,7 @@ ifdef DEB_OPT_WITH_JAVAHL
 		javahl_javahdir=/usr/include/svn-javahl
 endif
 
-	dh_install -i
+	dh_install -i --list-missing
 
 	mkdir -p debian/libsvn-doc/usr/share/doc/libsvn1
 	mkdir -p debian/libsvn-doc/usr/share/doc/libsvn-doc
@@ -288,32 +299,12 @@ endif
 	mkdir debian/libsvn-doc/usr/share/doc/libsvn1/examples
 	ln -s ../libsvn1/examples debian/libsvn-doc/usr/share/doc/libsvn-doc/
 
-	# Install files for 'subversion-tools' package.
-	install $(DEB_BUILDDIR)/tools/backup/hot-backup.py \
-		debian/subversion-tools/usr/bin/svn-hot-backup
-
-	rm debian/subversion-tools/usr/share/subversion/hook-scripts/*.in
-	rm -r debian/subversion-tools/usr/share/subversion/hook-scripts/mailer/tests
-ifndef DEB_OPT_WITH_RUBY
-	rm debian/subversion-tools/usr/share/subversion/hook-scripts/*.rb
-endif
-
-	# Fix some scripts not to use #!/usr/bin/env.
-	$(call fix_shebangs_in, debian/*/usr/bin \
-		debian/subversion-tools/usr/share/subversion/hook-scripts)
-	cd debian/subversion-tools/usr/share/subversion/hook-scripts; \
-		chmod 0755 commit-email.pl commit-access-control.pl \
-			   mailer/mailer.py verify-po.py svnperms.py;
-
-	# Remove suffixes from binaries in /usr/bin
-	prename 's/\.(sh|pl|rb|py)$$//' debian/*/usr/bin/*
-
-	pod2man -c 'User Commands' -r "" debian/contrib/svn-clean \
-		$(DEB_BUILDDIR)/svn-clean.1
-
 	touch $@
 
-debian/stamp-install-arch: debian/stamp-build-arch
+debian/libsvn-perl.install: debian/libsvn-perl.install.in
+	sed 's#@PERL_VENDORARCH@#$(PERL_VENDORARCH)#' < $< > $@
+
+debian/stamp-install-arch: debian/stamp-build-arch debian/libsvn-perl.install
 	dh_prep -s
 	dh_installdirs -s
 
@@ -343,8 +334,11 @@ endif
 ifdef DEB_OPT_WITH_RUBY
 	$(MAKE_B) install-swig-rb $(rb_defs) \
 		DESTDIR=$(CURDIR)/debian/tmp
-	find debian/tmp/usr/lib/ruby \( -name \*.a -o -name \*.la \) -exec $(RM) {} +
+	find debian/tmp/$(libdir)/ruby \( -name \*.a -o -name \*.la \) -exec $(RM) {} +
 endif
+
+	rm -f debian/tmp/usr/lib/apache2/modules/mod_dontdothat*
+	rm -f debian/tmp/usr/bin/diff*
 
 	cd debian/tmp/$(libdir); for lib in ra fs auth swig; do \
 	    $(RM) libsvn_$${lib}_*.so libsvn_$${lib}_*.la; \
@@ -352,7 +346,31 @@ endif
 	cd debian/tmp/$(libdir); $(RM) libsvn_swig*.a libsvnjavahl-1.a libsvnjavahl-1.la
 	# Intermediate hack, until we can remove the rest of the .la files.
 	sed -i  "/dependency_libs/s/=.*/=''/" debian/tmp/$(libdir)/*.la
-	dh_install -s
+	dh_install -s --list-missing
+
+	# Install files for 'subversion-tools' package.
+	install $(DEB_BUILDDIR)/tools/backup/hot-backup.py \
+		debian/subversion-tools/usr/bin/svn-hot-backup
+
+	rm debian/subversion-tools/usr/share/subversion/hook-scripts/*.in
+	rm -r debian/subversion-tools/usr/share/subversion/hook-scripts/mailer/tests
+ifndef DEB_OPT_WITH_RUBY
+	rm debian/subversion-tools/usr/share/subversion/hook-scripts/*.rb
+endif
+
+	# Fix some scripts not to use #!/usr/bin/env.
+	$(call fix_shebangs_in, debian/*/usr/bin \
+		debian/subversion-tools/usr/share/subversion/hook-scripts)
+	cd debian/subversion-tools/usr/share/subversion/hook-scripts; \
+		chmod 0755 commit-email.pl commit-access-control.pl \
+			   mailer/mailer.py verify-po.py svnperms.py;
+
+	# Remove suffixes from binaries in /usr/bin
+	prename 's/\.(sh|pl|rb|py)$$//' debian/*/usr/bin/*
+
+	pod2man -c 'User Commands' -r "" debian/contrib/svn-clean \
+		$(DEB_BUILDDIR)/svn-clean.1
+
 ifdef DEB_OPT_WITH_JAVAHL
 	mkdir -p debian/libsvn-java/$(libdir)
 	mv debian/libsvn-java/usr/lib/jni debian/libsvn-java/$(libdir)/
@@ -398,10 +416,11 @@ binary-arch: debian/stamp-install-arch
 	dh_installdocs -s
 	dh_installexamples -s
 	$(call fix_shebangs_in, debian/*/usr/share/doc/*/examples)
+	dh_installman -s
 	dh_installchangelogs -s CHANGES
 	dh_lintian -s
 	dh_fixperms -s
-	dh_strip -s
+	dh_strip -s --dbg-package=subversion-dbg
 	dh_compress -s
 
 	# dh_makeshlibs (1) creates shlibs/symbols files and (2) generates
@@ -415,7 +434,11 @@ binary-arch: debian/stamp-install-arch
 	dh_installdeb -s
 	dh_shlibdeps -s -X_auth_
 	sed -i 's:libsvn-private\(, *\)\?::' debian/*.substvars
-	dh_gencontrol -s
+ifeq ($(DEB_VENDOR),Ubuntu)
+	dh_gencontrol -s -- -V"subversion-tools:Suggests=svn2cl"
+else
+	dh_gencontrol -s -- -V"subversion-tools:Recommends=svn2cl"
+endif
 	dh_md5sums -s
 	dh_builddeb -s
 

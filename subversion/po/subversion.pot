@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: dev@subversion.apache.org\n"
-"POT-Creation-Date: 2014-12-09 02:26+0000\n"
+"POT-Creation-Date: 2014-08-01 23:16+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1184,7 +1184,7 @@ msgstr ""
 msgid "Credentials not saved"
 msgstr ""
 
-#: ../include/svn_error_codes.h:1446 ../libsvn_subr/gpg_agent.c:415
+#: ../include/svn_error_codes.h:1446
 msgid "Authentication failed"
 msgstr ""
 
@@ -1236,7 +1236,7 @@ msgstr ""
 msgid "No non-tracing links found in the error chain"
 msgstr ""
 
-#: ../libsvn_auth_gnome_keyring/gnome_keyring.c:152
+#: ../libsvn_auth_gnome_keyring/gnome_keyring.c:274
 msgid "GNOME Keyring is locked and we are non-interactive"
 msgstr ""
 
@@ -1276,7 +1276,7 @@ msgstr ""
 #: ../libsvn_client/patch.c:3009 ../libsvn_client/relocate.c:232
 #: ../libsvn_client/resolved.c:121 ../libsvn_client/revert.c:136
 #: ../libsvn_client/status.c:353 ../libsvn_client/switch.c:473
-#: ../libsvn_client/update.c:646 ../libsvn_client/upgrade.c:109
+#: ../libsvn_client/update.c:646 ../libsvn_client/upgrade.c:105
 #: ../svn/util.c:984
 #, c-format
 msgid "'%s' is not a local path"
@@ -1580,7 +1580,7 @@ msgid "'%s' does not have a URL associated with it"
 msgstr ""
 
 #: ../libsvn_client/copy_foreign.c:131 ../libsvn_client/copy_foreign.c:282
-#: ../libsvn_client/externals.c:938 ../libsvn_client/externals.c:1148
+#: ../libsvn_client/externals.c:904 ../libsvn_client/externals.c:1114
 #: ../libsvn_wc/update_editor.c:1124
 #, c-format
 msgid "Path '%s' is not in the working copy"
@@ -1588,8 +1588,8 @@ msgstr ""
 
 #: ../libsvn_client/copy_foreign.c:372 ../libsvn_client/export.c:814
 #: ../libsvn_client/repos_diff.c:998 ../libsvn_fs_fs/dag.c:1051
-#: ../libsvn_ra_svn/client.c:1208 ../libsvn_wc/diff_editor.c:1933
-#: ../libsvn_wc/diff_editor.c:2019 ../libsvn_wc/externals.c:651
+#: ../libsvn_ra_svn/client.c:1208 ../libsvn_wc/diff_editor.c:1981
+#: ../libsvn_wc/diff_editor.c:2060 ../libsvn_wc/externals.c:651
 #: ../libsvn_wc/update_editor.c:4279
 #, c-format
 msgid "Checksum mismatch for '%s'"
@@ -1779,41 +1779,41 @@ msgstr ""
 msgid "'%s' already exists"
 msgstr ""
 
-#: ../libsvn_client/externals.c:437
+#: ../libsvn_client/externals.c:406
 #, c-format
 msgid ""
 "Cannot insert a file external defined on '%s' into the working copy '%s'."
 msgstr ""
 
-#: ../libsvn_client/externals.c:462
+#: ../libsvn_client/externals.c:431
 #, c-format
 msgid ""
 "The file external from '%s' cannot overwrite the existing versioned item at "
 "'%s'"
 msgstr ""
 
-#: ../libsvn_client/externals.c:475
+#: ../libsvn_client/externals.c:444
 #, c-format
 msgid "The file external '%s' can not be created because the node exists."
 msgstr ""
 
-#: ../libsvn_client/externals.c:737
+#: ../libsvn_client/externals.c:703
 #, c-format
 msgid "URL '%s' at revision %ld doesn't exist"
 msgstr ""
 
-#: ../libsvn_client/externals.c:742
+#: ../libsvn_client/externals.c:708
 #, c-format
 msgid "URL '%s' at revision %ld is not a file or a directory"
 msgstr ""
 
-#: ../libsvn_client/externals.c:820
+#: ../libsvn_client/externals.c:786
 #, c-format
 msgid ""
 "Unsupported external: URL of file external '%s' is not in repository '%s'"
 msgstr ""
 
-#: ../libsvn_client/externals.c:1013
+#: ../libsvn_client/externals.c:979
 #, c-format
 msgid "Traversal of '%s' found no ambient depth"
 msgstr ""
@@ -2371,12 +2371,12 @@ msgstr ""
 msgid "Failed to delete mmap '%s'"
 msgstr ""
 
-#: ../libsvn_diff/util.c:464
+#: ../libsvn_diff/util.c:463
 #, c-format
 msgid "   Reverse-merged %s:r%s%s"
 msgstr ""
 
-#: ../libsvn_diff/util.c:481
+#: ../libsvn_diff/util.c:480
 #, c-format
 msgid "   Merged %s:r%s%s"
 msgstr ""
@@ -3320,7 +3320,7 @@ msgstr ""
 msgid "Transaction is dead: '%s'"
 msgstr ""
 
-#: ../libsvn_fs_base/revs-txns.c:272 ../libsvn_fs_fs/fs_fs.c:9773
+#: ../libsvn_fs_base/revs-txns.c:272 ../libsvn_fs_fs/fs_fs.c:9763
 #, c-format
 msgid "revprop '%s' has unexpected value in filesystem"
 msgstr ""
@@ -3602,7 +3602,7 @@ msgstr ""
 msgid "Malformed copyfrom line in node-rev '%s'"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:2684 ../libsvn_fs_fs/fs_fs.c:7642
+#: ../libsvn_fs_fs/fs_fs.c:2684 ../libsvn_fs_fs/fs_fs.c:7632
 #, c-format
 msgid "Attempted to write to non-transaction '%s'"
 msgstr ""
@@ -3748,113 +3748,113 @@ msgstr ""
 msgid "Transaction '%s' cleanup failed"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:7069
+#: ../libsvn_fs_fs/fs_fs.c:7064
 #, c-format
 msgid "Invalid change type %d"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:7662
+#: ../libsvn_fs_fs/fs_fs.c:7652
 msgid "Can't set text contents of a directory"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:7748 ../libsvn_fs_fs/fs_fs.c:7753
-#: ../libsvn_fs_fs/fs_fs.c:7760
+#: ../libsvn_fs_fs/fs_fs.c:7738 ../libsvn_fs_fs/fs_fs.c:7743
+#: ../libsvn_fs_fs/fs_fs.c:7750
 msgid "Corrupt 'current' file"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:8020
+#: ../libsvn_fs_fs/fs_fs.c:8010
 #, c-format
 msgid ""
 "predecessor count for the root node-revision is wrong: found (%d+%ld != %d), "
 "committing r%ld"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:8155
+#: ../libsvn_fs_fs/fs_fs.c:8145
 msgid "Truncated protorev file detected"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:8555
+#: ../libsvn_fs_fs/fs_fs.c:8545
 msgid "Transaction out of date"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:9054
+#: ../libsvn_fs_fs/fs_fs.c:9044
 msgid "Recovery encountered a non-directory node"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:9076
+#: ../libsvn_fs_fs/fs_fs.c:9066
 msgid "Recovery encountered a deltified directory representation"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:9112 ../libsvn_fs_fs/fs_fs.c:9121
-#: ../libsvn_fs_fs/fs_fs.c:9127
+#: ../libsvn_fs_fs/fs_fs.c:9102 ../libsvn_fs_fs/fs_fs.c:9111
+#: ../libsvn_fs_fs/fs_fs.c:9117
 msgid "Directory entry corrupt"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:9300
+#: ../libsvn_fs_fs/fs_fs.c:9290
 #, c-format
 msgid "Expected current rev to be <= %ld but found %ld"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:9357
+#: ../libsvn_fs_fs/fs_fs.c:9347
 #, c-format
 msgid "Revision %ld has a revs file but no revprops file"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:9364
+#: ../libsvn_fs_fs/fs_fs.c:9354
 #, c-format
 msgid "Revision %ld has a revs file but the revprops file is inaccessible"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:9373
+#: ../libsvn_fs_fs/fs_fs.c:9363
 #, c-format
 msgid "Revision %ld has a non-file where its revprops file should be"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:9551
+#: ../libsvn_fs_fs/fs_fs.c:9541
 #, c-format
 msgid ""
 "Node origin for '%s' exists with a different value (%s) than what we were "
 "about to store (%s)"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:9657
+#: ../libsvn_fs_fs/fs_fs.c:9647
 #, c-format
 msgid "No such transaction '%s'"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:10374
+#: ../libsvn_fs_fs/fs_fs.c:10364
 #, c-format
 msgid "FSFS format (%d) too old to pack; please upgrade the filesystem."
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:10653 ../libsvn_subr/io.c:248
+#: ../libsvn_fs_fs/fs_fs.c:10643 ../libsvn_subr/io.c:248
 #, c-format
 msgid "Error converting entry in directory '%s' to UTF-8"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:10690 ../libsvn_subr/io.c:1021
+#: ../libsvn_fs_fs/fs_fs.c:10680 ../libsvn_subr/io.c:1021
 #, c-format
 msgid "Source '%s' is not a directory"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:10696 ../libsvn_subr/io.c:1027
+#: ../libsvn_fs_fs/fs_fs.c:10686 ../libsvn_subr/io.c:1027
 #, c-format
 msgid "Destination '%s' is not a directory"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:10768 ../libsvn_subr/io.c:1104
+#: ../libsvn_fs_fs/fs_fs.c:10758 ../libsvn_subr/io.c:1104
 #: ../libsvn_subr/io.c:2492
 #, c-format
 msgid "Can't read directory '%s'"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:10773 ../libsvn_subr/io.c:1109
+#: ../libsvn_fs_fs/fs_fs.c:10763 ../libsvn_subr/io.c:1109
 #: ../libsvn_subr/io.c:2497 ../libsvn_subr/io.c:4002
 #, c-format
 msgid "Error closing directory '%s'"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:11056
+#: ../libsvn_fs_fs/fs_fs.c:11046
 #, c-format
 msgid ""
 "The FSFS format (%d) of the hotcopy source does not match the FSFS format "
@@ -3862,19 +3862,19 @@ msgid ""
 "same format"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:11065
+#: ../libsvn_fs_fs/fs_fs.c:11055
 msgid ""
 "The UUID of the hotcopy source does not match the UUID of the hotcopy "
 "destination"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:11072
+#: ../libsvn_fs_fs/fs_fs.c:11062
 msgid ""
 "The sharding layout configuration of the hotcopy source does not match the "
 "sharding layout configuration of the hotcopy destination"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:11198
+#: ../libsvn_fs_fs/fs_fs.c:11188
 #, c-format
 msgid ""
 "Failed to create hotcopy at '%s'. The file '%s' is missing from the source "
@@ -3882,28 +3882,28 @@ msgid ""
 "upgrade %s'"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:11224
+#: ../libsvn_fs_fs/fs_fs.c:11214
 #, c-format
 msgid ""
 "The hotcopy destination already contains more revisions (%lu) than the "
 "hotcopy source contains (%lu); are source and destination swapped?"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:11260
+#: ../libsvn_fs_fs/fs_fs.c:11250
 #, c-format
 msgid ""
 "The hotcopy destination already contains more packed revisions (%lu) than "
 "the hotcopy source contains (%lu)"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:11375
+#: ../libsvn_fs_fs/fs_fs.c:11365
 #, c-format
 msgid ""
 "The assumed HEAD revision (%lu) of the hotcopy source has been packed while "
 "the hotcopy was in progress; please restart the hotcopy operation"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:11390
+#: ../libsvn_fs_fs/fs_fs.c:11380
 #, c-format
 msgid ""
 "Revision %lu disappeared from the hotcopy source while hotcopy was in "
@@ -5010,7 +5010,7 @@ msgid ""
 msgstr ""
 
 #: ../libsvn_repos/commit.c:1266 ../libsvn_repos/fs-wrap.c:98
-#: ../libsvn_repos/load-fs-vtable.c:1008
+#: ../libsvn_repos/load-fs-vtable.c:978
 msgid "Commit succeeded, but post-commit hook failed"
 msgstr ""
 
@@ -5261,23 +5261,23 @@ msgid ""
 "ask the administrator to create a pre-revprop-change hook"
 msgstr ""
 
-#: ../libsvn_repos/load-fs-vtable.c:575 ../svnrdump/load_editor.c:766
+#: ../libsvn_repos/load-fs-vtable.c:565 ../svnrdump/load_editor.c:766
 #, c-format
 msgid "Relative source revision %ld is not available in current repository"
 msgstr ""
 
-#: ../libsvn_repos/load-fs-vtable.c:589
+#: ../libsvn_repos/load-fs-vtable.c:579
 #, c-format
 msgid ""
 "Copy source checksum mismatch on copy from '%s'@%ld\n"
 "to '%s' in rev based on r%ld"
 msgstr ""
 
-#: ../libsvn_repos/load-fs-vtable.c:653
+#: ../libsvn_repos/load-fs-vtable.c:638
 msgid "Malformed dumpstream: Revision 0 must not contain node records"
 msgstr ""
 
-#: ../libsvn_repos/load-fs-vtable.c:669
+#: ../libsvn_repos/load-fs-vtable.c:654
 #, c-format
 msgid "Unrecognized node-action on node '%s'"
 msgstr ""
@@ -5865,12 +5865,12 @@ msgstr ""
 msgid "unknown error"
 msgstr ""
 
-#: ../libsvn_subr/gpg_agent.c:408 ../libsvn_subr/prompt.c:631
+#: ../libsvn_subr/gpg_agent.c:358 ../libsvn_subr/prompt.c:631
 #, c-format
 msgid "Password for '%s': "
 msgstr ""
 
-#: ../libsvn_subr/gpg_agent.c:409
+#: ../libsvn_subr/gpg_agent.c:359
 #, c-format
 msgid "Enter your Subversion password for %s"
 msgstr ""
@@ -5930,7 +5930,6 @@ msgid "Can't copy '%s' to '%s'"
 msgstr ""
 
 #: ../libsvn_subr/io.c:895 ../libsvn_subr/io.c:917 ../libsvn_subr/io.c:963
-#: ../libsvn_subr/io.c:4691
 #, c-format
 msgid "Can't set permissions on '%s'"
 msgstr ""
@@ -8436,7 +8435,7 @@ msgid "accept merged version of file"
 msgstr ""
 
 #: ../svn/conflict-callbacks.c:456 ../svn/conflict-callbacks.c:501
-#: ../svn/conflict-callbacks.c:515
+#: ../svn/conflict-callbacks.c:533
 msgid "mark resolved"
 msgstr ""
 
@@ -8469,6 +8468,7 @@ msgid "accept my version of entire file (even non-conflicts)  [mine-full]"
 msgstr ""
 
 #: ../svn/conflict-callbacks.c:469 ../svn/conflict-callbacks.c:492
+#: ../svn/conflict-callbacks.c:515
 msgid "my version"
 msgstr ""
 
@@ -8477,6 +8477,7 @@ msgid "accept their version of entire file (same)  [theirs-full]"
 msgstr ""
 
 #: ../svn/conflict-callbacks.c:472 ../svn/conflict-callbacks.c:495
+#: ../svn/conflict-callbacks.c:518
 msgid "their version"
 msgstr ""
 
@@ -8497,27 +8498,28 @@ msgid "launch tool"
 msgstr ""
 
 #: ../svn/conflict-callbacks.c:480 ../svn/conflict-callbacks.c:503
+#: ../svn/conflict-callbacks.c:521
 msgid "mark the conflict to be resolved later  [postpone]"
 msgstr ""
 
 #: ../svn/conflict-callbacks.c:480 ../svn/conflict-callbacks.c:503
-#: ../svn/conflict-callbacks.c:517 ../svn/conflict-callbacks.c:535
-#: ../svn/conflict-callbacks.c:549 ../svn/conflict-callbacks.c:565
-#: ../svn/conflict-callbacks.c:581
+#: ../svn/conflict-callbacks.c:521 ../svn/conflict-callbacks.c:535
+#: ../svn/conflict-callbacks.c:553 ../svn/conflict-callbacks.c:567
+#: ../svn/conflict-callbacks.c:583 ../svn/conflict-callbacks.c:599
 msgid "postpone"
 msgstr ""
 
 #: ../svn/conflict-callbacks.c:483 ../svn/conflict-callbacks.c:506
-#: ../svn/conflict-callbacks.c:519 ../svn/conflict-callbacks.c:537
-#: ../svn/conflict-callbacks.c:551 ../svn/conflict-callbacks.c:567
-#: ../svn/conflict-callbacks.c:583
+#: ../svn/conflict-callbacks.c:524 ../svn/conflict-callbacks.c:537
+#: ../svn/conflict-callbacks.c:555 ../svn/conflict-callbacks.c:569
+#: ../svn/conflict-callbacks.c:585 ../svn/conflict-callbacks.c:601
 msgid "postpone all remaining conflicts"
 msgstr ""
 
 #: ../svn/conflict-callbacks.c:483 ../svn/conflict-callbacks.c:506
-#: ../svn/conflict-callbacks.c:519 ../svn/conflict-callbacks.c:537
-#: ../svn/conflict-callbacks.c:551 ../svn/conflict-callbacks.c:567
-#: ../svn/conflict-callbacks.c:583
+#: ../svn/conflict-callbacks.c:524 ../svn/conflict-callbacks.c:537
+#: ../svn/conflict-callbacks.c:555 ../svn/conflict-callbacks.c:569
+#: ../svn/conflict-callbacks.c:585 ../svn/conflict-callbacks.c:601
 msgid "quit resolution"
 msgstr ""
 
@@ -8553,124 +8555,134 @@ msgstr ""
 msgid "accept edited version of property"
 msgstr ""
 
-#: ../svn/conflict-callbacks.c:508 ../svn/conflict-callbacks.c:521
-#: ../svn/conflict-callbacks.c:539 ../svn/conflict-callbacks.c:553
-#: ../svn/conflict-callbacks.c:569 ../svn/conflict-callbacks.c:585
+#: ../svn/conflict-callbacks.c:508 ../svn/conflict-callbacks.c:526
+#: ../svn/conflict-callbacks.c:539 ../svn/conflict-callbacks.c:557
+#: ../svn/conflict-callbacks.c:571 ../svn/conflict-callbacks.c:587
+#: ../svn/conflict-callbacks.c:603
 msgid "help"
 msgstr ""
 
-#: ../svn/conflict-callbacks.c:508 ../svn/conflict-callbacks.c:521
-#: ../svn/conflict-callbacks.c:539 ../svn/conflict-callbacks.c:553
-#: ../svn/conflict-callbacks.c:569 ../svn/conflict-callbacks.c:585
+#: ../svn/conflict-callbacks.c:508 ../svn/conflict-callbacks.c:526
+#: ../svn/conflict-callbacks.c:539 ../svn/conflict-callbacks.c:557
+#: ../svn/conflict-callbacks.c:571 ../svn/conflict-callbacks.c:587
+#: ../svn/conflict-callbacks.c:603
 msgid "show this help (also '?')"
 msgstr ""
 
 #: ../svn/conflict-callbacks.c:515
+msgid "accept pre-existing item (ignore upstream addition)  [mine-full]"
+msgstr ""
+
+#: ../svn/conflict-callbacks.c:518
+msgid "accept incoming item (overwrite pre-existing item)  [theirs-full]"
+msgstr ""
+
+#: ../svn/conflict-callbacks.c:533
 msgid "accept current working copy state"
 msgstr ""
 
-#: ../svn/conflict-callbacks.c:517 ../svn/conflict-callbacks.c:535
-#: ../svn/conflict-callbacks.c:549 ../svn/conflict-callbacks.c:565
-#: ../svn/conflict-callbacks.c:581
+#: ../svn/conflict-callbacks.c:535 ../svn/conflict-callbacks.c:553
+#: ../svn/conflict-callbacks.c:567 ../svn/conflict-callbacks.c:583
+#: ../svn/conflict-callbacks.c:599
 msgid "resolve the conflict later  [postpone]"
 msgstr ""
 
-#: ../svn/conflict-callbacks.c:527
+#: ../svn/conflict-callbacks.c:545
 msgid "apply update (recommended)"
 msgstr ""
 
-#: ../svn/conflict-callbacks.c:528
+#: ../svn/conflict-callbacks.c:546
 msgid "apply update to the move destination  [mine-conflict]"
 msgstr ""
 
-#: ../svn/conflict-callbacks.c:531
+#: ../svn/conflict-callbacks.c:549
 msgid "discard update (breaks move)"
 msgstr ""
 
-#: ../svn/conflict-callbacks.c:531
+#: ../svn/conflict-callbacks.c:549
 msgid "discard update, mark resolved, the move will will become a copy"
 msgstr ""
 
-#: ../svn/conflict-callbacks.c:545
+#: ../svn/conflict-callbacks.c:563
 msgid "apply update to move destination"
 msgstr ""
 
-#: ../svn/conflict-callbacks.c:546
+#: ../svn/conflict-callbacks.c:564
 msgid "apply incoming update to move destination  [mine-conflict]"
 msgstr ""
 
-#: ../svn/conflict-callbacks.c:559 ../svn/conflict-callbacks.c:575
+#: ../svn/conflict-callbacks.c:577 ../svn/conflict-callbacks.c:593
 msgid "keep affected local moves"
 msgstr ""
 
-#: ../svn/conflict-callbacks.c:559
+#: ../svn/conflict-callbacks.c:577
 msgid "keep any local moves affected by this deletion  [mine-conflict]"
 msgstr ""
 
-#: ../svn/conflict-callbacks.c:562 ../svn/conflict-callbacks.c:578
+#: ../svn/conflict-callbacks.c:580 ../svn/conflict-callbacks.c:596
 msgid "mark resolved (breaks moves)"
 msgstr ""
 
-#: ../svn/conflict-callbacks.c:562
+#: ../svn/conflict-callbacks.c:580
 msgid "mark resolved, any affected moves will become copies"
 msgstr ""
 
-#: ../svn/conflict-callbacks.c:575
+#: ../svn/conflict-callbacks.c:593
 msgid "keep any moves affected by this replacement  [mine-conflict]"
 msgstr ""
 
-#: ../svn/conflict-callbacks.c:578
+#: ../svn/conflict-callbacks.c:596
 msgid "mark resolved (any affected moves will become copies)"
 msgstr ""
 
-#: ../svn/conflict-callbacks.c:614
+#: ../svn/conflict-callbacks.c:632
 msgid "Select:"
 msgstr ""
 
-#: ../svn/conflict-callbacks.c:641
+#: ../svn/conflict-callbacks.c:659
 #, c-format
 msgid " (%s) %s"
 msgstr ""
 
-#: ../svn/conflict-callbacks.c:681
+#: ../svn/conflict-callbacks.c:699
 msgid ""
 "Words in square brackets are the corresponding --accept option arguments.\n"
 msgstr ""
 
-#: ../svn/conflict-callbacks.c:720
+#: ../svn/conflict-callbacks.c:738
 #, c-format
 msgid ""
 "Unrecognized option.\n"
 "\n"
 msgstr ""
 
-#: ../svn/conflict-callbacks.c:748
+#: ../svn/conflict-callbacks.c:766
 #, c-format
 msgid "Conflict discovered in file '%s'.\n"
 msgstr ""
 
-#: ../svn/conflict-callbacks.c:818
+#: ../svn/conflict-callbacks.c:836
 #, c-format
 msgid ""
 "Invalid option; cannot display conflicts for a binary file.\n"
 "\n"
 msgstr ""
 
-#: ../svn/conflict-callbacks.c:827
+#: ../svn/conflict-callbacks.c:845
 #, c-format
 msgid ""
 "Invalid option; original files not available.\n"
 "\n"
 msgstr ""
 
-#: ../svn/conflict-callbacks.c:839
+#: ../svn/conflict-callbacks.c:857
 #, c-format
 msgid ""
 "Invalid option; there's no merged version to diff.\n"
 "\n"
 msgstr ""
 
-#: ../svn/conflict-callbacks.c:859
+#: ../svn/conflict-callbacks.c:877
 #, c-format
 msgid ""
 "Invalid option; can only resolve text conflicts with the internal merge "
@@ -8678,59 +8690,66 @@ msgid ""
 "\n"
 msgstr ""
 
-#: ../svn/conflict-callbacks.c:885 ../svn/conflict-callbacks.c:902
+#: ../svn/conflict-callbacks.c:903 ../svn/conflict-callbacks.c:920
 #, c-format
 msgid ""
 "Invalid option.\n"
 "\n"
 msgstr ""
 
-#: ../svn/conflict-callbacks.c:911
+#: ../svn/conflict-callbacks.c:929
 #, c-format
 msgid ""
 "Invalid option; cannot choose based on conflicts in a binary file.\n"
 "\n"
 msgstr ""
 
-#: ../svn/conflict-callbacks.c:925
+#: ../svn/conflict-callbacks.c:943
 #, c-format
 msgid ""
 "Invalid option; use diff/edit/merge/launch before choosing 'mark resolved'.\n"
 "\n"
 msgstr ""
 
-#: ../svn/conflict-callbacks.c:966
+#: ../svn/conflict-callbacks.c:984
 #, c-format
 msgid "Conflict for property '%s' discovered on '%s'.\n"
 msgstr ""
 
-#: ../svn/conflict-callbacks.c:1024
+#: ../svn/conflict-callbacks.c:1042
 #, c-format
 msgid ""
 "Invalid option; please edit the property first.\n"
 "\n"
 msgstr ""
 
-#: ../svn/conflict-callbacks.c:1061
+#: ../svn/conflict-callbacks.c:1079
 #, c-format
 msgid ""
 "Tree conflict on '%s'\n"
 "   > %s\n"
 msgstr ""
 
-#: ../svn/conflict-callbacks.c:1179
+#: ../svn/conflict-callbacks.c:1149
+#, c-format
+msgid ""
+"Conflict discovered when trying to add '%s'.\n"
+"An object of the same name already exists.\n"
+msgstr ""
+
+#: ../svn/conflict-callbacks.c:1247
 msgid "No editor found; leaving all conflicts."
 msgstr ""
 
-#: ../svn/conflict-callbacks.c:1188
+#: ../svn/conflict-callbacks.c:1256
 msgid "Error running editor; leaving all conflicts."
 msgstr ""
 
-#: ../svn/conflict-callbacks.c:1224
+#: ../svn/conflict-callbacks.c:1292
 msgid "No merge tool found; leaving all conflicts."
 msgstr ""
 
-#: ../svn/conflict-callbacks.c:1233
+#: ../svn/conflict-callbacks.c:1301
 msgid "Error running merge tool; leaving all conflicts."
 msgstr ""
 
