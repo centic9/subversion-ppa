@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: dev@subversion.apache.org\n"
-"POT-Creation-Date: 2014-08-01 23:14+0000\n"
+"POT-Creation-Date: 2014-12-09 07:32+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1195,7 +1195,7 @@ msgstr ""
 msgid "No non-tracing links found in the error chain"
 msgstr ""
 
-#: ../libsvn_auth_gnome_keyring/gnome_keyring.c:273
+#: ../libsvn_auth_gnome_keyring/gnome_keyring.c:152
 msgid "GNOME Keyring is locked and we are non-interactive"
 msgstr ""
 
@@ -1599,8 +1599,8 @@ msgstr ""
 msgid "   Merged %s:r%s%s"
 msgstr ""
 
-#: ../libsvn_client/diff.c:161 ../libsvn_diff/diff_file.c:1852
-#: ../libsvn_diff/diff_file.c:1868
+#: ../libsvn_client/diff.c:161 ../libsvn_diff/diff_file.c:1859
+#: ../libsvn_diff/diff_file.c:1875
 #, c-format
 msgid "Path '%s' must be an immediate child of the directory '%s'"
 msgstr ""
@@ -1737,48 +1737,48 @@ msgstr ""
 msgid "The file external '%s' can not be created because the node exists."
 msgstr ""
 
-#: ../libsvn_client/externals.c:553
+#: ../libsvn_client/externals.c:556
 #, c-format
 msgid "URL '%s' does not begin with a scheme"
 msgstr ""
 
-#: ../libsvn_client/externals.c:629
+#: ../libsvn_client/externals.c:632
 #, c-format
 msgid "Illegal parent directory URL '%s'"
 msgstr ""
 
-#: ../libsvn_client/externals.c:668
+#: ../libsvn_client/externals.c:671
 #, c-format
 msgid "Illegal repository root URL '%s'"
 msgstr ""
 
-#: ../libsvn_client/externals.c:713
+#: ../libsvn_client/externals.c:716
 #, c-format
 msgid "The external relative URL '%s' cannot have backpaths, i.e. '..'"
 msgstr ""
 
-#: ../libsvn_client/externals.c:741
+#: ../libsvn_client/externals.c:744
 #, c-format
 msgid "Unrecognized format for the relative external URL '%s'"
 msgstr ""
 
-#: ../libsvn_client/externals.c:880
+#: ../libsvn_client/externals.c:883
 #, c-format
 msgid "URL '%s' at revision %ld doesn't exist"
 msgstr ""
 
-#: ../libsvn_client/externals.c:885
+#: ../libsvn_client/externals.c:888
 #, c-format
 msgid "URL '%s' at revision %ld is not a file or a directory"
 msgstr ""
 
-#: ../libsvn_client/externals.c:953
+#: ../libsvn_client/externals.c:956
 #, c-format
 msgid ""
 "Unsupported external: url of file external '%s' is not in repository '%s'"
 msgstr ""
 
-#: ../libsvn_client/externals.c:1145
+#: ../libsvn_client/externals.c:1148
 #, c-format
 msgid "Traversal of '%s' found no ambient depth"
 msgstr ""
@@ -2247,30 +2247,30 @@ msgstr ""
 msgid "Unexpected end of svndiff input"
 msgstr ""
 
-#: ../libsvn_diff/diff_file.c:1089
+#: ../libsvn_diff/diff_file.c:1096
 #, c-format
 msgid "The file '%s' changed unexpectedly during diff"
 msgstr ""
 
-#: ../libsvn_diff/diff_file.c:1259
+#: ../libsvn_diff/diff_file.c:1266
 msgid "Error in options to internal diff"
 msgstr ""
 
-#: ../libsvn_diff/diff_file.c:1285
+#: ../libsvn_diff/diff_file.c:1292
 #, c-format
 msgid "Invalid argument '%s' in diff options"
 msgstr ""
 
-#: ../libsvn_diff/diff_file.c:1568
+#: ../libsvn_diff/diff_file.c:1575
 msgid "No newline at end of file"
 msgstr ""
 
 #. Order of date components can be different in different languages
-#: ../libsvn_diff/diff_file.c:1775
+#: ../libsvn_diff/diff_file.c:1782
 msgid "%a %b %e %H:%M:%S %Y"
 msgstr ""
 
-#: ../libsvn_diff/diff_file.c:2393
+#: ../libsvn_diff/diff_file.c:2400
 #, c-format
 msgid "Failed to delete mmap '%s'"
 msgstr ""
@@ -4809,48 +4809,48 @@ msgstr ""
 msgid " removing '\\r' from %s ..."
 msgstr ""
 
-#: ../libsvn_repos/dump.c:263
-#, c-format
-msgid "E%06d: While validating fspath '%s': %s"
-msgstr ""
-
-#: ../libsvn_repos/dump.c:387
-#, c-format
-msgid ""
-"Referencing data in revision %ld, which is older than the oldest dumped "
-"revision (r%ld).  Loading this dump into an empty repository will fail."
-msgstr ""
-
-#: ../libsvn_repos/dump.c:492
+#: ../libsvn_repos/dump.c:243
 #, c-format
 msgid ""
 "Mergeinfo referencing revision(s) prior to the oldest dumped revision (r"
 "%ld). Loading this dump may result in invalid mergeinfo."
 msgstr ""
 
-#: ../libsvn_repos/dump.c:1017 ../libsvn_repos/dump.c:1280
+#: ../libsvn_repos/dump.c:305
+#, c-format
+msgid "E%06d: While validating fspath '%s': %s"
+msgstr ""
+
+#: ../libsvn_repos/dump.c:429
+#, c-format
+msgid ""
+"Referencing data in revision %ld, which is older than the oldest dumped "
+"revision (r%ld).  Loading this dump into an empty repository will fail."
+msgstr ""
+
+#: ../libsvn_repos/dump.c:1041 ../libsvn_repos/dump.c:1304
 #, c-format
 msgid "Start revision %ld is greater than end revision %ld"
 msgstr ""
 
-#: ../libsvn_repos/dump.c:1022 ../libsvn_repos/dump.c:1285
+#: ../libsvn_repos/dump.c:1046 ../libsvn_repos/dump.c:1309
 #, c-format
 msgid "End revision %ld is invalid (youngest revision is %ld)"
 msgstr ""
 
-#: ../libsvn_repos/dump.c:1162
+#: ../libsvn_repos/dump.c:1186
 msgid ""
 "The range of revisions dumped contained references to copy sources outside "
 "that range."
 msgstr ""
 
-#: ../libsvn_repos/dump.c:1176
+#: ../libsvn_repos/dump.c:1200
 msgid ""
 "The range of revisions dumped contained mergeinfo which reference revisions "
 "outside that range."
 msgstr ""
 
-#: ../libsvn_repos/dump.c:1233
+#: ../libsvn_repos/dump.c:1257
 #, c-format
 msgid "Unexpected node kind %d for '%s'"
 msgstr ""
