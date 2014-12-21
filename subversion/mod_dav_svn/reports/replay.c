@@ -47,7 +47,6 @@ typedef struct edit_baton_t {
   ap_filter_t *output;
   svn_boolean_t started;
   svn_boolean_t sending_textdelta;
-  int compression_level;
 } edit_baton_t;
 
 
@@ -327,7 +326,7 @@ apply_textdelta(void *file_baton,
                                                              eb->output,
                                                              pool),
                           0,
-                          eb->compression_level,
+                          dav_svn__get_compression_level(),
                           pool);
 
   eb->sending_textdelta = TRUE;
@@ -368,7 +367,6 @@ make_editor(const svn_delta_editor_t **editor,
             void **edit_baton,
             apr_bucket_brigade *bb,
             ap_filter_t *output,
-            int compression_level,
             apr_pool_t *pool)
 {
   edit_baton_t *eb = apr_pcalloc(pool, sizeof(*eb));
@@ -378,7 +376,6 @@ make_editor(const svn_delta_editor_t **editor,
   eb->output = output;
   eb->started = FALSE;
   eb->sending_textdelta = FALSE;
-  eb->compression_level = compression_level;
 
   e->set_target_revision = set_target_revision;
   e->open_root = open_root;
@@ -418,11 +415,11 @@ dav_svn__replay_report(const dav_resource *resource,
 {
   dav_error *derr = NULL;
   svn_revnum_t low_water_mark = SVN_INVALID_REVNUM;
-  svn_revnum_t rev;
+  svn_revnum_t rev = SVN_INVALID_REVNUM;
   const svn_delta_editor_t *editor;
   svn_boolean_t send_deltas = TRUE;
   dav_svn__authz_read_baton arb;
-  const char *base_dir;
+  const char *base_dir = resource->info->repos_path;
   apr_bucket_brigade *bb;
   apr_xml_elem *child;
   svn_fs_root_t *root;
@@ -430,26 +427,9 @@ dav_svn__replay_report(const dav_resource *resource,
   void *edit_baton;
   int ns;
 
-  /* In Subversion 1.8, we allowed this REPORT to be issue against a
-     revision resource.  Doing so means the REV is part of the request
-     URL, and BASE_DIR is embedded in the request body.
-
-     The old-school (and incorrect, see issue #4287 --
-     http://subversion.tigris.org/issues/show_bug.cgi?id=4287) way was
-     to REPORT on the public URL of the BASE_DIR and embed the REV in
-     the report body.
-  */
-  if (resource->baselined
-      && (resource->type == DAV_RESOURCE_TYPE_VERSION))
-    {
-      rev = resource->info->root.rev;
-      base_dir = NULL;
-    }
-  else
-    {
-      rev = SVN_INVALID_REVNUM;
-      base_dir = resource->info->repos_path;
-    }
+  /* The request won't have a repos_path if it's for the root. */
+  if (! base_dir)
+    base_dir = "";
 
   arb.r = resource->info->r;
   arb.repos = resource->info->repos;
@@ -472,17 +452,9 @@ dav_svn__replay_report(const dav_resource *resource,
 
           if (strcmp(child->name, "revision") == 0)
             {
-              if (SVN_IS_VALID_REVNUM(rev))
-                {
-                  /* Uh... we already have a revision to use, either
-                     because this tag is non-unique or because the
-                     request was submitted against a revision-bearing
-                     resource URL.  Either way, something's not
-                     right.  */
-                  return malformed_element_error("revision", resource->pool);
-                }
-
               cdata = dav_xml_get_cdata(child, resource->pool, 1);
+              if (! cdata)
+                return malformed_element_error("revision", resource->pool);
               rev = SVN_STR_TO_REV(cdata);
             }
           else if (strcmp(child->name, "low-water-mark") == 0)
@@ -506,16 +478,7 @@ dav_svn__replay_report(const dav_resource *resource,
                   svn_error_clear(err);
                   return malformed_element_error("send-deltas", resource->pool);
                 }
-              send_deltas = parsed_val != 0;
-            }
-          else if (strcmp(child->name, "include-path") == 0)
-            {
-              cdata = dav_xml_get_cdata(child, resource->pool, 1);
-              if ((derr = dav_svn__test_canonical(cdata, resource->pool)))
-                return derr;
-
-              /* Force BASE_DIR to be a relative path, not an fspath. */
-              base_dir = svn_relpath_canonicalize(cdata, resource->pool);
+              send_deltas = parsed_val ? TRUE : FALSE;
             }
         }
     }
@@ -532,9 +495,6 @@ dav_svn__replay_report(const dav_resource *resource,
               "Request was missing the low-water-mark argument.",
               SVN_DAV_ERROR_NAMESPACE, SVN_DAV_ERROR_TAG);
 
-  if (! base_dir)
-    base_dir = "";
-
   bb = apr_brigade_create(resource->pool, output->c->bucket_alloc);
 
   if ((err = svn_fs_revision_root(&root, resource->info->repos->fs, rev,
@@ -546,9 +506,7 @@ dav_svn__replay_report(const dav_resource *resource,
       goto cleanup;
     }
 
-  make_editor(&editor, &edit_baton, bb, output,
-              dav_svn__get_compression_level(resource->info->r),
-              resource->pool);
+  make_editor(&editor, &edit_baton, bb, output, resource->pool);
 
   if ((err = svn_repos_replay2(root, base_dir, low_water_mark,
                                send_deltas, editor, edit_baton,

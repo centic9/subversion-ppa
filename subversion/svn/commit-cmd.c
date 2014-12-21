@@ -29,7 +29,6 @@
 
 #include <apr_general.h>
 
-#include "svn_hash.h"
 #include "svn_error.h"
 #include "svn_error_codes.h"
 #include "svn_wc.h"
@@ -137,7 +136,8 @@ svn_cl__commit(apr_getopt_t *os,
   if (opt_state->depth == svn_depth_unknown)
     opt_state->depth = svn_depth_infinity;
 
-  cfg = svn_hash_gets(ctx->config, SVN_CONFIG_CATEGORY_CONFIG);
+  cfg = apr_hash_get(ctx->config, SVN_CONFIG_CATEGORY_CONFIG,
+                     APR_HASH_KEY_STRING);
   if (cfg)
     SVN_ERR(svn_config_get_bool(cfg, &no_unlock,
                                 SVN_CONFIG_SECTION_MISCELLANY,
@@ -166,13 +166,11 @@ svn_cl__commit(apr_getopt_t *os,
     }
 
   /* Commit. */
-  err = svn_client_commit6(targets,
+  err = svn_client_commit5(targets,
                            opt_state->depth,
                            no_unlock,
                            opt_state->keep_changelists,
                            TRUE /* commit_as_operations */,
-                           opt_state->include_externals, /* file externals */
-                           opt_state->include_externals, /* dir externals */
                            opt_state->changelists,
                            opt_state->revprop_table,
                            (opt_state->quiet

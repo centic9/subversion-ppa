@@ -20,7 +20,7 @@
 require "my-assertions"
 require "util"
 require "time"
-require "digest/md5"
+require "md5"
 
 require "svn/core"
 require "svn/fs"
@@ -49,15 +49,14 @@ class SvnFsTest < Test::Unit::TestCase
 
     assert(!File.exist?(path))
     fs = nil
-    callback = Proc.new do |t_fs|
+    callback = Proc.new do |fs|
       assert(File.exist?(path))
       assert_equal(fs_type, Svn::Fs.type(path))
-      t_fs.set_warning_func do |err|
+      fs.set_warning_func do |err|
         p err
         abort
       end
-      assert_equal(path, t_fs.path)
-      fs = t_fs
+      assert_equal(path, fs.path)
     end
     yield(:create, [path, config], callback)
 
@@ -163,7 +162,7 @@ class SvnFsTest < Test::Unit::TestCase
 
       assert_equal(src, @fs.root.file_contents(path_in_repos){|f| f.read})
       assert_equal(src.length, @fs.root.file_length(path_in_repos))
-      assert_equal(Digest::MD5.hexdigest(src),
+      assert_equal(MD5.new(src).hexdigest,
                    @fs.root.file_md5_checksum(path_in_repos))
 
       assert_equal([path_in_repos], @fs.root.paths_changed.keys)
@@ -365,7 +364,7 @@ class SvnFsTest < Test::Unit::TestCase
 
       File.open(path, "w") {|f| f.print(modified)}
       @fs.transaction do |txn|
-        checksum = Digest::MD5.hexdigest(normalize_line_break(result))
+        checksum = MD5.new(normalize_line_break(result)).hexdigest
         stream = txn.root.apply_text(path_in_repos, checksum)
         stream.write(normalize_line_break(result))
         stream.close
@@ -393,8 +392,8 @@ class SvnFsTest < Test::Unit::TestCase
 
       File.open(path, "w") {|f| f.print(modified)}
       @fs.transaction do |txn|
-        base_checksum = Digest::MD5.hexdigest(normalize_line_break(src))
-        checksum = Digest::MD5.hexdigest(normalize_line_break(result))
+        base_checksum = MD5.new(normalize_line_break(src)).hexdigest
+        checksum = MD5.new(normalize_line_break(result)).hexdigest
         handler = txn.root.apply_textdelta(path_in_repos,
                                            base_checksum, checksum)
         assert_raises(Svn::Error::ChecksumMismatch) do

@@ -255,7 +255,7 @@ if sys.version_info[0] >= 3:
   from io import StringIO
 else:
   # Python <3.0
-  from cStringIO import StringIO
+  from StringIO import StringIO
 
 def make(wc_dir, commands, prev_status=None, prev_disk=None, verbose=True):
   """The Factory Invocation Function. This is typically the only one
@@ -288,9 +288,7 @@ class TestFactory:
     # Any expected_disk still there from a previous verification
     self.prev_disk = None
     if prev_disk:
-      reparented_prev_disk = svntest.wc.State(prev_disk.wc_dir, {});
-      reparented_prev_disk.add_state(sbox.wc_dir, prev_disk);
-      self.prev_disk = [None, reparented_prev_disk]
+      self.prev_disk = [None, prev_disk]      # svntest.wc.State
 
     # Those command line options that expect an argument following
     # which is not a path. (don't expand args following these)
@@ -310,7 +308,6 @@ class TestFactory:
 
     # Wether we ever used the variables 'wc_dir' and 'url' (tiny tweak)
     self.used_wc_dir = False
-    self.used_abs_wc_dir = False
     self.used_url = False
 
     # The alternate working copy directories created that need to be
@@ -351,8 +348,6 @@ class TestFactory:
       # main wc_dir and url
       if self.used_wc_dir:
         init += 'wc_dir = sbox.wc_dir\n'
-      if self.used_abs_wc_dir:
-        init += 'abs_wc_dir = os.path.abspath(sbox.wc_dir)\n'
       if self.used_url:
         init += 'url = sbox.repo_url\n'
 
@@ -450,13 +445,8 @@ class TestFactory:
         return self.cmd_svn_checkout(args[2:])
 
       if second in ['propset','pset','ps']:
-        multiline_args = [arg.replace(r'\n', '\n') for arg in args[1:]]
-        return self.cmd_svn(multiline_args, False,
-          self.keep_args_of, 3)
-
-      if second in ['propget','pget','pg']:
         return self.cmd_svn(args[1:], False,
-          self.keep_args_of, 2)
+          self.keep_args_of, 3)
 
       if second in ['delete','del','remove', 'rm']:
         return self.cmd_svn(args[1:], False,
@@ -1123,7 +1113,7 @@ class TestFactory:
         if not runpath:
           continue
         strlen = len(runpath)
-        item = (strlen, name, runpath)
+        item = [strlen, name, runpath]
         bisect.insort(lst, item)
 
     return lst
@@ -1136,14 +1126,14 @@ class TestFactory:
     urls = []
     for name in self.vars:
       if name.startswith('url_'):
-        bisect.insort(urls, (name.lower(), name))
+        bisect.insort(urls, [name.lower(), name])
       else:
-        bisect.insort(paths, (name.lower(), name))
+        bisect.insort(paths, [name.lower(), name])
     list = []
     for path in paths:
-      list.append(path[1])
+      list += [path[1]]
     for url in urls:
-      list.append(url[1])
+      list += [url[1]]
     return list
 
 
@@ -1176,20 +1166,8 @@ class TestFactory:
       path = var[2]
       str = replace(str, path, name, quote)
 
-    str2 = replace(str, os.path.abspath(self.sbox.wc_dir), 'abs_wc_dir', quote)
-    if str != str2:
-      self.used_abs_wc_dir = True
-    str = str2
-
-    str2 = replace(str, self.sbox.wc_dir, 'wc_dir', quote)
-    if str != str2:
-      self.used_wc_dir = True
-    str = str2
-
-    str2 = replace(str, self.sbox.repo_url, 'url', quote)
-    if str != str2:
-      self.used_url = True
-    str = str2
+    str = replace(str, self.sbox.wc_dir, 'wc_dir', quote)
+    str = replace(str, self.sbox.repo_url, 'url', quote)
 
     # now remove trailing null-str adds:
     #   '' + url_A_C + ''
@@ -1632,12 +1610,6 @@ class TestFactory:
 
   def ensure_path_var(self, wc, pathelements):
     "Given a path in a working copy, make sure we have a variable for it."
-
-    # special case: if a path is '.', simply use wc_dir.
-    if pathelements == ['.']:
-      self.used_wc_dir = True
-      return wc.py, wc.realpath
-
     name = "_".join(pathelements)
 
     if wc.suffix is not None:

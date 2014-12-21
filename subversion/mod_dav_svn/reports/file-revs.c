@@ -52,9 +52,6 @@ struct file_rev_baton {
   /* SVNDIFF version to use when sending to client.  */
   int svndiff_version;
 
-  /* Compression level to use for SVNDIFF. */
-  int compression_level;
-
   /* Used by the delta iwndow handler. */
   svn_txdelta_window_handler_t window_handler;
   void *window_baton;
@@ -211,7 +208,7 @@ file_rev_handler(void *baton,
                                                          pool);
       svn_txdelta_to_svndiff3(&frb->window_handler, &frb->window_baton,
                               base64_stream, frb->svndiff_version,
-                              frb->compression_level, pool);
+                              dav_svn__get_compression_level(), pool);
       *window_handler = delta_window_handler;
       *window_baton = frb;
       /* Start the txdelta element wich will be terminated by the window
@@ -254,6 +251,9 @@ dav_svn__file_revs_report(const dav_resource *resource,
   arb.repos = resource->info->repos;
 
   /* Sanity check. */
+  if (!resource->info->repos_path)
+    return dav_svn__new_error(resource->pool, HTTP_BAD_REQUEST, 0,
+                              "The request does not specify a repository path");
   ns = dav_svn__find_ns(doc->namespaces, SVN_XML_NAMESPACE);
   /* ### This is done on other places, but the document element is
      in this namespace, so is this necessary at all? */
@@ -309,7 +309,6 @@ dav_svn__file_revs_report(const dav_resource *resource,
   frb.output = output;
   frb.needs_header = TRUE;
   frb.svndiff_version = resource->info->svndiff_version;
-  frb.compression_level = dav_svn__get_compression_level(resource->info->r);
 
   /* file_rev_handler will send header first time it is called. */
 

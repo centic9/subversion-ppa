@@ -53,7 +53,6 @@
 #include <locale.h>
 #include <math.h>
 
-#include "svn_hash.h"
 #include "svn_nls.h"
 #include "svn_pools.h"
 #include "svn_props.h"
@@ -735,9 +734,7 @@ svn_swig_rb_get_pool(int argc, VALUE *argv, VALUE self,
 static svn_boolean_t
 rb_set_pool_if_swig_type_object(VALUE target, VALUE pool)
 {
-  VALUE targets[1];
-  
-  targets[0] = target;
+  VALUE targets[1] = {target};
 
   if (!NIL_P(find_swig_type_object(1, targets))) {
     rb_set_pool(target, pool);
@@ -1192,7 +1189,6 @@ DEFINE_DUP(auth_ssl_server_cert_info)
 DEFINE_DUP(wc_entry)
 DEFINE_DUP(client_diff_summarize)
 DEFINE_DUP(dirent)
-DEFINE_DUP(log_entry)
 DEFINE_DUP_NO_CONVENIENCE(client_commit_item3)
 DEFINE_DUP_NO_CONVENIENCE(client_proplist_item)
 DEFINE_DUP_NO_CONVENIENCE(wc_external_item2)
@@ -1223,7 +1219,7 @@ r2c_svn_string(VALUE value, void *ctx, apr_pool_t *pool)
 }
 
 void *
-svn_swig_rb_to_swig_type(VALUE value, const void *ctx, apr_pool_t *pool)
+svn_swig_rb_to_swig_type(VALUE value, void *ctx, apr_pool_t *pool)
 {
   void **result = NULL;
   result = apr_palloc(pool, sizeof(void *));
@@ -1520,8 +1516,10 @@ r2c_hash_i(VALUE key, VALUE value, hash_to_apr_hash_data_t *data)
 {
   if (key != Qundef) {
     void *val = data->func(value, data->ctx, data->pool);
-    svn_hash_sets(data->apr_hash, apr_pstrdup(data->pool, StringValuePtr(key)),
-                  val);
+    apr_hash_set(data->apr_hash,
+                 apr_pstrdup(data->pool, StringValuePtr(key)),
+                 APR_HASH_KEY_STRING,
+                 val);
   }
   return ST_CONTINUE;
 }
@@ -1533,14 +1531,15 @@ r2c_hash(VALUE hash, r2c_func func, void *ctx, apr_pool_t *pool)
     return NULL;
   } else {
     apr_hash_t *apr_hash;
-    hash_to_apr_hash_data_t data;
+    hash_to_apr_hash_data_t data = {
+      NULL,
+      func,
+      ctx,
+      pool
+    };
 
     apr_hash = apr_hash_make(pool);
     data.apr_hash = apr_hash;
-    data.ctx = ctx;
-    data.func = func;
-    data.pool = pool;
-
     rb_hash_foreach(hash, r2c_hash_i, (VALUE)&data);
 
     return apr_hash;
@@ -1639,9 +1638,8 @@ invoke_callback(VALUE baton, VALUE pool)
 {
   callback_baton_t *cbb = (callback_baton_t *)baton;
   VALUE sub_pool;
-  VALUE argv[1];
+  VALUE argv[] = {pool};
 
-  argv[0] = pool;
   svn_swig_rb_get_pool(1, argv, Qnil, &sub_pool, NULL);
   cbb->pool = sub_pool;
   return rb_ensure(callback, baton, callback_ensure, sub_pool);
@@ -2156,7 +2154,9 @@ svn_swig_rb_log_entry_receiver(void *baton,
 
         cbb.receiver = proc;
         cbb.message = id_call;
-        cbb.args = rb_ary_new3(1, c2r_log_entry__dup(entry));
+        cbb.args = rb_ary_new3(1,
+                               c2r_swig_type((void *)entry,
+                                             (void *)"svn_log_entry_t *"));
         invoke_callback_handle_error((VALUE)(&cbb), rb_pool, &err);
     }
     return err;
@@ -2959,41 +2959,6 @@ svn_swig_rb_auth_simple_prompt_func(svn_auth_cred_simple_t **cred,
   }
 
   *cred = new_cred;
-  return err;
-}
-
-svn_error_t *
-svn_swig_rb_auth_gnome_keyring_unlock_prompt_func(char **keyring_passwd,
-                                                  const char *keyring_name,
-                                                  void *baton,
-                                                  apr_pool_t *pool)
-{
-  svn_error_t *err = SVN_NO_ERROR;
-  VALUE proc, rb_pool;
-  *keyring_passwd = NULL;
-
-  svn_swig_rb_from_baton((VALUE)baton, &proc, &rb_pool);
-
-  if (!NIL_P(proc)) {
-    char error_message[] =
-      "svn_auth_gnome_keyring_unlock_prompt_func_t should"
-      "return a string, not '%s'.";
-
-    callback_baton_t cbb;
-    VALUE result;
-
-    cbb.receiver = proc;
-    cbb.message = id_call;
-    cbb.args = rb_ary_new3(1, c2r_string2(keyring_name));
-    result = invoke_callback_handle_error((VALUE)(&cbb), rb_pool, &err);
-
-    if (!NIL_P(result)) {
-      if (!RTEST(rb_obj_is_kind_of(result, rb_cString)))
-        rb_raise(rb_eTypeError, error_message, r2c_inspect(result));
-      *keyring_passwd = (char *)r2c_string(result, NULL, pool);
-    }
-  }
-
   return err;
 }
 

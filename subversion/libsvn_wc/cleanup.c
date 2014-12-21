@@ -76,7 +76,7 @@ repair_timestamps(svn_wc__db_t *db,
                   void *cancel_baton,
                   apr_pool_t *scratch_pool)
 {
-  svn_node_kind_t kind;
+  svn_wc__db_kind_t kind;
   svn_wc__db_status_t status;
 
   if (cancel_func)
@@ -95,15 +95,15 @@ repair_timestamps(svn_wc__db_t *db,
       || status == svn_wc__db_status_not_present)
     return SVN_NO_ERROR;
 
-  if (kind == svn_node_file
-      || kind == svn_node_symlink)
+  if (kind == svn_wc__db_kind_file
+      || kind == svn_wc__db_kind_symlink)
     {
       svn_boolean_t modified;
       SVN_ERR(svn_wc__internal_file_modified_p(&modified,
                                                db, local_abspath, FALSE,
                                                scratch_pool));
     }
-  else if (kind == svn_node_dir)
+  else if (kind == svn_wc__db_kind_dir)
     {
       apr_pool_t *iterpool = svn_pool_create(scratch_pool);
       const apr_array_header_t *children;
@@ -142,18 +142,13 @@ cleanup_internal(svn_wc__db_t *db,
                  apr_pool_t *scratch_pool)
 {
   int wc_format;
-  svn_boolean_t is_wcroot;
-  const char *lock_abspath;
+  const char *cleanup_abspath;
 
   /* Can we even work with this directory?  */
   SVN_ERR(can_be_cleaned(&wc_format, db, dir_abspath, scratch_pool));
 
-  /* We cannot obtain a lock on a directory that's within a locked
-     subtree, so always run cleanup from the lock owner. */
-  SVN_ERR(svn_wc__db_wclock_find_root(&lock_abspath, db, dir_abspath,
-                                      scratch_pool, scratch_pool));
-  if (lock_abspath)
-    dir_abspath = lock_abspath;
+  /* ### This fails if ADM_ABSPATH is locked indirectly via a
+     ### recursive lock on an ancestor. */
   SVN_ERR(svn_wc__db_wclock_obtain(db, dir_abspath, -1, TRUE, scratch_pool));
 
   /* Run our changes before the subdirectories. We may not have to recurse
@@ -162,7 +157,8 @@ cleanup_internal(svn_wc__db_t *db,
     SVN_ERR(svn_wc__wq_run(db, dir_abspath, cancel_func, cancel_baton,
                            scratch_pool));
 
-  SVN_ERR(svn_wc__db_is_wcroot(&is_wcroot, db, dir_abspath, scratch_pool));
+  SVN_ERR(svn_wc__db_get_wcroot(&cleanup_abspath, db, dir_abspath,
+                                scratch_pool, scratch_pool));
 
 #ifdef SVN_DEBUG
   SVN_ERR(svn_wc__db_verify(db, dir_abspath, scratch_pool));
@@ -173,7 +169,7 @@ cleanup_internal(svn_wc__db_t *db,
      svn_wc__check_wcroot() as that function, will just return true
      once we start sharing databases with externals.
    */
-  if (is_wcroot)
+  if (strcmp(cleanup_abspath, dir_abspath) == 0)
     {
     /* Cleanup the tmp area of the admin subdir, if running the log has not
        removed it!  The logs have been run, so anything left here has no hope
@@ -211,7 +207,7 @@ svn_wc_cleanup3(svn_wc_context_t *wc_ctx,
   /* We need a DB that allows a non-empty work queue (though it *will*
      auto-upgrade). We'll handle everything manually.  */
   SVN_ERR(svn_wc__db_open(&db,
-                          NULL /* ### config */, FALSE, FALSE,
+                          NULL /* ### config */, TRUE, FALSE,
                           scratch_pool, scratch_pool));
 
   SVN_ERR(cleanup_internal(db, local_abspath, cancel_func, cancel_baton,
@@ -221,8 +217,6 @@ svn_wc_cleanup3(svn_wc_context_t *wc_ctx,
      pre-1.7 prescribed workarounds aren't as user-friendly in WC-NG. */
   SVN_ERR(svn_wc__db_base_clear_dav_cache_recursive(db, local_abspath,
                                                     scratch_pool));
-
-  SVN_ERR(svn_wc__db_vacuum(db, local_abspath, scratch_pool));
 
   /* We're done with this DB, so proactively close it.  */
   SVN_ERR(svn_wc__db_close(db));

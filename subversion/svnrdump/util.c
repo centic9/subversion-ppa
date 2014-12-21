@@ -35,7 +35,7 @@ svn_rdump__normalize_prop(const char *name,
                           const svn_string_t **value,
                           apr_pool_t *result_pool)
 {
-  if (svn_prop_needs_translation(name) && *value)
+  if (svn_prop_needs_translation(name))
     {
       const char *cstring;
 
@@ -67,7 +67,7 @@ svn_rdump__normalize_props(apr_hash_t **normal_props,
       SVN_ERR(svn_rdump__normalize_prop(key, &value,
                                         result_pool));
 
-      svn_hash_sets(*normal_props, key, value);
+      apr_hash_set(*normal_props, key, APR_HASH_KEY_STRING, value);
     }
   return SVN_NO_ERROR;
 }
