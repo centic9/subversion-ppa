@@ -3,9 +3,11 @@ set, since it is already rendered in the local language.
 
 Not accepted upstream: http://svn.haxx.se/dev/archive-2006-04/0730.shtml
 
---- a/subversion/libsvn_subr/subst.c
-+++ b/subversion/libsvn_subr/subst.c
-@@ -209,8 +209,12 @@
+Index: git/subversion/libsvn_subr/subst.c
+===================================================================
+--- git.orig/subversion/libsvn_subr/subst.c	2012-10-15 22:11:40.000000000 +0200
++++ git/subversion/libsvn_subr/subst.c	2012-10-15 22:12:03.000000000 +0200
+@@ -200,8 +200,12 @@
            break;
          case 'D': /* long format of date of this revision */
            if (date)
@@ -18,5 +20,5 @@ Not accepted upstream: http://svn.haxx.se/dev/archive-2006-04/0730.shtml
 +              svn_stringbuf_appendcstr(value, date_keyword);
 +            }
            break;
-         case 'P': /* relative path of this file */
-           if (repos_root_url && *repos_root_url != '\0' && url && *url != '\0')
+         case 'r': /* number of this revision */
+           if (rev)

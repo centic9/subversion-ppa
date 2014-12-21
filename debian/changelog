@@ -1,144 +1,45 @@
-subversion (1.8.5-1) unstable; urgency=low
+subversion (1.7.18-0ubuntu0~ppa1) precise; urgency=medium
 
-  [ Peter Samuelson ]
-  * New upstream release.  (Closes: #725787) Rediff patches:
-    - Remove apr-abi1 (applied upstream), rename apr-abi2 to apr-abi
-    - Remove loosen-sqlite-version-check (shouldn't be needed)
-    - Remove java-osgi-metadata (applied upstream)
-    - svnmucc prompts for a changelog if none is provided. (Closes: #507430)
-    - Remove fix-bdb-version-detection, upstream uses "apu-config --dbm-libs"
-    - Remove ruby-test-wc (applied upstream)
-    - Fix “svn diff -r N file” when file has svn:mime-type set.
-      (Closes: #734163)
-    - Support specifying an encoding for mod_dav_svn's environment in which
-      hooks are run.  (Closes: #601544)
-    - Fix ordering of “svnadmin dump” paths with certain APR versions.
-      (Closes: #687291)
-    - Provide a better error message when authentication fails with an
-      svn+ssh:// URL.  (Closes: #273874)
-    - Updated Polish translations.  (Closes: #690815)
+  * New upstream release.
 
-  [ James McCoy ]
-  * Remove all traces of libneon, replaced by libserf.
-  * patches/sqlite_3.8.x_workaround: Upstream fix for wc-queries-test test
-    failurse.
-  * Run configure with --with-apache-libexecdir, which allows removing part of
-    patches/rpath.
-  * Re-enable auth-test as upstream has fixed the problem of picking up
-    libraries from the environment rather than the build tree.
-    (Closes: #654172)
-  * Point LD_LIBRARY_PATH at the built auth libraries when running the svn
-    command during the build.  (Closes: #678224)
-  * Add a NEWS entry describing how to configure mod_dav_svn to understand
-    UTF-8.  (Closes: #566148)
-  * Remove ancient transitional package, libsvn-ruby.
-  * Enable compatibility with Sqlite3 versions back to Wheezy.
-  * Enable hardening flags.  (Closes: #734918)
-  * patches/build-fixes: Enable verbose build logs.
-  * Build against the default ruby version.  (Closes: #722393)
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Mon, 11 Aug 2014 22:51:37 +0200
 
- -- James McCoy <jamessan@debian.org>  Sun, 12 Jan 2014 19:48:33 -0500
+subversion (1.7.17-0ubuntu0~ppa1) precise; urgency=medium
 
-subversion (1.7.14-1) unstable; urgency=medium
+  * New upstream release.
 
-  * New upstream version.
-    - mod_dav_svn: Prevent crashes with some 3rd party modules.  (Closes:
-      #728352)
-    - Includes security fix:
-      + CVE-2013-4505: mod_dontdothat restrictions bypassed by relative
-        requests  (Closes: #730541)
-      + CVE-2013-4558: mod_dav_svn assertion when SVNAutoversioning is
-        enabled.
-  * Bump compat to debhelper 8
-  * Use shlibs.local to handle intrapackage dependencies on private libraries.
-  * rules: Fix removal of libsvnjavahl-1.a/.la/.so from libsvn-dev.  (Closes:
-    #711911)
-  * Remove obsolete conffiles under /etc/svn2cl.  (Closes: #677990)
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Sun, 20 Jul 2014 20:34:35 +0200
 
- -- James McCoy <jamessan@debian.org>  Fri, 27 Dec 2013 10:17:38 -0500
+subversion (1.7.16-0ubuntu0~ppa1) precise; urgency=low
 
-subversion (1.7.13-3) unstable; urgency=low
+  * New upstream release.
 
-  * Remove architecture exclusions for libsvn-java.  (Closes: #710498)
-  * Fix multi-arch Python include paths.  (Closes: #698443)
-  * Add strict Depends on libsvn1 to libapach2-mod-svn since the latter
-    leverages some internal APIs and therefore must be upgraded in lock step.
-    (Closes: #705464)
-  * Standards-Version 3.9.5 (no change needed).
-  * Add strict minimum Depends on libsqlite3-0 to work around lack of build
-    time dependency information.  (Closes: #721878)
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Thu, 27 Feb 2014 08:36:40 +0100
 
- -- James McCoy <jamessan@debian.org>  Sat, 16 Nov 2013 11:33:37 -0500
+subversion (1.7.14-0ubuntu0~ppa1) precise; urgency=low
 
-subversion (1.7.13-2) unstable; urgency=low
+  * New upstream release.
 
-  * Remove unnecessary libapache2-svn.prem.  (Closes: #726717)
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Mon, 25 Nov 2013 20:41:15 +0100
 
- -- James McCoy <jamessan@debian.org>  Fri, 18 Oct 2013 23:23:06 -0400
+subversion (1.7.13-0ubuntu0~ppa1) precise; urgency=low
 
-subversion (1.7.13-1) unstable; urgency=low
+  * New upstream release.
 
-  [ Peter Samuelson ]
-  * New upstream version.  (Closes: #719476)
-    - patches/CVE-2013-1968.patch, patches/CVE-2013-2112.patch: remove,
-      obsoleted
-    - Includes security fixes:
-      + CVE-2013-4131: Remotely triggered crash in mod_dav_svn (Closes:
-        #717794)
-      + CVE-2013-4277: Local privilege escalation vulnerability via symlink
-        attack (Closes: #721542)
-      + CVE-2013-2088: Arbitrary code execution in check-mime-type.pl and
-        svn-keyword-check.pl contrib scripts.
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Sat, 31 Aug 2013 10:53:10 +0200
 
-  [ James McCoy ]
-  * Add myself to uploaders.
-  * Acknowledge NMUs.
-  * Canonicalize the Vcs-* URLs.  Thanks, Lintian.
-  * Remove Guilherme de S. Pastore from Uploaders. (Closes: #698270)
-  * Add Breaks: svnmailer (<< 1.0.9) to python-subversion.  (Closes: #726491)
-  * Remove obsolete conffile /etc/emacs/site-start.d/50psvn.el.  (Closes:
-    #705033)
+subversion (1.7.11-0ubuntu0~ppa1) precise; urgency=low
 
- -- James McCoy <jamessan@debian.org>  Wed, 16 Oct 2013 20:53:11 -0400
+  * New upstream release.
 
-subversion (1.7.9-1+nmu6) unstable; urgency=low
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Fri, 26 Jul 2013 09:17:09 +0200
 
-  * Add Breaks/Replaces: libapache2-svn to libapach2-mod-svn.
+subversion (1.7.10-0ubuntu0~ppa1) precise; urgency=low
 
- -- James McCoy <jamessan@debian.org>  Tue, 01 Oct 2013 00:28:55 -0400
+  * Reapply some changes from local ppa, remove two CVE patches as they are
+    applied upstream now.
 
-subversion (1.7.9-1+nmu5) unstable; urgency=low
-
-  * Non-maintainer upload.
-  * Re-enable libapache2-svn build  (Closes: #725028)
-  * Adjust packaging for Apache 2.4 compatibility  (Closes: #712004)
-    - Rename libapache2-svn to libapache2-mod-svn and add a transitional
-      package
-    - Add apache2-dev & dh-apache2 to Build-Depends
-    - Add apache2-api-20120211 as a Depends for libapache2-mod-svn
-    - Update maintainer scripts to use apache2-maintscript-helper
-
- -- James McCoy <jamessan@debian.org>  Mon, 30 Sep 2013 19:02:34 -0400
-
-subversion (1.7.9-1+nmu4) unstable; urgency=low
-
-  * Non-maintainer upload.
-  * patches/ruby-test-wc: New patch from upstream to fix a stray case of a
-    testsuite failure due to APR 1.4 hash randomization.  Thanks to
-    Michael Gilbert for digging this up.  (Closes: #705364)
-  * Use --disable-neon-version-check to build libsvn_ra_neon against libneon27
-    0.30.0.
-  * Add handling of directory to symlink conversions for
-    /usr/share/doc/libsvn-{dev,java,ruby,ruby1.8}.  (Closes: #690155)
-
- -- James McCoy <jamessan@debian.org>  Mon, 02 Sep 2013 21:11:08 -0400
-
-subversion (1.7.9-1+nmu3) unstable; urgency=high
-
-  * Non-maintainer upload.
-  * Disable libapache2-svn build (closes: #712004, #666794)
-
- -- Julien Cristau <jcristau@debian.org>  Tue, 09 Jul 2013 19:56:11 +0200
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Sun, 16 Jun 2013 21:33:54 +0200
 
 subversion (1.7.9-1+nmu2) unstable; urgency=high
 
@@ -176,6 +77,59 @@ subversion (1.7.9-1) unstable; urgency=medium
   * Update watch file.  (Closes: #672157)
 
  -- Peter Samuelson <peter@p12n.org>  Sat, 06 Apr 2013 16:16:37 -0500
+
+subversion (1.7.9-0ubuntu0~ppa1) precise; urgency=low
+
+  * Upgrade to latest upstream release.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Fri, 19 Apr 2013 20:35:06 +0200
+
+subversion (1.7.8-0ubuntu0~ppa1) precise; urgency=low
+
+  * Upgrade to latest upstream release.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Sun, 23 Dec 2012 10:15:42 +0100
+
+subversion (1.7.7-0ubuntu0~ppa5) precise; urgency=low
+
+  * Refresh and fix patches, one applied upstream, refresh all 
+    patches to latest code.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Mon, 15 Oct 2012 22:12:42 +0200
+
+subversion (1.7.7-0ubuntu0~ppa4) precise; urgency=low
+
+  * Previous versions were actually still 1.7.5 because of a 
+    git merge problem, now it should be fixed.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Mon, 15 Oct 2012 21:39:57 +0200
+
+subversion (1.7.7-0ubuntu0~ppa3) precise; urgency=low
+
+  * Update new upstream version, based on latest quantal package now.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Fri, 12 Oct 2012 20:40:29 +0200
+
+subversion (1.7.7-0ubuntu0~ppa2) precise; urgency=low
+
+  * Try to fix build failure because of rm.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Fri, 12 Oct 2012 20:06:35 +0200
+
+subversion (1.7.7-0ubuntu0~ppa1) precise; urgency=low
+
+  * Update to latest upstream version.
+  * Start integrating some changes from Ubuntu/Debian version 1.7.5-1, but
+    many differences still present in this package for now, need to slowly 
+    migrate onto the official one now.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Fri, 12 Oct 2012 18:20:07 +0200
+
+subversion (1.7.5-1ubuntu3) raring; urgency=low
+
+  * Fix python multi-arch includes issues. 
+
+ -- Chris J Arges <chris.j.arges@canonical.com>  Thu, 17 Jan 2013 12:25:15 -0600
 
 subversion (1.7.5-1) unstable; urgency=low
 
