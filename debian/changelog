@@ -1,3 +1,9 @@
+subversion (1.7.19-0ubuntu0~ppa1) precise; urgency=medium
+
+  * New upstream release.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Sun, 21 Dec 2014 20:40:07 +0100
+
 subversion (1.7.18-0ubuntu0~ppa1) precise; urgency=medium
 
   * New upstream release.
