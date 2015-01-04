@@ -1,7 +1,8 @@
 Source: subversion
 Section: vcs
 Priority: optional
-Maintainer: Peter Samuelson <peter@p12n.org>
+Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
+XSBC-Original-Maintainer: Peter Samuelson <peter@p12n.org>
 Uploaders: Troy Heber <troyh@debian.org>,
            James McCoy <jamessan@debian.org>
 Build-Depends: debhelper (>= 8), libserf-dev (>= 1.2), zlib1g-dev,
@@ -10,12 +11,13 @@ Build-Depends: debhelper (>= 8), libserf-dev (>= 1.2), zlib1g-dev,
                libsqlite3-dev (>= 3.7.12), libgnome-keyring-dev, libdbus-1-dev, kdelibs5-dev,
                quilt, doxygen, autotools-dev, autoconf, libtool, swig,
                python-all-dev, perl, libperl-dev, ruby, ruby-dev,
-               default-jdk, junit
+               python-all-dbg, default-jdk, junit
 Build-Conflicts: libsvn-dev (<< 1.8~), ruby-test-unit
 Homepage: http://subversion.apache.org/
 Vcs-Svn: svn://anonscm.debian.org/pkg-subversion/src/1.8.x/
 Vcs-Browser: http://anonscm.debian.org/viewvc/pkg-subversion/src/1.8.x/
 Standards-Version: 3.9.5
+X-Python-Version: >= 2.4
 XS-Testsuite: autopkgtest
 
 Package: subversion
@@ -108,6 +110,7 @@ Section: python
 Architecture: any
 Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${python:Depends}, ${misc:Depends}
+Suggests: python-subversion-dbg
 Provides: ${python:Provides}
 Breaks: svnmailer (<< 1.0.9)
 Description: Python bindings for Apache Subversion
@@ -115,6 +118,21 @@ Description: Python bindings for Apache Subversion
  libraries.  It is useful if you want to, for example, write a Python
  script that manipulates a Subversion repository or working copy.  See
  the 'subversion' package for more information.
+
+Package: python-subversion-dbg
+Priority: extra
+Section: python
+Architecture: any
+Pre-Depends: multiarch-support
+Depends: python-subversion (= ${binary:Version}), python-dbg, ${shlibs:Depends}, ${python:Depends}, ${misc:Depends}
+Provides: ${python:Provides}
+Description: Python bindings for Subversion (debug extension)
+ This is a set of Python interfaces to libsvn, the Subversion
+ libraries.  It is useful if you want to, for example, write a Python
+ script that manipulates a Subversion repository or working copy.  See
+ the 'subversion' package for more information.
+ .
+ This package contains the extension built for the python debug interpreter.
 
 Package: subversion-tools
 Priority: extra

@@ -56,7 +56,8 @@ fix_shebangs_in = \
 PERL_VENDORARCH := $(shell perl -MConfig -e 'print $$Config{vendorarch}')
 PERL_DIR := $(DEB_BUILDDIR)/subversion/bindings/swig/perl/native
 PY_DIR := $(DEB_BUILDDIR)/subversion/bindings/swig/python
-PYVERSIONS := $(shell pyversions -vi)
+PYVERSIONS := $(shell pyversions -vr)
+PYDEFAULT := $(shell pyversions -vd)
 
 allpy = \
 	set -e; for v in $(PYVERSIONS); do \
@@ -64,6 +65,15 @@ allpy = \
 		ln -fs python$$v $(PY_DIR); \
 		pyinc=$$(python$$v-config --includes); \
 		pylib=$$(python$$v -c 'from distutils import sysconfig; print sysconfig.get_python_lib()'); \
+		$1; \
+	done
+
+allpydbg = \
+	set -e; for v in $(PYVERSIONS); do \
+		$(RM) $(PY_DIR); \
+		ln -fs python$$v-dbg $(PY_DIR); \
+		pyinc=$$(python$$v-dbg-config --includes); \
+		pylib=$$(python$$v-dbg -c 'from distutils import sysconfig; print sysconfig.get_python_lib()'); \
 		$1; \
 	done
 
@@ -89,6 +99,7 @@ confflags := \
 		--with-sasl=/usr \
 		--with-editor=/usr/bin/editor \
 		--with-ruby-sitedir=/usr/lib/ruby \
+		--with-ruby-test-verbose \
 		--with-swig=/usr \
 		--with-kwallet \
 		CFLAGS="$(EXTRA_CFLAGS)" \
@@ -176,6 +187,9 @@ debian/stamp-configure: $(QUILT_STAMPFN) debian/stamp-autogen
 	for v in $(PYVERSIONS); do \
 		cp -la $(PY_DIR) $(PY_DIR)$$v; \
 	done
+	for v in $(PYVERSIONS); do \
+		cp -la $(PY_DIR) $(PY_DIR)$$v-dbg; \
+	done
 	$(RM) -r $(PY_DIR)
 
 	touch $@
@@ -196,8 +210,14 @@ check-swig-pl: debian/stamp-build-arch
 	$(MAKE) -C $(PERL_DIR) test MAN3EXT=3perl LC_ALL=C
 
 check-swig-py: debian/stamp-build-arch
+	@echo checking swig-py with optimized interpreter
 	$(call allpy, \
 	  $(MAKE_B) $@ PYTHON=python$$v PYVER=$$v $(check_defs))
+	@echo checking swig-py with debug interpreter
+	$(call allpydbg, \
+	  $(MAKE_B) $@ PYTHON=python$$v-dbg PYVER=$${v}_d \
+		PYTHON_INCLUDES="$$pyinc" $(check_defs)) \
+	 || true
 
 build-arch: debian/stamp-build-arch
 debian/stamp-build-arch: debian/stamp-configure
@@ -206,6 +226,8 @@ debian/stamp-build-arch: debian/stamp-configure
 
 	# note: autogen-swig does not support -jN
 	$(call allpy, $(MAKE_B) -j1 autogen-swig)
+	$(call allpydbg, $(MAKE_B) -j1 autogen-swig)
+	ln -sf python$(PYDEFAULT) $(PY_DIR)
 	+$(MAKE_B) all tools
 	# Run svn once, to make sure it populates $(HOME)/.subversion/*
 	env LD_LIBRARY_PATH="$(AUTH_LIB_DIRS):$(LD_LIBRARY_PATH)" $(DEB_BUILDDIR)/subversion/svn/svn --version > /dev/null
@@ -213,6 +235,12 @@ debian/stamp-build-arch: debian/stamp-configure
 	  $(MAKE_B) swig-py PYTHON=python$$v PYVER=$$v \
 	            PYTHON_INCLUDES="$$pyinc" \
 	            swig_pydir=$$pylib/libsvn swig_pydir_extra=$$pylib/svn)
+	$(call allpydbg, \
+	  $(MAKE_B) swig-py PYTHON=python$$v PYVER=$${v}_d \
+	            PYTHON_INCLUDES="$$pyinc" \
+	            EXTRA_SWIG_PY_CFLAGS=-O0 \
+	            swig_pydir=$$pylib/libsvn swig_pydir_extra=$$pylib/svn)
+	ln -sf python$(PYDEFAULT) $(PY_DIR)
 	# note: swig-pl seems to have trouble with -jN
 	+$(MAKE_B) -j1 swig-pl MAN3EXT=3perl
 	$(MAKE) -C $(PERL_DIR) all \
@@ -230,7 +258,7 @@ ifndef DEB_OPT_NOCHECK
 	@echo "Running testsuite - may take a while.  To disable,"
 	@echo "use DEB_BUILD_OPTIONS=nocheck or edit debian/rules."
 	@echo
-	$(MAKE) -f debian/rules $(check_swig)
+	-$(MAKE) -f debian/rules $(check_swig)
 
   ifdef DEB_OPT_WITH_JAVAHL
 	# This fails on current free JVMs, according to Blair Zajac.
@@ -275,6 +303,7 @@ clean: unpatch
 	$(RM) build/config.sub build/config.guess
 	$(RM) subversion/po/subversion.pot
 	$(RM) debian/stamp-*
+	$(RM) -r debian/tmp-dbg
 	$(RM) debian/libsvn-perl.install
 
 debian/stamp-install-indep: debian/stamp-build-indep
@@ -312,6 +341,18 @@ debian/stamp-install-arch: debian/stamp-build-arch debian/libsvn-perl.install
 		DESTDIR=$(CURDIR)/debian/tmp toolsdir=/usr/bin
 	sed -i 's:/usr/lib/\([^/]*/\)?lib\([^ ]*\).la:-l\1:g' debian/tmp/usr/lib/*/*.la
 
+	$(call allpydbg, \
+	  $(MAKE_B) install-swig-py DESTDIR=$(CURDIR)/debian/tmp \
+	            PYTHON=python$$v-dbg PYVER=$${v}_d \
+	            PYTHON_INCLUDES="$$pyinc" \
+	            EXTRA_SWIG_PY_CFLAGS=-O0 \
+	            swig_pydir=$$pylib/libsvn swig_pydir_extra=$$pylib/svn)
+	for i in $$(find debian/tmp/usr/lib/python* -name '*.so'); do \
+	  b=$$(basename $$i .so); \
+	  mv $$i $$(dirname $$i)/$${b}_d.so; \
+	done
+	find debian/tmp/usr/lib/python* \
+		! -type d ! -name '*.so' ! -name '*.so.*' | xargs -r rm -f
 	$(call allpy, \
 	  $(MAKE_B) install-swig-py DESTDIR=$(CURDIR)/debian/tmp \
 	            PYTHON=python$$v PYVER=$$v \
@@ -377,6 +418,14 @@ ifdef DEB_OPT_WITH_JAVAHL
 	$(RM) debian/libsvn-dev/$(libdir)/libsvnjavahl-1.so
 endif
 
+	# move the python debug modules to the -dbg package
+	(cd debian/python-subversion && tar cf - $$(find -name '*_d.so')) \
+	  | (cd debian/python-subversion-dbg && tar xf - )
+	mkdir -p debian/python-subversion-dbg/$(libdir)
+	mv debian/python-subversion/$(libdir)/libsvn_swig_py*d-1.so.* \
+	  debian/python-subversion-dbg/$(libdir)/
+	find debian/python-subversion -name '*_d.so' | xargs rm -f
+
 	install -m644 tools/client-side/bash_completion \
 		debian/subversion/etc/bash_completion.d/subversion
 
@@ -420,7 +469,11 @@ binary-arch: debian/stamp-install-arch
 	dh_installchangelogs -s CHANGES
 	dh_lintian -s
 	dh_fixperms -s
-	dh_strip -s --dbg-package=subversion-dbg
+	dh_strip -ppython-subversion --dbg-package=python-subversion-dbg
+	dh_strip -s -Npython-subversion --dbg-package=subversion-dbg
+	rm -rf debian/python-subversion-dbg/usr/share/doc/python-subversion-dbg
+	ln -s python-subversion \
+		debian/python-subversion-dbg/usr/share/doc/python-subversion-dbg
 	dh_compress -s
 
 	# dh_makeshlibs (1) creates shlibs/symbols files and (2) generates

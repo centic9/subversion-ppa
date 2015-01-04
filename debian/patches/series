@@ -17,5 +17,6 @@ workaround_EINVAL_on_kfreebsd
 ruby2.0-build-fixes
 test-failure-with-optimizations
 libtoolize
+verbose-tests.diff
 CVE-2014-3580
 CVE-2014-8108
