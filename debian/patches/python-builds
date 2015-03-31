@@ -6,8 +6,8 @@ Submitted upstream: http://svn.haxx.se/dev/archive-2008-05/0361.shtml
 
 Index: git/Makefile.in
 ===================================================================
---- git.orig/Makefile.in	2014-06-26 21:52:28.205004604 +0200
-+++ git/Makefile.in	2014-06-26 21:52:28.201004570 +0200
+--- git.orig/Makefile.in	2015-03-31 21:26:26.088677861 +0200
++++ git/Makefile.in	2015-03-31 21:26:26.084677829 +0200
 @@ -133,6 +133,7 @@
  APACHE_LDFLAGS = @APACHE_LDFLAGS@
  
@@ -18,8 +18,8 @@ Index: git/Makefile.in
  SWIG_PY_LINK = @SWIG_PY_LINK@
 Index: git/build/ac-macros/swig.m4
 ===================================================================
---- git.orig/build/ac-macros/swig.m4	2014-06-26 21:52:28.205004604 +0200
-+++ git/build/ac-macros/swig.m4	2014-06-26 21:52:28.201004570 +0200
+--- git.orig/build/ac-macros/swig.m4	2015-03-31 21:26:26.088677861 +0200
++++ git/build/ac-macros/swig.m4	2015-03-31 21:26:26.156678551 +0200
 @@ -109,7 +109,8 @@
      AC_CACHE_CHECK([for Python includes], [ac_cv_python_includes],[
        ac_cv_python_includes="`$PYTHON ${abs_srcdir}/build/get-py-info.py --includes`"
@@ -30,7 +30,7 @@ Index: git/build/ac-macros/swig.m4
  
      if test "$ac_cv_python_includes" = "none"; then
        AC_MSG_WARN([python bindings cannot be built without distutils module])
-@@ -289,6 +290,7 @@
+@@ -295,6 +296,7 @@
        AC_MSG_RESULT([$SWIG_RB_TEST_VERBOSE])
    fi
    AC_SUBST(SWIG)
@@ -40,8 +40,8 @@ Index: git/build/ac-macros/swig.m4
    AC_SUBST(SWIG_PY_LINK)
 Index: git/build.conf
 ===================================================================
---- git.orig/build.conf	2014-06-26 21:52:28.205004604 +0200
-+++ git/build.conf	2014-06-26 21:52:28.201004570 +0200
+--- git.orig/build.conf	2015-03-31 21:26:26.088677861 +0200
++++ git/build.conf	2015-03-31 21:26:26.084677829 +0200
 @@ -428,7 +428,7 @@
  type = swig
  path = subversion/bindings/swig

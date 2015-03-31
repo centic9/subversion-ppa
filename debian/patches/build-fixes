@@ -5,8 +5,8 @@ Fix some build problems:
 
 Index: git/build/generator/swig/checkout_swig_header.py
 ===================================================================
---- git.orig/build/generator/swig/checkout_swig_header.py	2014-06-26 21:52:05.060799556 +0200
-+++ git/build/generator/swig/checkout_swig_header.py	2014-06-26 21:52:05.052799495 +0200
+--- git.orig/build/generator/swig/checkout_swig_header.py	2015-03-31 21:26:25.876675669 +0200
++++ git/build/generator/swig/checkout_swig_header.py	2015-03-31 21:26:25.872675638 +0200
 @@ -40,15 +40,14 @@
  
    def write_makefile_rules(self, makefile):
@@ -29,8 +29,8 @@ Index: git/build/generator/swig/checkout_swig_header.py
                     % " ".join(checkout_locations))
 Index: git/Makefile.in
 ===================================================================
---- git.orig/Makefile.in	2014-06-26 21:52:05.060799556 +0200
-+++ git/Makefile.in	2014-06-26 21:52:05.052799495 +0200
+--- git.orig/Makefile.in	2015-03-31 21:26:25.876675669 +0200
++++ git/Makefile.in	2015-03-31 21:26:44.000000000 +0200
 @@ -113,8 +113,8 @@
  
  SHELL = @SHELL@
@@ -93,8 +93,8 @@ Index: git/Makefile.in
  extraclean-swig-rb: clean-swig-rb
 Index: git/build/generator/gen_base.py
 ===================================================================
---- git.orig/build/generator/gen_base.py	2014-06-26 21:52:05.060799556 +0200
-+++ git/build/generator/gen_base.py	2014-06-26 21:52:05.056799524 +0200
+--- git.orig/build/generator/gen_base.py	2015-03-31 21:26:25.876675669 +0200
++++ git/build/generator/gen_base.py	2015-03-31 21:26:44.000000000 +0200
 @@ -340,7 +340,8 @@
  
  class SWIGSource(SourceFile):
@@ -107,8 +107,8 @@ Index: git/build/generator/gen_base.py
  lang_abbrev = {
 Index: git/build/generator/swig/header_wrappers.py
 ===================================================================
---- git.orig/build/generator/swig/header_wrappers.py	2014-06-26 21:52:05.060799556 +0200
-+++ git/build/generator/swig/header_wrappers.py	2014-06-26 21:52:05.056799524 +0200
+--- git.orig/build/generator/swig/header_wrappers.py	2015-03-31 21:26:25.876675669 +0200
++++ git/build/generator/swig/header_wrappers.py	2015-03-31 21:26:25.872675638 +0200
 @@ -52,7 +52,7 @@
      """Write makefile rules for generating SWIG wrappers for Subversion
      header files."""
@@ -120,8 +120,8 @@ Index: git/build/generator/swig/header_wrappers.py
      for fname in self.includes:
 Index: git/configure.ac
 ===================================================================
---- git.orig/configure.ac	2014-06-26 21:52:05.060799556 +0200
-+++ git/configure.ac	2014-06-26 21:52:05.056799524 +0200
+--- git.orig/configure.ac	2015-03-31 21:26:25.876675669 +0200
++++ git/configure.ac	2015-03-31 21:26:39.000000000 +0200
 @@ -688,6 +688,7 @@
  fi
  
@@ -130,7 +130,7 @@ Index: git/configure.ac
  /* Indicate to translators that string X should be translated.  Do not look
     up the translation at run time; just expand to X.  This macro is suitable
     for use where a constant string is required at compile time. */
-@@ -1508,6 +1509,11 @@
+@@ -1504,6 +1505,11 @@
                     [Defined to the config.guess name of the build target])
  
  AC_OUTPUT
@@ -144,8 +144,8 @@ Index: git/configure.ac
  
 Index: git/build.conf
 ===================================================================
---- git.orig/build.conf	2014-06-26 21:52:05.060799556 +0200
-+++ git/build.conf	2014-06-26 21:52:05.056799524 +0200
+--- git.orig/build.conf	2015-03-31 21:26:25.876675669 +0200
++++ git/build.conf	2015-03-31 21:26:46.000000000 +0200
 @@ -213,7 +213,7 @@
  description = Subversion Client Library
  type = lib
@@ -166,8 +166,8 @@ Index: git/build.conf
  add-install-deps = $(SVN_RA_LIB_INSTALL_DEPS)
 Index: git/subversion/libsvn_ra_serf/update.c
 ===================================================================
---- git.orig/subversion/libsvn_ra_serf/update.c	2014-06-26 21:52:05.060799556 +0200
-+++ git/subversion/libsvn_ra_serf/update.c	2014-06-26 21:52:05.056799524 +0200
+--- git.orig/subversion/libsvn_ra_serf/update.c	2015-03-31 21:26:25.876675669 +0200
++++ git/subversion/libsvn_ra_serf/update.c	2015-03-31 21:26:25.872675638 +0200
 @@ -3064,12 +3064,6 @@
          SVN_ERR(svn_ra_serf__process_pending(parser_ctx,
                                               &report->report_received,
@@ -183,8 +183,8 @@ Index: git/subversion/libsvn_ra_serf/update.c
    /* If we got a complete report, close the edit.  Otherwise, abort it. */
 Index: git/subversion/libsvn_ra_serf/util.c
 ===================================================================
---- git.orig/subversion/libsvn_ra_serf/util.c	2014-06-26 21:52:05.060799556 +0200
-+++ git/subversion/libsvn_ra_serf/util.c	2014-06-26 21:52:05.056799524 +0200
+--- git.orig/subversion/libsvn_ra_serf/util.c	2015-03-31 21:26:25.876675669 +0200
++++ git/subversion/libsvn_ra_serf/util.c	2015-03-31 21:26:25.876675669 +0200
 @@ -962,12 +962,6 @@
  
            return svn_ra_serf__wrap_err(status, _("Error running context"));
