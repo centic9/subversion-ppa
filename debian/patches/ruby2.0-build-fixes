@@ -1,5 +1,7 @@
---- a/build/ac-macros/swig.m4
-+++ b/build/ac-macros/swig.m4
+Index: git/build/ac-macros/swig.m4
+===================================================================
+--- git.orig/build/ac-macros/swig.m4	2014-06-26 21:52:29.857019250 +0200
++++ git/build/ac-macros/swig.m4	2014-06-26 21:52:29.853019208 +0200
 @@ -186,7 +186,7 @@
      rbconfig="$RUBY -rrbconfig -e "
  

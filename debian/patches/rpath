@@ -6,8 +6,10 @@ patch by David Kimdon <dwhedon@debian.org>.  The basic theory is:
 - Use libtool instead of apxs to install the apache modules.
   libtool relinks without rpath in this case, apxs obviously doesn't.
 
---- a/Makefile.in
-+++ b/Makefile.in
+Index: git/Makefile.in
+===================================================================
+--- git.orig/Makefile.in	2014-06-26 21:52:24.688973448 +0200
++++ git/Makefile.in	2014-06-26 21:52:24.684973415 +0200
 @@ -216,10 +216,10 @@
  # special compilation for files destined for cxxhl
  COMPILE_CXXHL_CXX = $(LIBTOOL) $(LTCXXFLAGS) --mode=compile $(COMPILE_CXX) $(LT_CFLAGS) $(CXXHL_INCLUDES) -o $@ -c
@@ -34,8 +36,10 @@ patch by David Kimdon <dwhedon@debian.org>.  The basic theory is:
  
  # There is a "readlink -f" command on some systems for the same purpose,
  # but it's not as portable (e.g. Mac OS X doesn't have it).  These should
---- a/build.conf
-+++ b/build.conf
+Index: git/build.conf
+===================================================================
+--- git.orig/build.conf	2014-06-26 21:52:24.688973448 +0200
++++ git/build.conf	2014-06-26 21:52:24.684973415 +0200
 @@ -502,7 +502,7 @@
  lang = python
  path = subversion/bindings/swig/python/libsvn_swig_py
@@ -54,8 +58,10 @@ patch by David Kimdon <dwhedon@debian.org>.  The basic theory is:
  install = swig-rb-lib
  # need special build rule to include
  compile-cmd = $(COMPILE_SWIG_RB)
---- a/build/generator/gen_base.py
-+++ b/build/generator/gen_base.py
+Index: git/build/generator/gen_base.py
+===================================================================
+--- git.orig/build/generator/gen_base.py	2014-06-26 21:52:24.688973448 +0200
++++ git/build/generator/gen_base.py	2014-06-26 21:52:24.684973415 +0200
 @@ -415,7 +415,7 @@
      self.install = options.get('install')
      self.compile_cmd = options.get('compile-cmd')

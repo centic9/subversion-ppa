@@ -1,7 +1,7 @@
-Index: b/Makefile.in
+Index: git/Makefile.in
 ===================================================================
---- a/Makefile.in
-+++ b/Makefile.in
+--- git.orig/Makefile.in	2014-06-26 21:52:30.677026516 +0200
++++ git/Makefile.in	2014-06-26 21:52:30.677026516 +0200
 @@ -820,7 +820,7 @@
  check-swig-py: swig-py
  	$(TEST_SHLIB_VAR_SWIG_PY) \
