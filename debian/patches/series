@@ -15,11 +15,11 @@ python-builds
 examples-compile-instructions
 apache_module_dependency
 workaround_EINVAL_on_kfreebsd
-ruby2.0-build-fixes
+# applied upstream: ruby2.0-build-fixes
 test-failure-with-optimizations
 libtoolize
 verbose-tests.diff
-CVE-2014-3580
-CVE-2014-8108
+# applied upstream: CVE-2014-3580
+# applied upstream: CVE-2014-8108
 libtool-check.diff
 verbose-tests.diff
