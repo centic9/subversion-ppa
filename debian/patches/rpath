@@ -8,8 +8,8 @@ patch by David Kimdon <dwhedon@debian.org>.  The basic theory is:
 
 Index: git/Makefile.in
 ===================================================================
---- git.orig/Makefile.in	2015-03-31 21:26:25.964676568 +0200
-+++ git/Makefile.in	2015-03-31 21:26:43.000000000 +0200
+--- git.orig/Makefile.in	2015-03-31 21:53:18.014470601 +0200
++++ git/Makefile.in	2015-03-31 21:56:07.000000000 +0200
 @@ -216,10 +216,10 @@
  # special compilation for files destined for cxxhl
  COMPILE_CXXHL_CXX = $(LIBTOOL) $(LTCXXFLAGS) --mode=compile $(COMPILE_CXX) $(LT_CFLAGS) $(CXXHL_INCLUDES) -o $@ -c
@@ -38,8 +38,8 @@ Index: git/Makefile.in
  # but it's not as portable (e.g. Mac OS X doesn't have it).  These should
 Index: git/build.conf
 ===================================================================
---- git.orig/build.conf	2015-03-31 21:26:25.964676568 +0200
-+++ git/build.conf	2015-03-31 21:26:39.000000000 +0200
+--- git.orig/build.conf	2015-03-31 21:53:18.014470601 +0200
++++ git/build.conf	2015-03-31 21:56:05.000000000 +0200
 @@ -502,7 +502,7 @@
  lang = python
  path = subversion/bindings/swig/python/libsvn_swig_py
@@ -60,8 +60,8 @@ Index: git/build.conf
  compile-cmd = $(COMPILE_SWIG_RB)
 Index: git/build/generator/gen_base.py
 ===================================================================
---- git.orig/build/generator/gen_base.py	2015-03-31 21:26:25.964676568 +0200
-+++ git/build/generator/gen_base.py	2015-03-31 21:26:25.960676527 +0200
+--- git.orig/build/generator/gen_base.py	2015-03-31 21:53:18.014470601 +0200
++++ git/build/generator/gen_base.py	2015-03-31 21:53:18.010470557 +0200
 @@ -415,7 +415,7 @@
      self.install = options.get('install')
      self.compile_cmd = options.get('compile-cmd')

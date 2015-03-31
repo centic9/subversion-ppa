@@ -6,8 +6,8 @@ Patch from Roland Illig <roland.illig@gmx.de>.
 
 Index: git/tools/examples/svnshell.py
 ===================================================================
---- git.orig/tools/examples/svnshell.py	2015-03-31 21:26:26.052677500 +0200
-+++ git/tools/examples/svnshell.py	2015-03-31 21:26:26.048677439 +0200
+--- git.orig/tools/examples/svnshell.py	2015-03-31 21:53:18.114471761 +0200
++++ git/tools/examples/svnshell.py	2015-03-31 21:53:18.110471710 +0200
 @@ -56,14 +56,8 @@
    def postcmd(self, stop, line):
      self._setup_prompt()

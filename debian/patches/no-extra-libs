@@ -5,8 +5,8 @@ libexpat2, libxml2, zlib1g.
 
 Index: git/build/ac-macros/apr.m4
 ===================================================================
---- git.orig/build/ac-macros/apr.m4	2015-03-31 21:26:25.912676031 +0200
-+++ git/build/ac-macros/apr.m4	2015-03-31 21:26:25.908675999 +0200
+--- git.orig/build/ac-macros/apr.m4	2015-03-31 21:53:17.954469912 +0200
++++ git/build/ac-macros/apr.m4	2015-03-31 21:53:17.950469871 +0200
 @@ -94,9 +94,9 @@
        AC_MSG_ERROR([apr-config --link-ld --libs failed])
      fi
@@ -21,8 +21,8 @@ Index: git/build/ac-macros/apr.m4
    SVN_APR_LIBS="`SVN_REMOVE_STANDARD_LIB_DIRS($SVN_APR_LIBS)`"
 Index: git/build/ac-macros/aprutil.m4
 ===================================================================
---- git.orig/build/ac-macros/aprutil.m4	2015-03-31 21:26:25.912676031 +0200
-+++ git/build/ac-macros/aprutil.m4	2015-03-31 21:26:25.908675999 +0200
+--- git.orig/build/ac-macros/aprutil.m4	2015-03-31 21:53:17.954469912 +0200
++++ git/build/ac-macros/aprutil.m4	2015-03-31 21:53:17.954469912 +0200
 @@ -98,9 +98,9 @@
        AC_MSG_ERROR([apu-config --link-ld --libs failed])
      fi

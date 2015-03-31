@@ -7,8 +7,8 @@ dependencies, mod_authz_svn is loaded first.
 
 Index: git/subversion/include/mod_dav_svn.h
 ===================================================================
---- git.orig/subversion/include/mod_dav_svn.h	2015-03-31 21:26:26.124678236 +0200
-+++ git/subversion/include/mod_dav_svn.h	2015-03-31 21:26:26.120678207 +0200
+--- git.orig/subversion/include/mod_dav_svn.h	2015-03-31 21:53:18.194472685 +0200
++++ git/subversion/include/mod_dav_svn.h	2015-03-31 21:53:18.190472632 +0200
 @@ -30,6 +30,7 @@
  
  #include <httpd.h>
@@ -46,8 +46,8 @@ Index: git/subversion/include/mod_dav_svn.h
  }
 Index: git/subversion/mod_authz_svn/mod_authz_svn.c
 ===================================================================
---- git.orig/subversion/mod_authz_svn/mod_authz_svn.c	2015-03-31 21:26:26.124678236 +0200
-+++ git/subversion/mod_authz_svn/mod_authz_svn.c	2015-03-31 21:26:26.120678207 +0200
+--- git.orig/subversion/mod_authz_svn/mod_authz_svn.c	2015-03-31 21:53:18.194472685 +0200
++++ git/subversion/mod_authz_svn/mod_authz_svn.c	2015-03-31 21:53:18.190472632 +0200
 @@ -22,7 +22,7 @@
   * ====================================================================
   */
@@ -100,8 +100,8 @@ Index: git/subversion/mod_authz_svn/mod_authz_svn.c
  module AP_MODULE_DECLARE_DATA authz_svn_module =
 Index: git/subversion/mod_dav_svn/mod_dav_svn.c
 ===================================================================
---- git.orig/subversion/mod_dav_svn/mod_dav_svn.c	2015-03-31 21:26:26.124678236 +0200
-+++ git/subversion/mod_dav_svn/mod_dav_svn.c	2015-03-31 21:26:26.120678207 +0200
+--- git.orig/subversion/mod_dav_svn/mod_dav_svn.c	2015-03-31 21:53:18.194472685 +0200
++++ git/subversion/mod_dav_svn/mod_dav_svn.c	2015-03-31 21:53:18.190472632 +0200
 @@ -1330,6 +1330,9 @@
  static void
  register_hooks(apr_pool_t *pconf)
