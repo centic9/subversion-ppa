@@ -18,7 +18,6 @@ workaround_EINVAL_on_kfreebsd
 # applied upstream: ruby2.0-build-fixes
 test-failure-with-optimizations
 libtoolize
-verbose-tests.diff
 # applied upstream: CVE-2014-3580
 # applied upstream: CVE-2014-8108
 # replace by patch libtoolize: libtool-check.diff
