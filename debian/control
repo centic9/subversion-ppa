@@ -6,7 +6,7 @@ XSBC-Original-Maintainer: Peter Samuelson <peter@p12n.org>
 Uploaders: Troy Heber <troyh@debian.org>,
            James McCoy <jamessan@debian.org>
 Build-Depends: debhelper (>= 8), libserf-dev (>= 1.2), zlib1g-dev,
-               libapr1-dev, libaprutil1-dev, libdb5.3-dev,
+               libapr1-dev, libaprutil1-dev, libdb5.1-dev,
                libsasl2-dev, apache2-dev, dh-apache2,
                libsqlite3-dev (>= 3.7.12), libgnome-keyring-dev, libdbus-1-dev, kdelibs5-dev,
                quilt, doxygen, autotools-dev, autoconf, libtool, swig,
@@ -23,7 +23,7 @@ XS-Testsuite: autopkgtest
 Package: subversion
 Architecture: any
 Depends: libsvn1 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
-Suggests: subversion-tools, db5.3-util, patch
+Suggests: subversion-tools, db5.1-util, patch
 Description: Advanced version control system
  Apache Subversion, also known as svn, is a centralised version control
  system.  Version control systems allow many individuals (who may be
@@ -85,10 +85,10 @@ Description: Developer documentation for libsvn
 Package: libapache2-mod-svn
 Section: httpd
 Architecture: any
-Depends: apache2-api-20120211, libsvn1 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Depends: apache2.2-common, libsvn1 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
 Breaks: libapache2-svn (<< 1.7.9-1+nmu5)
 Replaces: libapache2-svn (<< 1.7.9-1+nmu5)
-Suggests: db5.3-util
+Suggests: db5.1-util
 Description: Apache Subversion server modules for Apache httpd
  This package provides the mod_dav_svn and mod_authz_svn modules for
  the Apache 2.4 web server.  These modules provide Apache Subversion's WebDAV
