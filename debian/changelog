@@ -1,3 +1,9 @@
+subversion (1.8.13-0ubuntu0~ppa4) trusty; urgency=medium
+
+  * Some more change necessary for ruby-svn to avoid build breakage.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Thu, 02 Apr 2015 22:33:06 +0200
+
 subversion (1.8.13-0ubuntu0~ppa3) trusty; urgency=medium
 
   * Fix patches once again
