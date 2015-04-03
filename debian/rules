@@ -429,7 +429,6 @@ endif
 	install -m644 tools/client-side/bash_completion \
 		debian/subversion/etc/bash_completion.d/subversion
 
-	dh_apache2 -s
 ifdef DEB_OPT_WITH_APACHE
 	install subversion/mod_authz_svn/INSTALL \
 		debian/libapache2-mod-svn/usr/share/doc/libapache2-mod-svn/INSTALL.authz
