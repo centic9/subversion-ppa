@@ -2,7 +2,7 @@ Index: b/Makefile.in
 ===================================================================
 --- a/Makefile.in
 +++ b/Makefile.in
-@@ -820,7 +820,7 @@
+@@ -837,7 +837,7 @@
  check-swig-py: swig-py
  	$(TEST_SHLIB_VAR_SWIG_PY) \
  	cd $(SWIG_PY_DIR); \

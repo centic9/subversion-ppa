@@ -9,7 +9,7 @@ Build-Depends: debhelper (>= 8), libserf-dev (>= 1.2), zlib1g-dev,
                libapr1-dev, libaprutil1-dev, libdb5.3-dev,
                libsasl2-dev, apache2-dev, dh-apache2,
                libsqlite3-dev (>= 3.7.12), libgnome-keyring-dev, libdbus-1-dev, kdelibs5-dev,
-               quilt, doxygen, autotools-dev, autoconf, libtool, swig,
+               quilt, doxygen, autotools-dev, autoconf, libtool-bin, swig,
                python-all-dev, perl, libperl-dev, ruby, ruby-dev,
                python-all-dbg, default-jdk, junit
 Build-Conflicts: libsvn-dev (<< 1.8~), ruby-test-unit

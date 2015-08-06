@@ -1,3 +1,38 @@
+subversion (1.8.13-1ubuntu1) wily; urgency=medium
+
+  * Resynchronise with Debian.  Remaining changes:
+    - debian/rules: Manually create the doxygen output directory, otherwise
+      we get weird build failures when running parallel builds.
+    - Build a python-subversion-dbg package.
+    - Build-depend on python-all-dbg.
+    - Only build on requested python versions (X-Python-Versions:).
+    - debian/patches/verbose-tests: Make tests verbose.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Thu, 06 Aug 2015 11:15:12 +0100
+
+subversion (1.8.13-1) unstable; urgency=medium
+
+  * New upstream release.  Refresh patches.
+    - Remove backported patches CVE-2014-8108, CVE-2014-3580, CVE-2015-0202,
+      CVE-2015-0248, CVE-2015-0251, ruby2.0-build-fixes, and
+      test-failure-with-optimizations.
+  * Add patches wc-queries-test1-r1672295 and wc-queries-test2-r1673691, from
+    upstream, to fix wc-queries test failures with new SQLite versions.
+    (Closes: #785496)
+
+ -- James McCoy <jamessan@debian.org>  Fri, 22 May 2015 02:43:09 -0400
+
+subversion (1.8.10-6) unstable; urgency=high
+
+  * patches/CVE-2015-0202: Excessive memory use with certain REPORT requests
+    against mod_dav_svn with FSFS repositories
+  * patches/CVE-2015-0248: Assertion DoS vulnerability for certain mod_dav_svn
+    and svnserve requests with dynamically evaluated revision numbers
+  * patches/CVE-2015-0251: mod_dav_svn allows spoofing svn:author property
+    values for new revisions
+
+ -- James McCoy <jamessan@debian.org>  Tue, 31 Mar 2015 22:51:18 -0400
+
 subversion (1.8.10-5ubuntu1) vivid; urgency=medium
 
   * Resynchronise with Debian.  Remaining changes:

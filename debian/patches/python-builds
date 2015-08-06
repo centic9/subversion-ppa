@@ -26,7 +26,7 @@ Submitted upstream: http://svn.haxx.se/dev/archive-2008-05/0361.shtml
  
      if test "$ac_cv_python_includes" = "none"; then
        AC_MSG_WARN([python bindings cannot be built without distutils module])
-@@ -289,6 +290,7 @@
+@@ -295,6 +296,7 @@
        AC_MSG_RESULT([$SWIG_RB_TEST_VERBOSE])
    fi
    AC_SUBST(SWIG)
