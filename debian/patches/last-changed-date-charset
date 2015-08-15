@@ -3,8 +3,10 @@ set, since it is already rendered in the local language.
 
 Not accepted upstream: http://svn.haxx.se/dev/archive-2006-04/0730.shtml
 
---- a/subversion/libsvn_subr/subst.c
-+++ b/subversion/libsvn_subr/subst.c
+Index: git/subversion/libsvn_subr/subst.c
+===================================================================
+--- git.orig/subversion/libsvn_subr/subst.c	2015-03-31 21:53:17.934469678 +0200
++++ git/subversion/libsvn_subr/subst.c	2015-03-31 21:53:17.930469634 +0200
 @@ -209,8 +209,12 @@
            break;
          case 'D': /* long format of date of this revision */

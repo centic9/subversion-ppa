@@ -15,8 +15,10 @@ doesn't work well output_helper.)
 
 Sent upstream: http://svn.haxx.se/dev/archive-2006-09/0536.shtml
 
---- a/subversion/bindings/swig/include/svn_types.swg
-+++ b/subversion/bindings/swig/include/svn_types.swg
+Index: git/subversion/bindings/swig/include/svn_types.swg
+===================================================================
+--- git.orig/subversion/bindings/swig/include/svn_types.swg	2015-03-31 21:53:18.078471342 +0200
++++ git/subversion/bindings/swig/include/svn_types.swg	2015-03-31 21:53:18.070471249 +0200
 @@ -1093,7 +1093,7 @@
  #ifdef SWIGRUBY
  %typemap(argout) unsigned char digest[ANY] {

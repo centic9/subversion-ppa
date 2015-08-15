@@ -1,0 +1,68 @@
+------------------------------------------------------------------------
+r1485480 | stefan2 | 2013-05-22 19:05:40 -0400 (Wed, 22 May 2013) | 7 lines
+
+Fix a snafu that prevented the optimized code path to be executed in most
+cases. This affects legacy txdelta v1 data only - which is quite rare to
+find these days.
+
+* subversion/libsvn_delta/text_delta.c
+  (patterning_copy): there will be no overlap past the END ..
+
+
+Index: git/subversion/libsvn_delta/text_delta.c
+===================================================================
+--- git.orig/subversion/libsvn_delta/text_delta.c	2015-03-31 21:53:18.238473186 +0200
++++ git/subversion/libsvn_delta/text_delta.c	2015-03-31 21:53:18.230473098 +0200
+@@ -649,9 +649,8 @@
+     {
+       /* memcpy is not exactly fast for small block sizes.
+        * Since they are common, let's run optimized code for them. */
+-      const char *end = source + len;
+-      for (; source != end; source++)
+-        *(target++) = *source;
++      while (len--)
++        *target++ = *source++;
+     }
+ 
+   return target;
+@@ -663,28 +662,21 @@
+ static APR_INLINE char *
+ patterning_copy(char *target, const char *source, apr_size_t len)
+ {
+-  const char *end = source + len;
+-
+-  /* On many machines, we can do "chunky" copies. */
+-
+-#if SVN_UNALIGNED_ACCESS_IS_OK
+-
+-  if (end + sizeof(apr_uint32_t) <= target)
++  /* If the source and target overlap, repeat the overlapping pattern
++     in the target buffer. Always copy from the source buffer because
++     presumably it will be in the L1 cache after the first iteration
++     and doing this should avoid pipeline stalls due to write/read
++     dependencies. */
++  const apr_size_t overlap = target - source;
++  while (len > overlap)
+     {
+-      /* Source and target are at least 4 bytes apart, so we can copy in
+-       * 4-byte chunks.  */
+-      for (; source + sizeof(apr_uint32_t) <= end;
+-           source += sizeof(apr_uint32_t),
+-           target += sizeof(apr_uint32_t))
+-      *(apr_uint32_t *)(target) = *(apr_uint32_t *)(source);
++      target = fast_memcpy(target, source, overlap);
++      len -= overlap;
+     }
+ 
+-#endif
+-
+-  /* fall through to byte-wise copy (either for the below-chunk-size tail
+-   * or the whole copy) */
+-  for (; source != end; source++)
+-    *(target++) = *source;
++  /* Copy any remaining source pattern. */
++  if (len)
++    target = fast_memcpy(target, source, len);
+ 
+   return target;
+ }

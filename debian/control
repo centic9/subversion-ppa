@@ -138,8 +138,8 @@ Package: subversion-tools
 Priority: extra
 Architecture: any
 Depends: subversion, ${misc:Depends}, ${shlibs:Depends}
-Breaks: subversion (<< 1.8.10-3~)
-Replaces: subversion (<< 1.8.10-3~)
+Breaks: subversion (<< 1.8.12)
+Replaces: subversion (<< 1.8.12)
 Recommends: python-subversion, libsvn-perl,
             libconfig-inifiles-perl, liburi-perl,
             exim4 | mail-transport-agent, rsync, ${subversion-tools:Recommends}
