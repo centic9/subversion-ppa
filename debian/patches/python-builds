@@ -6,8 +6,8 @@ Submitted upstream: http://svn.haxx.se/dev/archive-2008-05/0361.shtml
 
 Index: git/Makefile.in
 ===================================================================
---- git.orig/Makefile.in	2015-03-31 21:53:18.154472224 +0200
-+++ git/Makefile.in	2015-03-31 21:54:50.763537879 +0200
+--- git.orig/Makefile.in	2015-08-16 00:14:07.263464771 +0200
++++ git/Makefile.in	2015-08-16 00:14:07.251464628 +0200
 @@ -133,6 +133,7 @@
  APACHE_LDFLAGS = @APACHE_LDFLAGS@
  
@@ -16,7 +16,7 @@ Index: git/Makefile.in
  SWIG_PY_INCLUDES = @SWIG_PY_INCLUDES@ -I$(SWIG_SRC_DIR)/python/libsvn_swig_py
  SWIG_PY_COMPILE = @SWIG_PY_COMPILE@
  SWIG_PY_LINK = @SWIG_PY_LINK@
-@@ -836,7 +837,7 @@
+@@ -840,7 +841,7 @@
  check-swig-py: swig-py
  	$(TEST_SHLIB_VAR_SWIG_PY) \
  	cd $(SWIG_PY_DIR); \
@@ -27,8 +27,8 @@ Index: git/Makefile.in
                            $(SWIG_PY_SRC_DIR)/[a-z]*.py
 Index: git/build/ac-macros/swig.m4
 ===================================================================
---- git.orig/build/ac-macros/swig.m4	2015-03-31 21:53:18.154472224 +0200
-+++ git/build/ac-macros/swig.m4	2015-03-31 21:53:18.150472173 +0200
+--- git.orig/build/ac-macros/swig.m4	2015-08-16 00:14:07.263464771 +0200
++++ git/build/ac-macros/swig.m4	2015-08-16 00:14:07.251464628 +0200
 @@ -109,7 +109,8 @@
      AC_CACHE_CHECK([for Python includes], [ac_cv_python_includes],[
        ac_cv_python_includes="`$PYTHON ${abs_srcdir}/build/get-py-info.py --includes`"
@@ -49,8 +49,8 @@ Index: git/build/ac-macros/swig.m4
    AC_SUBST(SWIG_PY_LINK)
 Index: git/build.conf
 ===================================================================
---- git.orig/build.conf	2015-03-31 21:53:18.154472224 +0200
-+++ git/build.conf	2015-03-31 21:53:18.150472173 +0200
+--- git.orig/build.conf	2015-08-16 00:14:07.263464771 +0200
++++ git/build.conf	2015-08-16 00:14:07.255464677 +0200
 @@ -428,7 +428,7 @@
  type = swig
  path = subversion/bindings/swig

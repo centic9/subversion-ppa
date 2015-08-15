@@ -4,8 +4,8 @@ be real bugs with real consequences.
 
 Index: git/Makefile.in
 ===================================================================
---- git.orig/Makefile.in	2015-03-31 21:53:18.034470835 +0200
-+++ git/Makefile.in	2015-03-31 21:56:05.000000000 +0200
+--- git.orig/Makefile.in	2015-08-16 00:14:02.903413967 +0200
++++ git/Makefile.in	2015-08-16 00:14:02.899413925 +0200
 @@ -139,7 +139,7 @@
  SWIG_PY_LIBS = @SWIG_PY_LIBS@
  SWIG_PL_INCLUDES = @SWIG_PL_INCLUDES@

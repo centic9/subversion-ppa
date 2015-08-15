@@ -23,5 +23,5 @@ libtoolize
 # replace by patch libtoolize: libtool-check.diff
 # applied upstream? verbose-tests.diff
 wc-queries-test1-r1672295
-wc-queries-test2-r1673691
-verbose-tests
+# applied upstream: wc-queries-test2-r1673691
+# applied in debian package in python-builds: verbose-tests

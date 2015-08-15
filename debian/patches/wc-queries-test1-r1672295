@@ -17,10 +17,12 @@ many externals.
     verifying schema.
 
 
---- a/subversion/tests/libsvn_wc/wc-queries-test.c
-+++ b/subversion/tests/libsvn_wc/wc-queries-test.c
-@@ -824,6 +824,15 @@
-                    "VALUES (1, '', '')",
+Index: git/subversion/tests/libsvn_wc/wc-queries-test.c
+===================================================================
+--- git.orig/subversion/tests/libsvn_wc/wc-queries-test.c	2015-08-16 00:14:10.791505879 +0200
++++ git/subversion/tests/libsvn_wc/wc-queries-test.c	2015-08-16 00:14:10.787505827 +0200
+@@ -833,6 +833,15 @@
+                    "VALUES (1, 'subdir', '', 1, 'normal', 'dir', '', '')",
                     NULL, NULL, NULL));
  
 +  SQLITE_ERR(
@@ -35,11 +37,13 @@ many externals.
    /* These are currently not necessary for query optimization, but it's better
       to tell Sqlite how we intend to use this table anyway */
    SQLITE_ERR(
---- a/subversion/libsvn_wc/wc-metadata.sql
-+++ b/subversion/libsvn_wc/wc-metadata.sql
-@@ -619,6 +619,11 @@
- INSERT OR REPLACE INTO sqlite_stat1(tbl, idx, stat) VALUES
-     ('WC_LOCK', 'sqlite_autoindex_WC_LOCK_1',           '100 100 1');
+Index: git/subversion/libsvn_wc/wc-metadata.sql
+===================================================================
+--- git.orig/subversion/libsvn_wc/wc-metadata.sql	2015-08-16 00:14:10.791505879 +0200
++++ git/subversion/libsvn_wc/wc-metadata.sql	2015-08-16 00:14:10.787505827 +0200
+@@ -624,6 +624,11 @@
+ INSERT INTO sqlite_stat1(tbl, idx, stat) VALUES
+     ('EXTERNALS','I_EXTERNALS_DEFINED',                 '100 100 3 1');
  
 +INSERT OR REPLACE INTO sqlite_stat1(tbl, idx, stat) VALUES
 +    ('EXTERNALS','sqlite_autoindex_EXTERNALS_1',        '100 100 1');

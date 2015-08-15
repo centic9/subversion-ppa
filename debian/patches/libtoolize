@@ -12,8 +12,8 @@ Patch by: Helmut Grohne <helmut{_AT_}subdivi.de>
 
 Index: git/build/buildcheck.sh
 ===================================================================
---- git.orig/build/buildcheck.sh	2015-03-31 21:53:18.254473376 +0200
-+++ git/build/buildcheck.sh	2015-03-31 21:53:18.306473968 +0200
+--- git.orig/build/buildcheck.sh	2015-08-16 00:14:09.911495621 +0200
++++ git/build/buildcheck.sh	2015-08-16 00:14:09.907495576 +0200
 @@ -97,14 +97,14 @@
    esac
  fi
@@ -34,8 +34,8 @@ Index: git/build/buildcheck.sh
  fi
 Index: git/autogen.sh
 ===================================================================
---- git.orig/autogen.sh	2015-03-31 21:53:18.254473376 +0200
-+++ git/autogen.sh	2015-03-31 21:53:18.250473325 +0200
+--- git.orig/autogen.sh	2015-08-16 00:14:09.911495621 +0200
++++ git/autogen.sh	2015-08-16 00:14:09.907495576 +0200
 @@ -63,7 +63,7 @@
  # ### APR's libtool. deferring to a second round of change...
  #

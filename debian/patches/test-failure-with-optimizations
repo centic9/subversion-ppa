@@ -11,8 +11,8 @@ find these days.
 
 Index: git/subversion/libsvn_delta/text_delta.c
 ===================================================================
---- git.orig/subversion/libsvn_delta/text_delta.c	2015-03-31 21:53:18.238473186 +0200
-+++ git/subversion/libsvn_delta/text_delta.c	2015-03-31 21:53:18.230473098 +0200
+--- git.orig/subversion/libsvn_delta/text_delta.c	2015-08-16 00:14:09.467490448 +0200
++++ git/subversion/libsvn_delta/text_delta.c	2015-08-16 00:14:09.463490408 +0200
 @@ -649,9 +649,8 @@
      {
        /* memcpy is not exactly fast for small block sizes.

@@ -4,8 +4,8 @@ _at all_, so we don't want it to pull in aprutil for us.)
 
 Index: git/subversion/bindings/swig/perl/native/Makefile.PL.in
 ===================================================================
---- git.orig/subversion/bindings/swig/perl/native/Makefile.PL.in	2015-03-31 21:53:17.966470056 +0200
-+++ git/subversion/bindings/swig/perl/native/Makefile.PL.in	2015-03-31 21:53:17.966470056 +0200
+--- git.orig/subversion/bindings/swig/perl/native/Makefile.PL.in	2015-08-16 00:14:00.855390107 +0200
++++ git/subversion/bindings/swig/perl/native/Makefile.PL.in	2015-08-16 00:14:00.851390056 +0200
 @@ -43,6 +43,12 @@
                                  fs_base fs_util fs_fs/);
  
@@ -48,8 +48,8 @@ Index: git/subversion/bindings/swig/perl/native/Makefile.PL.in
        NAME    => "SVN::_".perlish($_),
 Index: git/build.conf
 ===================================================================
---- git.orig/build.conf	2015-03-31 21:53:17.966470056 +0200
-+++ git/build.conf	2015-03-31 21:56:08.000000000 +0200
+--- git.orig/build.conf	2015-08-16 00:14:00.855390107 +0200
++++ git/build.conf	2015-08-16 00:14:00.851390056 +0200
 @@ -1149,7 +1149,7 @@
  
  [apriconv]

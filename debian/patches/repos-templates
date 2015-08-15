@@ -5,8 +5,8 @@ hooks, not just use them in place.
 
 Index: git/subversion/libsvn_repos/repos.c
 ===================================================================
---- git.orig/subversion/libsvn_repos/repos.c	2015-03-31 21:53:17.994470378 +0200
-+++ git/subversion/libsvn_repos/repos.c	2015-03-31 21:53:17.986470279 +0200
+--- git.orig/subversion/libsvn_repos/repos.c	2015-08-16 00:14:01.599398772 +0200
++++ git/subversion/libsvn_repos/repos.c	2015-08-16 00:14:01.591398685 +0200
 @@ -276,7 +276,7 @@
  
  #define PREWRITTEN_HOOKS_TEXT                                                 \

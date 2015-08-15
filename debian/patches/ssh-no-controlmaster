@@ -16,8 +16,8 @@ connection sharing, but only if a ControlMaster is already present.
 
 Index: git/subversion/libsvn_subr/config_file.c
 ===================================================================
---- git.orig/subversion/libsvn_subr/config_file.c	2015-03-31 21:53:18.098471571 +0200
-+++ git/subversion/libsvn_subr/config_file.c	2015-03-31 21:53:18.094471523 +0200
+--- git.orig/subversion/libsvn_subr/config_file.c	2015-08-16 00:14:05.203440765 +0200
++++ git/subversion/libsvn_subr/config_file.c	2015-08-16 00:14:05.199440718 +0200
 @@ -1134,7 +1134,7 @@
          "### passed to the tunnel agent as <user>@<hostname>.)  If the"      NL
          "### built-in ssh scheme were not predefined, it could be defined"   NL
@@ -29,8 +29,8 @@ Index: git/subversion/libsvn_subr/config_file.c
          "# rsh = rsh"                                                        NL
 Index: git/subversion/libsvn_ra_svn/client.c
 ===================================================================
---- git.orig/subversion/libsvn_ra_svn/client.c	2015-03-31 21:53:18.098471571 +0200
-+++ git/subversion/libsvn_ra_svn/client.c	2015-03-31 21:53:18.094471523 +0200
+--- git.orig/subversion/libsvn_ra_svn/client.c	2015-08-16 00:14:05.203440765 +0200
++++ git/subversion/libsvn_ra_svn/client.c	2015-08-16 00:14:05.199440718 +0200
 @@ -395,7 +395,7 @@
         * versions have it too. If the user is using some other ssh
         * implementation that doesn't accept it, they can override it

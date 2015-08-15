@@ -9,8 +9,8 @@ be ABI-compatible again if and when we move to apr-2.x.
 
 Index: git/configure.ac
 ===================================================================
---- git.orig/configure.ac	2015-03-31 21:53:18.134471985 +0200
-+++ git/configure.ac	2015-03-31 21:53:18.130471941 +0200
+--- git.orig/configure.ac	2015-08-16 00:14:06.571456700 +0200
++++ git/configure.ac	2015-08-16 00:14:06.567456657 +0200
 @@ -111,9 +111,13 @@
    AC_SUBST(SVN_APRUTIL_INCLUDES)
    AC_SUBST(SVN_APRUTIL_CONFIG, ["$apu_config"])
