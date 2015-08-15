@@ -2006,7 +2006,7 @@ SWIG_ruby_failed(void)
 } 
 
 
-/*@SWIG:/tmp/svnrm/prefix/share/swig/2.0.9/ruby/rubyprimtypes.swg,19,%ruby_aux_method@*/
+/*@SWIG:/opt/svnrm18/prefix/share/swig/2.0.9/ruby/rubyprimtypes.swg,19,%ruby_aux_method@*/
 SWIGINTERN VALUE SWIG_AUX_NUM2LONG(VALUE *args)
 {
   VALUE obj = args[0];
@@ -2148,7 +2148,7 @@ SWIG_FromCharPtr(const char *cptr)
 }
 
 
-/*@SWIG:/tmp/svnrm/prefix/share/swig/2.0.9/ruby/rubyprimtypes.swg,19,%ruby_aux_method@*/
+/*@SWIG:/opt/svnrm18/prefix/share/swig/2.0.9/ruby/rubyprimtypes.swg,19,%ruby_aux_method@*/
 SWIGINTERN VALUE SWIG_AUX_NUM2ULONG(VALUE *args)
 {
   VALUE obj = args[0];
