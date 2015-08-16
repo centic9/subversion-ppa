@@ -1,0 +1,13 @@
+Index: git/build/buildcheck.sh
+===================================================================
+--- git.orig/build/buildcheck.sh	2014-06-26 21:52:30.253022754 +0200
++++ git/build/buildcheck.sh	2014-06-26 21:52:30.253022754 +0200
+@@ -97,7 +97,7 @@
+   esac
+ fi
+ 
+-libtool=${LIBTOOL:-`./build/PrintPath glibtool libtool libtool15`}
++libtool=${LIBTOOL:-`./build/PrintPath libtoolize glibtool libtool libtool15`}
+ # Extract the libtool version number: everything from the first number in
+ # the version text until a hyphen or space.
+ lt_pversion=`$libtool --version 2>/dev/null |
