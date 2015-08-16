@@ -4,6 +4,7 @@
 
 /* No default constructors for opaque structs */
 #ifdef SWIGPYTHON
+%nodefault svn_sort__item_t;
 #endif
 
 /* Callback typemaps */
@@ -18,7 +19,7 @@
 
 /* Structure definitions */
 #ifdef SWIGPYTHON
-%proxy(svn_sort__item_t);
+%opaque_proxy(svn_sort__item_t);
 #endif
 
 /* Callbacks */

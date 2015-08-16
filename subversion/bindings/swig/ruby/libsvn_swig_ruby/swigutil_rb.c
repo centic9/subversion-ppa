@@ -23,9 +23,16 @@
 /* Tell swigutil_rb.h that we're inside the implementation */
 #define SVN_SWIG_SWIGUTIL_RB_C
 
+/* Windows hack: Allow overriding some <ruby.h> defaults */
+#include "swigutil_rb__pre_ruby.h"
 #include "swig_ruby_external_runtime.swg"
 #include "swigutil_rb.h"
+
+#ifdef HAVE_RUBY_ST_H
+#include <ruby/st.h>
+#else
 #include <st.h>
+#endif
 
 #undef PACKAGE_BUGREPORT
 #undef PACKAGE_NAME
@@ -474,9 +481,9 @@ static void
 check_apr_status(apr_status_t status, VALUE exception_class, const char *format)
 {
     if (status != APR_SUCCESS) {
-	char buffer[1024];
-	apr_strerror(status, buffer, sizeof(buffer) - 1);
-	rb_raise(exception_class, format, buffer);
+        char buffer[1024];
+        apr_strerror(status, buffer, sizeof(buffer) - 1);
+        rb_raise(exception_class, format, buffer);
     }
 }
 
@@ -519,8 +526,8 @@ svn_swig_rb_destroyer_destroy(VALUE self, VALUE target)
 
     objects[0] = target;
     if (find_swig_type_object(1, objects) && DATA_PTR(target)) {
-	svn_swig_rb_destroy_internal_pool(target);
-	DATA_PTR(target) = NULL;
+        svn_swig_rb_destroy_internal_pool(target);
+        DATA_PTR(target) = NULL;
     }
 
     return Qnil;
@@ -538,9 +545,9 @@ svn_swig_rb_initialize(void)
   }
 
   check_apr_status(apr_allocator_create(&swig_rb_allocator),
-		   rb_eLoadError, "failed to create allocator: %s");
+                   rb_eLoadError, "failed to create allocator: %s");
   apr_allocator_max_free_set(swig_rb_allocator,
-			     SVN_ALLOCATOR_RECOMMENDED_MAX_FREE);
+                             SVN_ALLOCATOR_RECOMMENDED_MAX_FREE);
 
   swig_rb_pool = svn_pool_create_ex(NULL, swig_rb_allocator);
   apr_pool_tag(swig_rb_pool, "svn-ruby-pool");
@@ -549,8 +556,8 @@ svn_swig_rb_initialize(void)
     apr_thread_mutex_t *mutex;
 
     check_apr_status(apr_thread_mutex_create(&mutex, APR_THREAD_MUTEX_DEFAULT,
-					     swig_rb_pool),
-		     rb_eLoadError, "failed to create allocator: %s");
+                                             swig_rb_pool),
+                                             rb_eLoadError, "failed to create allocator: %s");
     apr_allocator_mutex_set(swig_rb_allocator, mutex);
   }
 #endif
@@ -583,7 +590,7 @@ svn_swig_rb_initialize(void)
 
   mSvnDestroyer = rb_define_module_under(rb_svn(), "Destroyer");
   rb_define_module_function(mSvnDestroyer, "destroy",
-			    svn_swig_rb_destroyer_destroy, 1);
+                            svn_swig_rb_destroyer_destroy, 1);
 }
 
 apr_pool_t *
@@ -736,7 +743,7 @@ static svn_boolean_t
 rb_set_pool_if_swig_type_object(VALUE target, VALUE pool)
 {
   VALUE targets[1];
-  
+
   targets[0] = target;
 
   if (!NIL_P(find_swig_type_object(1, targets))) {
@@ -862,7 +869,7 @@ svn_swig_rb_raise_svn_repos_already_close(void)
 
 VALUE
 svn_swig_rb_svn_error_new(VALUE code, VALUE message, VALUE file, VALUE line,
-			  VALUE child)
+                          VALUE child)
 {
   return rb_funcall(rb_svn_error_svn_error(),
                     id_new_corresponding_error,
@@ -1598,7 +1605,7 @@ typedef struct callback_handle_error_baton_t {
 } callback_handle_error_baton_t;
 
 static VALUE
-callback(VALUE baton)
+callback(VALUE baton, ...)
 {
   callback_baton_t *cbb = (callback_baton_t *)baton;
   VALUE result;
@@ -1610,7 +1617,7 @@ callback(VALUE baton)
 }
 
 static VALUE
-callback_rescue(VALUE baton)
+callback_rescue(VALUE baton, ...)
 {
   callback_rescue_baton_t *rescue_baton = (callback_rescue_baton_t*)baton;
 
@@ -1627,7 +1634,7 @@ callback_rescue(VALUE baton)
 }
 
 static VALUE
-callback_ensure(VALUE pool)
+callback_ensure(VALUE pool, ...)
 {
   svn_swig_rb_pop_pool(pool);
 
@@ -1638,17 +1645,17 @@ static VALUE
 invoke_callback(VALUE baton, VALUE pool)
 {
   callback_baton_t *cbb = (callback_baton_t *)baton;
-  VALUE sub_pool;
+  VALUE subpool;
   VALUE argv[1];
 
   argv[0] = pool;
-  svn_swig_rb_get_pool(1, argv, Qnil, &sub_pool, NULL);
-  cbb->pool = sub_pool;
-  return rb_ensure(callback, baton, callback_ensure, sub_pool);
+  svn_swig_rb_get_pool(1, argv, Qnil, &subpool, NULL);
+  cbb->pool = subpool;
+  return rb_ensure(callback, baton, callback_ensure, subpool);
 }
 
 static VALUE
-callback_handle_error(VALUE baton)
+callback_handle_error(VALUE baton, ...)
 {
   callback_handle_error_baton_t *handle_error_baton;
   handle_error_baton = (callback_handle_error_baton_t *)baton;
@@ -3231,7 +3238,8 @@ svn_swig_rb_make_stream(VALUE io)
     pool_wrapper_p = &pool_wrapper;
     r2c_swig_type2(rb_pool, "apr_pool_wrapper_t *", (void **)pool_wrapper_p);
     stream = svn_stream_create((void *)io, pool_wrapper->pool);
-    svn_stream_set_read(stream, read_handler_rbio);
+    svn_stream_set_read2(stream, NULL /* only full read support */,
+                         read_handler_rbio);
     svn_stream_set_write(stream, write_handler_rbio);
   }
 
@@ -4025,4 +4033,7 @@ static svn_ra_reporter3_t rb_ra_reporter3 = {
   svn_swig_rb_ra_reporter_abort_report
 };
 
-svn_ra_reporter3_t *svn_swig_rb_ra_reporter3 = &rb_ra_reporter3;
+svn_ra_reporter3_t *svn_swig_rb_get_ra_reporter3()
+{
+  return &rb_ra_reporter3;
+}

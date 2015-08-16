@@ -270,7 +270,7 @@ test_dirent_join(apr_pool_t *pool)
                                  "\"%s\". expected \"%s\"",
                                  base, comp, result, expect);
 
-      result = svn_dirent_join_many(pool, base, comp, NULL);
+      result = svn_dirent_join_many(pool, base, comp, SVN_VA_NULL);
       if (strcmp(result, expect))
         return svn_error_createf(SVN_ERR_TEST_FAILED, NULL,
                                  "svn_dirent_join_many(\"%s\", \"%s\") returned "
@@ -286,72 +286,72 @@ test_dirent_join(apr_pool_t *pool)
                              "expected \"%s\"", \
                              result, expect);
 
-  TEST_MANY((pool, "abc", NULL), "abc");
-  TEST_MANY((pool, "/abc", NULL), "/abc");
-  TEST_MANY((pool, "/", NULL), "/");
+  TEST_MANY((pool, "abc", SVN_VA_NULL), "abc");
+  TEST_MANY((pool, "/abc", SVN_VA_NULL), "/abc");
+  TEST_MANY((pool, "/", SVN_VA_NULL), "/");
 
-  TEST_MANY((pool, "abc", "def", "ghi", NULL), "abc/def/ghi");
-  TEST_MANY((pool, "abc", "/def", "ghi", NULL), "/def/ghi");
-  TEST_MANY((pool, "/abc", "def", "ghi", NULL), "/abc/def/ghi");
-  TEST_MANY((pool, "abc", "def", "/ghi", NULL), "/ghi");
-  TEST_MANY((pool, "/", "def", "/ghi", NULL), "/ghi");
-  TEST_MANY((pool, "/", "/def", "/ghi", NULL), "/ghi");
+  TEST_MANY((pool, "abc", "def", "ghi", SVN_VA_NULL), "abc/def/ghi");
+  TEST_MANY((pool, "abc", "/def", "ghi", SVN_VA_NULL), "/def/ghi");
+  TEST_MANY((pool, "/abc", "def", "ghi", SVN_VA_NULL), "/abc/def/ghi");
+  TEST_MANY((pool, "abc", "def", "/ghi", SVN_VA_NULL), "/ghi");
+  TEST_MANY((pool, "/", "def", "/ghi", SVN_VA_NULL), "/ghi");
+  TEST_MANY((pool, "/", "/def", "/ghi", SVN_VA_NULL), "/ghi");
 
-  TEST_MANY((pool, SVN_EMPTY_PATH, "def", "ghi", NULL), "def/ghi");
-  TEST_MANY((pool, "abc", SVN_EMPTY_PATH, "ghi", NULL), "abc/ghi");
-  TEST_MANY((pool, "abc", "def", SVN_EMPTY_PATH, NULL), "abc/def");
-  TEST_MANY((pool, SVN_EMPTY_PATH, "def", SVN_EMPTY_PATH, NULL), "def");
-  TEST_MANY((pool, SVN_EMPTY_PATH, SVN_EMPTY_PATH, "ghi", NULL), "ghi");
-  TEST_MANY((pool, "abc", SVN_EMPTY_PATH, SVN_EMPTY_PATH, NULL), "abc");
-  TEST_MANY((pool, SVN_EMPTY_PATH, "def", "/ghi", NULL), "/ghi");
-  TEST_MANY((pool, SVN_EMPTY_PATH, SVN_EMPTY_PATH, "/ghi", NULL), "/ghi");
+  TEST_MANY((pool, SVN_EMPTY_PATH, "def", "ghi", SVN_VA_NULL), "def/ghi");
+  TEST_MANY((pool, "abc", SVN_EMPTY_PATH, "ghi", SVN_VA_NULL), "abc/ghi");
+  TEST_MANY((pool, "abc", "def", SVN_EMPTY_PATH, SVN_VA_NULL), "abc/def");
+  TEST_MANY((pool, SVN_EMPTY_PATH, "def", SVN_EMPTY_PATH, SVN_VA_NULL), "def");
+  TEST_MANY((pool, SVN_EMPTY_PATH, SVN_EMPTY_PATH, "ghi", SVN_VA_NULL), "ghi");
+  TEST_MANY((pool, "abc", SVN_EMPTY_PATH, SVN_EMPTY_PATH, SVN_VA_NULL), "abc");
+  TEST_MANY((pool, SVN_EMPTY_PATH, "def", "/ghi", SVN_VA_NULL), "/ghi");
+  TEST_MANY((pool, SVN_EMPTY_PATH, SVN_EMPTY_PATH, "/ghi", SVN_VA_NULL), "/ghi");
 
-  TEST_MANY((pool, "/", "def", "ghi", NULL), "/def/ghi");
-  TEST_MANY((pool, "abc", "/", "ghi", NULL), "/ghi");
-  TEST_MANY((pool, "abc", "def", "/", NULL), "/");
-  TEST_MANY((pool, "/", "/", "ghi", NULL), "/ghi");
-  TEST_MANY((pool, "/", "/", "/", NULL), "/");
-  TEST_MANY((pool, "/", SVN_EMPTY_PATH, "ghi", NULL), "/ghi");
-  TEST_MANY((pool, "/", "def", SVN_EMPTY_PATH, NULL), "/def");
-  TEST_MANY((pool, SVN_EMPTY_PATH, "/", "ghi", NULL), "/ghi");
-  TEST_MANY((pool, "/", SVN_EMPTY_PATH, SVN_EMPTY_PATH, NULL), "/");
-  TEST_MANY((pool, SVN_EMPTY_PATH, "/", SVN_EMPTY_PATH, NULL), "/");
-  TEST_MANY((pool, SVN_EMPTY_PATH, SVN_EMPTY_PATH, "/", NULL), "/");
+  TEST_MANY((pool, "/", "def", "ghi", SVN_VA_NULL), "/def/ghi");
+  TEST_MANY((pool, "abc", "/", "ghi", SVN_VA_NULL), "/ghi");
+  TEST_MANY((pool, "abc", "def", "/", SVN_VA_NULL), "/");
+  TEST_MANY((pool, "/", "/", "ghi", SVN_VA_NULL), "/ghi");
+  TEST_MANY((pool, "/", "/", "/", SVN_VA_NULL), "/");
+  TEST_MANY((pool, "/", SVN_EMPTY_PATH, "ghi", SVN_VA_NULL), "/ghi");
+  TEST_MANY((pool, "/", "def", SVN_EMPTY_PATH, SVN_VA_NULL), "/def");
+  TEST_MANY((pool, SVN_EMPTY_PATH, "/", "ghi", SVN_VA_NULL), "/ghi");
+  TEST_MANY((pool, "/", SVN_EMPTY_PATH, SVN_EMPTY_PATH, SVN_VA_NULL), "/");
+  TEST_MANY((pool, SVN_EMPTY_PATH, "/", SVN_EMPTY_PATH, SVN_VA_NULL), "/");
+  TEST_MANY((pool, SVN_EMPTY_PATH, SVN_EMPTY_PATH, "/", SVN_VA_NULL), "/");
 
 #ifdef SVN_USE_DOS_PATHS
-  TEST_MANY((pool, "X:/", "def", "ghi", NULL), "X:/def/ghi");
-  TEST_MANY((pool, "abc", "X:/", "ghi", NULL), "X:/ghi");
-  TEST_MANY((pool, "abc", "def", "X:/", NULL), "X:/");
-  TEST_MANY((pool, "X:/", "X:/", "ghi", NULL), "X:/ghi");
-  TEST_MANY((pool, "X:/", "X:/", "/", NULL), "/");
-  TEST_MANY((pool, "X:/", SVN_EMPTY_PATH, "ghi", NULL), "X:/ghi");
-  TEST_MANY((pool, "X:/", "def", SVN_EMPTY_PATH, NULL), "X:/def");
-  TEST_MANY((pool, SVN_EMPTY_PATH, "X:/", "ghi", NULL), "X:/ghi");
-  TEST_MANY((pool, "X:/", SVN_EMPTY_PATH, SVN_EMPTY_PATH, NULL), "X:/");
-  TEST_MANY((pool, SVN_EMPTY_PATH, "X:/", SVN_EMPTY_PATH, NULL), "X:/");
-  TEST_MANY((pool, SVN_EMPTY_PATH, SVN_EMPTY_PATH, "X:/", NULL), "X:/");
+  TEST_MANY((pool, "X:/", "def", "ghi", SVN_VA_NULL), "X:/def/ghi");
+  TEST_MANY((pool, "abc", "X:/", "ghi", SVN_VA_NULL), "X:/ghi");
+  TEST_MANY((pool, "abc", "def", "X:/", SVN_VA_NULL), "X:/");
+  TEST_MANY((pool, "X:/", "X:/", "ghi", SVN_VA_NULL), "X:/ghi");
+  TEST_MANY((pool, "X:/", "X:/", "/", SVN_VA_NULL), "/");
+  TEST_MANY((pool, "X:/", SVN_EMPTY_PATH, "ghi", SVN_VA_NULL), "X:/ghi");
+  TEST_MANY((pool, "X:/", "def", SVN_EMPTY_PATH, SVN_VA_NULL), "X:/def");
+  TEST_MANY((pool, SVN_EMPTY_PATH, "X:/", "ghi", SVN_VA_NULL), "X:/ghi");
+  TEST_MANY((pool, "X:/", SVN_EMPTY_PATH, SVN_EMPTY_PATH, SVN_VA_NULL), "X:/");
+  TEST_MANY((pool, SVN_EMPTY_PATH, "X:/", SVN_EMPTY_PATH, SVN_VA_NULL), "X:/");
+  TEST_MANY((pool, SVN_EMPTY_PATH, SVN_EMPTY_PATH, "X:/", SVN_VA_NULL), "X:/");
 
-  TEST_MANY((pool, "X:", "def", "ghi", NULL), "X:def/ghi");
-  TEST_MANY((pool, "X:", "X:/", "ghi", NULL), "X:/ghi");
-  TEST_MANY((pool, "X:", "X:/", "/", NULL), "/");
-  TEST_MANY((pool, "X:", SVN_EMPTY_PATH, "ghi", NULL), "X:ghi");
-  TEST_MANY((pool, "X:", "def", SVN_EMPTY_PATH, NULL), "X:def");
-  TEST_MANY((pool, SVN_EMPTY_PATH, "X:", "ghi", NULL), "X:ghi");
-  TEST_MANY((pool, "//srv/shr", "def", "ghi", NULL), "//srv/shr/def/ghi");
-  TEST_MANY((pool, "//srv/shr/fld", "def", "ghi", NULL), "//srv/shr/fld/def/ghi");
-  TEST_MANY((pool, "//srv/shr/fld", "def", "//srv/shr", NULL), "//srv/shr");
-  TEST_MANY((pool, "//srv/s r/fld", "def", "//srv/s r", NULL), "//srv/s r");
-  TEST_MANY((pool, SVN_EMPTY_PATH, "//srv/shr/fld", "def", "ghi", NULL), "//srv/shr/fld/def/ghi");
-  TEST_MANY((pool, SVN_EMPTY_PATH, "//srv/shr/fld", "def", "//srv/shr", NULL), "//srv/shr");
+  TEST_MANY((pool, "X:", "def", "ghi", SVN_VA_NULL), "X:def/ghi");
+  TEST_MANY((pool, "X:", "X:/", "ghi", SVN_VA_NULL), "X:/ghi");
+  TEST_MANY((pool, "X:", "X:/", "/", SVN_VA_NULL), "/");
+  TEST_MANY((pool, "X:", SVN_EMPTY_PATH, "ghi", SVN_VA_NULL), "X:ghi");
+  TEST_MANY((pool, "X:", "def", SVN_EMPTY_PATH, SVN_VA_NULL), "X:def");
+  TEST_MANY((pool, SVN_EMPTY_PATH, "X:", "ghi", SVN_VA_NULL), "X:ghi");
+  TEST_MANY((pool, "//srv/shr", "def", "ghi", SVN_VA_NULL), "//srv/shr/def/ghi");
+  TEST_MANY((pool, "//srv/shr/fld", "def", "ghi", SVN_VA_NULL), "//srv/shr/fld/def/ghi");
+  TEST_MANY((pool, "//srv/shr/fld", "def", "//srv/shr", SVN_VA_NULL), "//srv/shr");
+  TEST_MANY((pool, "//srv/s r/fld", "def", "//srv/s r", SVN_VA_NULL), "//srv/s r");
+  TEST_MANY((pool, SVN_EMPTY_PATH, "//srv/shr/fld", "def", "ghi", SVN_VA_NULL), "//srv/shr/fld/def/ghi");
+  TEST_MANY((pool, SVN_EMPTY_PATH, "//srv/shr/fld", "def", "//srv/shr", SVN_VA_NULL), "//srv/shr");
 
-  TEST_MANY((pool, "abcd", "/dir", "A:", "file", NULL), "A:file");
-  TEST_MANY((pool, "abcd", "A:", "/dir", "file", NULL), "A:/dir/file");
+  TEST_MANY((pool, "abcd", "/dir", "A:", "file", SVN_VA_NULL), "A:file");
+  TEST_MANY((pool, "abcd", "A:", "/dir", "file", SVN_VA_NULL), "A:/dir/file");
 
 #else /* !SVN_USE_DOS_PATHS */
-  TEST_MANY((pool, "X:", "def", "ghi", NULL), "X:/def/ghi");
-  TEST_MANY((pool, "X:", SVN_EMPTY_PATH, "ghi", NULL), "X:/ghi");
-  TEST_MANY((pool, "X:", "def", SVN_EMPTY_PATH, NULL), "X:/def");
-  TEST_MANY((pool, SVN_EMPTY_PATH, "X:", "ghi", NULL), "X:/ghi");
+  TEST_MANY((pool, "X:", "def", "ghi", SVN_VA_NULL), "X:/def/ghi");
+  TEST_MANY((pool, "X:", SVN_EMPTY_PATH, "ghi", SVN_VA_NULL), "X:/ghi");
+  TEST_MANY((pool, "X:", "def", SVN_EMPTY_PATH, SVN_VA_NULL), "X:/def");
+  TEST_MANY((pool, SVN_EMPTY_PATH, "X:", "ghi", SVN_VA_NULL), "X:/ghi");
 #endif /* SVN_USE_DOS_PATHS */
 
   /* ### probably need quite a few more tests... */
@@ -809,6 +809,9 @@ static const testcase_canonicalize_t uri_canonical_tests[] =
     { "http://hst/foo/../bar","http://hst/foo/../bar" },
     { "http://hst/",          "http://hst" },
     { "http:///",             "http://" },
+    { "http:///example.com/", "http:///example.com" },
+    { "http:////example.com/", "http:///example.com" },
+    { "http://///////example.com/", "http:///example.com" },
     { "https://",             "https://" },
     { "file:///",             "file://" },
     { "file://",              "file://" },
@@ -1109,6 +1112,7 @@ test_relpath_is_canonical(apr_pool_t *pool)
   static const testcase_is_canonical_t tests[] = {
     { "",                      TRUE },
     { ".",                     FALSE },
+    { "..",                    TRUE },
     { "/",                     FALSE },
     { "/.",                    FALSE },
     { "./",                    FALSE },
@@ -1937,13 +1941,13 @@ test_dirent_get_absolute(apr_pool_t *pool)
 
       expect_abs = expect;
       if (*expect == '%')
-        expect_abs = apr_pstrcat(pool, curdir, expect + 1, (char *)NULL);
+        expect_abs = apr_pstrcat(pool, curdir, expect + 1, SVN_VA_NULL);
 #ifdef SVN_USE_DOS_PATHS
       if (*expect == '@')
-        expect_abs = apr_pstrcat(pool, curdironc, expect + 1, NULL);
+        expect_abs = apr_pstrcat(pool, curdironc, expect + 1, SVN_VA_NULL);
 
       if (*expect == '$')
-        expect_abs = apr_pstrcat(pool, curdrive, expect + 1, NULL);
+        expect_abs = apr_pstrcat(pool, curdrive, expect + 1, SVN_VA_NULL);
 
       /* Remove double '/' when CWD was the root dir (E.g. C:/) */
       expect_abs = svn_dirent_canonicalize(expect_abs, pool);
@@ -1987,8 +1991,8 @@ test_dirent_get_absolute_from_lc_drive(apr_pool_t *pool)
 
   for (hi = apr_hash_first(pool, dirents); hi; hi = apr_hash_next(hi))
     {
-      const char *dir = svn__apr_hash_index_key(hi);
-      svn_io_dirent2_t *de = svn__apr_hash_index_val(hi);
+      const char *dir = apr_hash_this_key(hi);
+      svn_io_dirent2_t *de = apr_hash_this_val(hi);
 
       if (de->kind == svn_node_dir &&
           strcmp(dir, current_dir_on_C))
@@ -2857,7 +2861,9 @@ test_rule3(apr_pool_t *pool)
 
 /* The test table.  */
 
-struct svn_test_descriptor_t test_funcs[] =
+static int max_threads = 1;
+
+static struct svn_test_descriptor_t test_funcs[] =
   {
     SVN_TEST_NULL,
     SVN_TEST_PASS2(test_dirent_is_root,
@@ -2958,3 +2964,5 @@ struct svn_test_descriptor_t test_funcs[] =
                     "test match with RFC 6125 s. 6.4.3 Rule 3"),
     SVN_TEST_NULL
   };
+
+SVN_TEST_MAIN

@@ -66,16 +66,42 @@ except ImportError:
     import ezt
 
 
+try:
+    subprocess.check_output
+except AttributeError:
+    def check_output(cmd):
+        proc = subprocess.Popen(['svn', 'list', dist_dev_url],
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+        (stdout, stderr) = proc.communicate()
+        rc = proc.wait()
+        if rc or stderr:
+            logging.error('%r failed with stderr %r', cmd, stderr)
+            raise subprocess.CalledProcessError(rc, cmd)
+        return stdout
+    subprocess.check_output = check_output
+    del check_output
+
 # Our required / recommended release tool versions by release branch
 tool_versions = {
   'trunk' : {
-            'autoconf' : '2.68',
-            'libtool'  : '2.4',
-            'swig'     : '2.0.4',
+            'autoconf' : '2.69',
+            'libtool'  : '2.4.3',
+            'swig'     : '3.0.0',
+  },
+  '1.9' : {
+            'autoconf' : '2.69',
+            'libtool'  : '2.4.3',
+            'swig'     : '3.0.0'
+  },
+  '1.8' : {
+            'autoconf' : '2.69',
+            'libtool'  : '2.4.3',
+            'swig'     : '2.0.9',
   },
   '1.7' : {
             'autoconf' : '2.68',
-            'libtool'  : '2.4',
+            'libtool'  : '2.4.3',
             'swig'     : '2.0.4',
   },
   '1.6' : {
@@ -84,6 +110,9 @@ tool_versions = {
             'swig'     : '1.3.36',
   },
 }
+
+# The version that is our current recommended release
+recommended_release = '1.8'
 
 # Some constants
 repos = 'http://svn.apache.org/repos/asf/subversion'
@@ -99,7 +128,7 @@ extns = ['zip', 'tar.gz', 'tar.bz2']
 # Utility functions
 
 class Version(object):
-    regex = re.compile('(\d+).(\d+).(\d+)(?:-(?:(rc|alpha|beta)(\d+)))?')
+    regex = re.compile(r'(\d+).(\d+).(\d+)(?:-(?:(rc|alpha|beta)(\d+)))?')
 
     def __init__(self, ver_str):
         # Special case the 'trunk-nightly' version
@@ -135,6 +164,18 @@ class Version(object):
     def is_prerelease(self):
         return self.pre != None
 
+    def is_recommended(self):
+        return self.branch == recommended_release
+
+    def get_download_anchor(self):
+        if self.is_prerelease():
+            return 'pre-releases'
+        else:
+            if self.is_recommended():
+                return 'recommended-release'
+            else:
+                return 'supported-releases'
+
     def __lt__(self, that):
         if self.major < that.major: return True
         if self.major > that.major: return False
@@ -155,7 +196,7 @@ class Version(object):
         else:
             return self.pre_num < that.pre_num
 
-    def __str(self):
+    def __str__(self):
         if self.pre:
             if self.pre == 'nightly':
                 return 'nightly'
@@ -168,11 +209,7 @@ class Version(object):
 
     def __repr__(self):
 
-        return "Version('%s')" % self.__str()
-
-    def __str__(self):
-        return self.__str()
-
+        return "Version(%s)" % repr(str(self))
 
 def get_prefix(base_dir):
     return os.path.join(base_dir, 'prefix')
@@ -182,6 +219,13 @@ def get_tempdir(base_dir):
 
 def get_deploydir(base_dir):
     return os.path.join(base_dir, 'deploy')
+
+def get_target(args):
+    "Return the location of the artifacts"
+    if args.target:
+        return args.target
+    else:
+        return get_deploydir(args.base_dir)
 
 def get_tmpldir():
     return os.path.join(os.path.abspath(sys.path[0]), 'templates')
@@ -194,8 +238,7 @@ def get_tmplfile(filename):
         return urllib2.urlopen(repos + '/trunk/tools/dist/templates/' + filename)
 
 def get_nullfile():
-    # This is certainly not cross platform
-    return open('/dev/null', 'w')
+    return open(os.path.devnull, 'w')
 
 def run_script(verbose, script):
     if verbose:
@@ -371,12 +414,7 @@ def compare_changes(repos, branch, revision):
     mergeinfo_cmd = ['svn', 'mergeinfo', '--show-revs=eligible',
                      repos + '/trunk/CHANGES',
                      repos + '/' + branch + '/' + 'CHANGES']
-    proc = subprocess.Popen(mergeinfo_cmd, stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
-    (stdout, stderr) = proc.communicate()
-    rc = proc.wait()
-    if stderr:
-      raise RuntimeError('svn mergeinfo failed: %s' % stderr)
+    stdout = subprocess.check_output(mergeinfo_cmd)
     if stdout:
       # Treat this as a warning since we are now putting entries for future
       # minor releases in CHANGES on trunk.
@@ -463,15 +501,11 @@ def sign_candidates(args):
     def sign_file(filename):
         asc_file = open(filename + '.asc', 'a')
         logging.info("Signing %s" % filename)
-        proc = subprocess.Popen(['gpg', '-ba', '-o', '-', filename],
-                              stdout=asc_file)
-        proc.wait()
+        proc = subprocess.check_call(['gpg', '-ba', '-o', '-', filename],
+                                     stdout=asc_file)
         asc_file.close()
 
-    if args.target:
-        target = args.target
-    else:
-        target = get_deploydir(args.base_dir)
+    target = get_target(args)
 
     for e in extns:
         filename = os.path.join(target, 'subversion-%s.%s' % (args.version, e))
@@ -488,17 +522,17 @@ def sign_candidates(args):
 def post_candidates(args):
     'Post candidate artifacts to the dist development directory.'
 
+    target = get_target(args)
+
     logging.info('Importing tarballs to %s' % dist_dev_url)
     svn_cmd = ['svn', 'import', '-m',
                'Add %s candidate release artifacts' % args.version.base,
                '--auto-props', '--config-option',
                'config:auto-props:*.asc=svn:eol-style=native;svn:mime-type=text/plain',
-               get_deploydir(args.base_dir), dist_dev_url]
+               target, dist_dev_url]
     if (args.username):
         svn_cmd += ['--username', args.username]
-    proc = subprocess.Popen(svn_cmd)
-    (stdout, stderr) = proc.communicate()
-    proc.wait()
+    subprocess.check_call(svn_cmd)
 
 #----------------------------------------------------------------------
 # Create tag
@@ -513,6 +547,7 @@ def create_tag(args):
     else:
         branch = secure_repos + '/branches/%d.%d.x' % (args.version.major,
                                                        args.version.minor)
+    target = get_target(args)
 
     tag = secure_repos + '/tags/' + str(args.version)
 
@@ -521,13 +556,63 @@ def create_tag(args):
     if (args.username):
         svnmucc_cmd += ['--username', args.username]
     svnmucc_cmd += ['cp', str(args.revnum), branch, tag]
-    svnmucc_cmd += ['put', os.path.join(get_deploydir(args.base_dir),
-                                        'svn_version.h.dist'),
+    svnmucc_cmd += ['put', os.path.join(target, 'svn_version.h.dist' + '-' +
+                                        str(args.version)),
                     tag + '/subversion/include/svn_version.h']
 
     # don't redirect stdout/stderr since svnmucc might ask for a password
-    proc = subprocess.Popen(svnmucc_cmd)
-    proc.wait()
+    subprocess.check_call(svnmucc_cmd)
+
+    if not args.version.is_prerelease():
+        logging.info('Bumping revisions on the branch')
+        def replace_in_place(fd, startofline, flat, spare):
+            """In file object FD, replace FLAT with SPARE in the first line
+            starting with STARTOFLINE."""
+
+            fd.seek(0, os.SEEK_SET)
+            lines = fd.readlines()
+            for i, line in enumerate(lines):
+                if line.startswith(startofline):
+                    lines[i] = line.replace(flat, spare)
+                    break
+            else:
+                raise RuntimeError('Definition of %r not found' % startofline)
+
+            fd.seek(0, os.SEEK_SET)
+            fd.writelines(lines)
+            fd.truncate() # for current callers, new value is never shorter.
+
+        new_version = Version('%d.%d.%d' %
+                              (args.version.major, args.version.minor,
+                               args.version.patch + 1))
+
+        def file_object_for(relpath):
+            fd = tempfile.NamedTemporaryFile()
+            url = branch + '/' + relpath
+            fd.url = url
+            subprocess.check_call(['svn', 'cat', '%s@%d' % (url, args.revnum)],
+                                  stdout=fd)
+            return fd
+
+        svn_version_h = file_object_for('subversion/include/svn_version.h')
+        replace_in_place(svn_version_h, '#define SVN_VER_PATCH ',
+                         str(args.version.patch), str(new_version.patch))
+
+        STATUS = file_object_for('STATUS')
+        replace_in_place(STATUS, 'Status of ',
+                         str(args.version), str(new_version))
+
+        svn_version_h.seek(0, os.SEEK_SET)
+        STATUS.seek(0, os.SEEK_SET)
+        subprocess.check_call(['svnmucc', '-r', str(args.revnum),
+                               '-m', 'Post-release housekeeping: '
+                                     'bump the %s branch to %s.'
+                               % (branch.split('/')[-1], str(new_version)),
+                               'put', svn_version_h.name, svn_version_h.url,
+                               'put', STATUS.name, STATUS.url,
+                              ])
+        del svn_version_h
+        del STATUS
 
 #----------------------------------------------------------------------
 # Clean dist
@@ -535,13 +620,7 @@ def create_tag(args):
 def clean_dist(args):
     'Clean the distribution directory of all but the most recent artifacts.'
 
-    proc = subprocess.Popen(['svn', 'list', dist_release_url],
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
-    (stdout, stderr) = proc.communicate()
-    proc.wait()
-    if stderr:
-      raise RuntimeError(stderr)
+    stdout = subprocess.check_output(['svn', 'list', dist_release_url])
 
     filenames = stdout.split('\n')
     tar_gz_archives = []
@@ -570,8 +649,7 @@ def clean_dist(args):
                 svnmucc_cmd += ['rm', dist_release_url + '/' + filename]
 
     # don't redirect stdout/stderr since svnmucc might ask for a password
-    proc = subprocess.Popen(svnmucc_cmd)
-    proc.wait()
+    subprocess.check_call(svnmucc_cmd)
 
 #----------------------------------------------------------------------
 # Move to dist
@@ -579,13 +657,7 @@ def clean_dist(args):
 def move_to_dist(args):
     'Move candidate artifacts to the distribution directory.'
 
-    proc = subprocess.Popen(['svn', 'list', dist_dev_url],
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
-    (stdout, stderr) = proc.communicate()
-    proc.wait()
-    if stderr:
-      raise RuntimeError(stderr)
+    stdout = subprocess.check_output(['svn', 'list', dist_dev_url])
 
     filenames = []
     for entry in stdout.split('\n'):
@@ -603,8 +675,7 @@ def move_to_dist(args):
 
     # don't redirect stdout/stderr since svnmucc might ask for a password
     logging.info('Moving release artifacts to %s' % dist_release_url)
-    proc = subprocess.Popen(svnmucc_cmd)
-    proc.wait()
+    subprocess.check_call(svnmucc_cmd)
 
 #----------------------------------------------------------------------
 # Write announcements
@@ -613,9 +684,10 @@ def write_news(args):
     'Write text for the Subversion website.'
     data = { 'date' : datetime.date.today().strftime('%Y%m%d'),
              'date_pres' : datetime.date.today().strftime('%Y-%m-%d'),
-             'major-minor' : '%d.%d' % (args.version.major, args.version.minor),
+             'major-minor' : args.version.branch,
              'version' : str(args.version),
              'version_base' : args.version.base,
+             'anchor': args.version.get_download_anchor(),
            }
 
     if args.version.is_prerelease():
@@ -631,10 +703,7 @@ def write_news(args):
 def get_sha1info(args, replace=False):
     'Return a list of sha1 info for the release'
 
-    if args.target:
-        target = args.target
-    else:
-        target = get_deploydir(args.base_dir)
+    target = get_target(args)
 
     sha1s = glob.glob(os.path.join(target, 'subversion*-%s*.sha1' % args.version))
 
@@ -665,9 +734,9 @@ def write_announcement(args):
     data = { 'version'              : str(args.version),
              'sha1info'             : sha1info,
              'siginfo'              : siginfo,
-             'major-minor'          : '%d.%d' % (args.version.major,
-                                                 args.version.minor),
+             'major-minor'          : args.version.branch,
              'major-minor-patch'    : args.version.base,
+             'anchor'               : args.version.get_download_anchor(),
            }
 
     if args.version.is_prerelease():
@@ -708,10 +777,7 @@ def get_siginfo(args, quiet=False):
         import _gnupg as gnupg
     gpg = gnupg.GPG()
 
-    if args.target:
-        target = args.target
-    else:
-        target = get_deploydir(args.base_dir)
+    target = get_target(args)
 
     good_sigs = {}
     fingerprints = {}
@@ -842,6 +908,9 @@ def main():
                     help='''The release label, such as '1.7.0-alpha1'.''')
     subparser.add_argument('--username',
                     help='''Username for ''' + dist_repos + '''.''')
+    subparser.add_argument('--target',
+                    help='''The full path to the directory containing
+                            release artifacts.''')
 
     # Setup the parser for the create-tag subcommand
     subparser = subparsers.add_parser('create-tag',
@@ -855,6 +924,9 @@ def main():
                     help='''The branch to base the release on.''')
     subparser.add_argument('--username',
                     help='''Username for ''' + secure_repos + '''.''')
+    subparser.add_argument('--target',
+                    help='''The full path to the directory containing
+                            release artifacts.''')
 
     # The clean-dist subcommand
     subparser = subparsers.add_parser('clean-dist',

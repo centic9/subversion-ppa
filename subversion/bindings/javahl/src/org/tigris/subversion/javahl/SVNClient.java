@@ -47,7 +47,7 @@ public class SVNClient implements SVNClientInterface
     private org.apache.subversion.javahl.SVNClient aSVNClient;
 
     /**
-     * Standard empty contructor, builds just the native peer.
+     * Standard empty constructor, builds just the native peer.
      */
     public SVNClient()
     {
@@ -377,7 +377,10 @@ public class SVNClient implements SVNClientInterface
 
         public boolean userAllowedSave()
         {
-            return false;
+            if (oldPrompt3 != null)
+                return oldPrompt3.userAllowedSave();
+            else
+                return false;
         }
 
         public String askQuestion(String realm, String question,
@@ -756,14 +759,14 @@ public class SVNClient implements SVNClientInterface
             }
 
             public String getLogMessage(
-                Set<org.apache.subversion.javahl.CommitItem> elementsToBeCommited)
+                Set<org.apache.subversion.javahl.CommitItem> elementsToBeCommitted)
             {
                 CommitItem[] aElements =
-                        new CommitItem[elementsToBeCommited.size()];
+                        new CommitItem[elementsToBeCommitted.size()];
 
                 int i = 0;
                 for (org.apache.subversion.javahl.CommitItem item
-                                                        : elementsToBeCommited)
+                                                        : elementsToBeCommitted)
                 {
                     aElements[i] = new CommitItem(item);
                     i++;
@@ -2415,18 +2418,18 @@ public class SVNClient implements SVNClientInterface
     {
         try
         {
-        	final List<org.apache.subversion.javahl.types.Info> infos =
-        		new ArrayList<org.apache.subversion.javahl.types.Info>();
-        	aSVNClient.info2(path,
-        					org.apache.subversion.javahl.types.Revision.HEAD,
-        					org.apache.subversion.javahl.types.Revision.HEAD,
-        					org.apache.subversion.javahl.types.Depth.empty,
-        				    null, new org.apache.subversion.javahl.callback.InfoCallback()
-        	{
-				public void singleInfo(org.apache.subversion.javahl.types.Info info) {
-					infos.add(info);
-				}
-        	});
+            final List<org.apache.subversion.javahl.types.Info> infos =
+                new ArrayList<org.apache.subversion.javahl.types.Info>();
+            aSVNClient.info2(path,
+                            org.apache.subversion.javahl.types.Revision.HEAD,
+                            org.apache.subversion.javahl.types.Revision.HEAD,
+                            org.apache.subversion.javahl.types.Depth.empty,
+                            null, new org.apache.subversion.javahl.callback.InfoCallback()
+            {
+                public void singleInfo(org.apache.subversion.javahl.types.Info info) {
+                    infos.add(info);
+                }
+            });
             return new Info(infos.get(0));
         }
         catch (org.apache.subversion.javahl.ClientException ex)

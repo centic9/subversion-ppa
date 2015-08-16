@@ -60,6 +60,7 @@
   void *log_msg_baton3,
   void *conflict_baton,
   void *conflict_baton2,
+  void *tunnel_baton,
   void *commit_baton,
   void *filter_baton,
   void *backwards_compatibility_baton,

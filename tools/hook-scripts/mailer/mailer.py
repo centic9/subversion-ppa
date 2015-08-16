@@ -22,10 +22,10 @@
 #
 # mailer.py: send email describing a commit
 #
-# $HeadURL: http://svn.apache.org/repos/asf/subversion/branches/1.8.x/tools/hook-scripts/mailer/mailer.py $
-# $LastChangedDate: 2013-04-12 07:44:37 +0000 (Fri, 12 Apr 2013) $
+# $HeadURL: http://svn.apache.org/repos/asf/subversion/branches/1.9.x/tools/hook-scripts/mailer/mailer.py $
+# $LastChangedDate: 2015-02-13 11:17:40 +0000 (Fri, 13 Feb 2015) $
 # $LastChangedBy: rhuijben $
-# $LastChangedRevision: 1467191 $
+# $LastChangedRevision: 1659509 $
 #
 # USAGE: mailer.py commit      REPOS REVISION [CONFIG-FILE]
 #        mailer.py propchange  REPOS REVISION AUTHOR REVPROPNAME [CONFIG-FILE]
@@ -236,16 +236,30 @@ class MailedOutput(OutputBase):
                                and self.reply_to[2] == ']':
       self.reply_to = self.reply_to[3:]
 
+  def _rfc2047_encode(self, hdr):
+    # Return the result of splitting HDR into tokens (on space
+    # characters), encoding (per RFC2047) each token as necessary, and
+    # slapping 'em back to together again.
+    from email.Header import Header
+
+    def _maybe_encode_header(hdr_token):
+      try:
+        hdr_token.encode('ascii')
+        return hdr_token
+      except UnicodeError:
+        return Header(hdr_token, 'utf-8').encode()
+
+    return ' '.join(map(_maybe_encode_header, hdr.split()))
+
   def mail_headers(self, group, params):
     from email import Utils
-    subject = self.make_subject(group, params)
-    try:
-      subject.encode('ascii')
-    except UnicodeError:
-      from email.Header import Header
-      subject = Header(subject, 'utf-8').encode()
-    hdrs = 'From: %s\n'    \
-           'To: %s\n'      \
+
+    subject  = self._rfc2047_encode(self.make_subject(group, params))
+    from_hdr = self._rfc2047_encode(self.from_addr)
+    to_hdr   = self._rfc2047_encode(', '.join(self.to_addrs))
+
+    hdrs = 'From: %s\n' \
+           'To: %s\n' \
            'Subject: %s\n' \
            'Date: %s\n' \
            'Message-ID: %s\n' \
@@ -256,7 +270,7 @@ class MailedOutput(OutputBase):
            'X-Svn-Commit-Author: %s\n' \
            'X-Svn-Commit-Revision: %d\n' \
            'X-Svn-Commit-Repository: %s\n' \
-           % (self.from_addr, ', '.join(self.to_addrs), subject,
+           % (from_hdr, to_hdr, subject,
               Utils.formatdate(), Utils.make_msgid(), group,
               self.repos.author or 'no_author', self.repos.rev,
               os.path.basename(self.repos.repos_dir))

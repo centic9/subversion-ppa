@@ -24,12 +24,18 @@
  * @brief: Implementation of the SVNClient class
  */
 
+#include <vector>
+#include <iostream>
+#include <sstream>
+#include <string>
+
 #include "SVNClient.h"
 #include "JNIUtil.h"
 #include "CopySources.h"
 #include "DiffSummaryReceiver.h"
 #include "ClientContext.h"
 #include "Prompter.h"
+#include "RemoteSession.h"
 #include "Pool.h"
 #include "Targets.h"
 #include "Revision.h"
@@ -50,9 +56,11 @@
 #include "CommitMessage.h"
 #include "EnumMapper.h"
 #include "StringArray.h"
-#include "RevpropTable.h"
+#include "PropertyTable.h"
 #include "DiffOptions.h"
 #include "CreateJ.h"
+#include "JNIStringHolder.h"
+
 #include "svn_auth.h"
 #include "svn_dso.h"
 #include "svn_types.h"
@@ -62,14 +70,17 @@
 #include "svn_diff.h"
 #include "svn_config.h"
 #include "svn_io.h"
+#include "svn_hash.h"
 #include "svn_dirent_uri.h"
 #include "svn_path.h"
 #include "svn_utf.h"
+#include "private/svn_subr_private.h"
 #include "svn_private_config.h"
-#include "JNIStringHolder.h"
-#include <vector>
-#include <iostream>
-#include <sstream>
+
+#include "ExternalItem.hpp"
+#include "jniwrapper/jni_list.hpp"
+#include "jniwrapper/jni_stack.hpp"
+#include "jniwrapper/jni_string_map.hpp"
 
 
 SVNClient::SVNClient(jobject jthis_in)
@@ -85,21 +96,21 @@ SVNClient *SVNClient::getCppObject(jobject jthis)
 {
     static jfieldID fid = 0;
     jlong cppAddr = SVNBase::findCppAddrForJObject(jthis, &fid,
-                                                   JAVA_PACKAGE"/SVNClient");
+                                                   JAVAHL_CLASS("/SVNClient"));
     return (cppAddr == 0 ? NULL : reinterpret_cast<SVNClient *>(cppAddr));
 }
 
 void SVNClient::dispose(jobject jthis)
 {
     static jfieldID fid = 0;
-    SVNBase::dispose(jthis, &fid, JAVA_PACKAGE"/SVNClient");
+    SVNBase::dispose(jthis, &fid, JAVAHL_CLASS("/SVNClient"));
 }
 
 jobject SVNClient::getVersionExtended(bool verbose)
 {
     JNIEnv *const env = JNIUtil::getEnv();
 
-    jclass clazz = env->FindClass(JAVA_PACKAGE"/types/VersionExtended");
+    jclass clazz = env->FindClass(JAVAHL_CLASS("/types/VersionExtended"));
     if (JNIUtil::isJavaExceptionThrown())
         return NULL;
 
@@ -184,8 +195,9 @@ void SVNClient::list(const char *url, Revision &revision,
 
 void
 SVNClient::status(const char *path, svn_depth_t depth,
-                  bool onServer, bool getAll, bool noIgnore,
-                  bool ignoreExternals, StringArray &changelists,
+                  bool onServer, bool onDisk, bool getAll,
+                  bool noIgnore, bool ignoreExternals,
+                  bool depthAsSticky, StringArray &changelists,
                   StatusCallback *callback)
 {
     SVN::Pool subPool(pool);
@@ -204,11 +216,10 @@ SVNClient::status(const char *path, svn_depth_t depth,
 
     rev.kind = svn_opt_revision_unspecified;
 
-    SVN_JNI_ERR(svn_client_status5(&youngest, ctx, checkedPath.c_str(),
-                                   &rev,
-                                   depth,
-                                   getAll, onServer, noIgnore, ignoreExternals,
-                                   FALSE,
+    SVN_JNI_ERR(svn_client_status6(&youngest, ctx, checkedPath.c_str(),
+                                   &rev, depth,
+                                   getAll, onServer, onDisk,
+                                   noIgnore, ignoreExternals, depthAsSticky,
                                    changelists.array(subPool),
                                    StatusCallback::callback, callback,
                                    subPool.getPool()), );
@@ -227,23 +238,23 @@ rev_range_vector_to_apr_array(std::vector<RevisionRange> &revRanges,
     std::vector<RevisionRange>::const_iterator it;
     for (it = revRanges.begin(); it != revRanges.end(); ++it)
     {
-        if (it->toRange(subPool)->start.kind
-            == svn_opt_revision_unspecified
-            && it->toRange(subPool)->end.kind
-            == svn_opt_revision_unspecified)
+        const svn_opt_revision_range_t *range = it->toRange(subPool);
+
+        if (range->start.kind == svn_opt_revision_unspecified
+            && range->end.kind == svn_opt_revision_unspecified)
         {
-            svn_opt_revision_range_t *range =
+            svn_opt_revision_range_t *full =
                 reinterpret_cast<svn_opt_revision_range_t *>
                     (apr_pcalloc(subPool.getPool(), sizeof(*range)));
-            range->start.kind = svn_opt_revision_number;
-            range->start.value.number = 1;
-            range->end.kind = svn_opt_revision_head;
-            APR_ARRAY_PUSH(ranges, const svn_opt_revision_range_t *) = range;
+            full->start.kind = svn_opt_revision_number;
+            full->start.value.number = 1;
+            full->end.kind = svn_opt_revision_head;
+            full->end.value.number = 0;
+            APR_ARRAY_PUSH(ranges, const svn_opt_revision_range_t *) = full;
         }
         else
         {
-            APR_ARRAY_PUSH(ranges, const svn_opt_revision_range_t *) =
-                it->toRange(subPool);
+            APR_ARRAY_PUSH(ranges, const svn_opt_revision_range_t *) = range;
         }
         if (JNIUtil::isExceptionThrown())
             return NULL;
@@ -255,7 +266,7 @@ void SVNClient::logMessages(const char *path, Revision &pegRevision,
                             std::vector<RevisionRange> &logRanges,
                             bool stopOnCopy, bool discoverPaths,
                             bool includeMergedRevisions, StringArray &revProps,
-                            long limit, LogMessageCallback *callback)
+                            int limit, LogMessageCallback *callback)
 {
     SVN::Pool subPool(pool);
 
@@ -317,7 +328,7 @@ jlong SVNClient::checkout(const char *moduleName, const char *destPath,
 }
 
 void SVNClient::remove(Targets &targets, CommitMessage *message, bool force,
-                       bool keep_local, RevpropTable &revprops,
+                       bool keep_local, PropertyTable &revprops,
                        CommitCallback *callback)
 {
     SVN::Pool subPool(pool);
@@ -334,23 +345,24 @@ void SVNClient::remove(Targets &targets, CommitMessage *message, bool force,
                                    ctx, subPool.getPool()), );
 }
 
-void SVNClient::revert(const char *path, svn_depth_t depth,
-                       StringArray &changelists)
+void SVNClient::revert(StringArray &paths, svn_depth_t depth,
+                       StringArray &changelists,
+                       bool clear_changelists,
+                       bool metadata_only)
 {
     SVN::Pool subPool(pool);
-
-    SVN_JNI_NULL_PTR_EX(path, "path", );
 
     svn_client_ctx_t *ctx = context.getContext(NULL, subPool);
     if (ctx == NULL)
         return;
 
-    Targets target(path, subPool);
-    const apr_array_header_t *targets = target.array(subPool);
-    SVN_JNI_ERR(target.error_occurred(), );
-    SVN_JNI_ERR(svn_client_revert2(targets, depth,
-                                   changelists.array(subPool), ctx,
-                                   subPool.getPool()), );
+    Targets targets(paths, subPool);
+    SVN_JNI_ERR(targets.error_occurred(), );
+    SVN_JNI_ERR(svn_client_revert3(targets.array(subPool), depth,
+                                   changelists.array(subPool),
+                                   clear_changelists,
+                                   metadata_only,
+                                   ctx, subPool.getPool()), );
 }
 
 void SVNClient::add(const char *path,
@@ -417,7 +429,7 @@ jlongArray SVNClient::update(Targets &targets, Revision &revision,
 
 void SVNClient::commit(Targets &targets, CommitMessage *message,
                        svn_depth_t depth, bool noUnlock, bool keepChangelist,
-                       StringArray &changelists, RevpropTable &revprops,
+                       StringArray &changelists, PropertyTable &revprops,
                        CommitCallback *callback)
 {
     SVN::Pool subPool(pool);
@@ -439,20 +451,82 @@ void SVNClient::commit(Targets &targets, CommitMessage *message,
                 );
 }
 
+
+namespace {
+typedef Java::ImmutableList<JavaHL::ExternalItem> PinList;
+typedef Java::ImmutableMap<PinList> PinMap;
+
+struct PinListFunctor
+{
+  explicit PinListFunctor(const Java::Env& env, SVN::Pool& pool, int refs_len)
+    : m_pool(pool),
+      m_refs(apr_array_make(pool.getPool(), refs_len,
+                            sizeof(svn_wc_external_item2_t*)))
+      {}
+
+  void operator()(const JavaHL::ExternalItem& item)
+    {
+      APR_ARRAY_PUSH(m_refs, svn_wc_external_item2_t*) =
+        item.get_external_item(m_pool);
+    }
+
+  SVN::Pool& m_pool;
+  apr_array_header_t *m_refs;
+};
+
+struct PinMapFunctor
+{
+  explicit PinMapFunctor(const Java::Env& env, SVN::Pool& pool)
+    : m_env(env),
+      m_pool(pool),
+      m_pin_set(svn_hash__make(pool.getPool()))
+    {}
+
+  void operator()(const std::string& path, const PinList& refs)
+    {
+      PinListFunctor lf(m_env, m_pool, refs.length());
+      refs.for_each(lf);
+      const char* key = static_cast<const char*>(
+          apr_pmemdup(m_pool.getPool(), path.c_str(), path.size() + 1));
+      svn_hash_sets(m_pin_set, key, lf.m_refs);
+    }
+
+  const Java::Env& m_env;
+  SVN::Pool& m_pool;
+  apr_hash_t *m_pin_set;
+};
+
+apr_hash_t *get_externals_to_pin(jobject jexternalsToPin, SVN::Pool& pool)
+{
+  if (!jexternalsToPin)
+    return NULL;
+
+  const Java::Env env;
+  JNIEnv *jenv = env.get();
+
+  try
+    {
+      PinMap pin_map(env, jexternalsToPin);
+      PinMapFunctor mf(env, pool);
+      pin_map.for_each(mf);
+      return mf.m_pin_set;
+    }
+  SVN_JAVAHL_JNI_CATCH;
+  return NULL;
+}
+} // anonymous namespace
+
 void SVNClient::copy(CopySources &copySources, const char *destPath,
                      CommitMessage *message, bool copyAsChild,
                      bool makeParents, bool ignoreExternals,
-                     RevpropTable &revprops, CommitCallback *callback)
+                     bool metadataOnly,
+                     bool pinExternals, jobject jexternalsToPin,
+                     PropertyTable &revprops, CommitCallback *callback)
 {
     SVN::Pool subPool(pool);
 
     apr_array_header_t *srcs = copySources.array(subPool);
-    if (srcs == NULL)
-    {
-        JNIUtil::throwNativeException(JAVA_PACKAGE "/ClientException",
-                                      "Invalid copy sources");
-        return;
-    }
+    SVN_JNI_NULL_PTR_EX(srcs, "sources", );
     SVN_JNI_NULL_PTR_EX(destPath, "destPath", );
     Path destinationPath(destPath, subPool);
     SVN_JNI_ERR(destinationPath.error_occurred(), );
@@ -461,17 +535,21 @@ void SVNClient::copy(CopySources &copySources, const char *destPath,
     if (ctx == NULL)
         return;
 
-    SVN_JNI_ERR(svn_client_copy6(srcs, destinationPath.c_str(),
-                                 copyAsChild, makeParents, ignoreExternals,
-                                 revprops.hash(subPool),
-                                 CommitCallback::callback, callback,
+    apr_hash_t *pin_set = get_externals_to_pin(jexternalsToPin, subPool);
+    if (!JNIUtil::isJavaExceptionThrown())
+      SVN_JNI_ERR(svn_client_copy7(srcs, destinationPath.c_str(),
+                                   copyAsChild, makeParents, ignoreExternals,
+                                   metadataOnly,
+                                   pinExternals, pin_set,
+                                   revprops.hash(subPool),
+                                   CommitCallback::callback, callback,
                                  ctx, subPool.getPool()), );
 }
 
 void SVNClient::move(Targets &srcPaths, const char *destPath,
                      CommitMessage *message, bool force, bool moveAsChild,
                      bool makeParents, bool metadataOnly, bool allowMixRev,
-                     RevpropTable &revprops, CommitCallback *callback)
+                     PropertyTable &revprops, CommitCallback *callback)
 {
     SVN::Pool subPool(pool);
 
@@ -496,7 +574,7 @@ void SVNClient::move(Targets &srcPaths, const char *destPath,
 }
 
 void SVNClient::mkdir(Targets &targets, CommitMessage *message,
-                      bool makeParents, RevpropTable &revprops,
+                      bool makeParents, PropertyTable &revprops,
                       CommitCallback *callback)
 {
     SVN::Pool subPool(pool);
@@ -513,7 +591,12 @@ void SVNClient::mkdir(Targets &targets, CommitMessage *message,
                                   ctx, subPool.getPool()), );
 }
 
-void SVNClient::cleanup(const char *path)
+void SVNClient::cleanup(const char *path,
+                        bool break_locks,
+                        bool fix_recorded_timestamps,
+                        bool clear_dav_cache,
+                        bool remove_unused_pristines,
+                        bool include_externals)
 {
     SVN::Pool subPool(pool);
     SVN_JNI_NULL_PTR_EX(path, "path", );
@@ -524,7 +607,13 @@ void SVNClient::cleanup(const char *path)
     if (ctx == NULL)
         return;
 
-    SVN_JNI_ERR(svn_client_cleanup(intPath.c_str(), ctx, subPool.getPool()),);
+    SVN_JNI_ERR(svn_client_cleanup2(intPath.c_str(),
+                                    break_locks,
+                                    fix_recorded_timestamps,
+                                    clear_dav_cache,
+                                    remove_unused_pristines,
+                                    include_externals,
+                                    ctx, subPool.getPool()),);
 }
 
 void SVNClient::resolve(const char *path, svn_depth_t depth,
@@ -545,6 +634,7 @@ void SVNClient::resolve(const char *path, svn_depth_t depth,
 jlong SVNClient::doExport(const char *srcPath, const char *destPath,
                           Revision &revision, Revision &pegRevision,
                           bool force, bool ignoreExternals,
+                          bool ignoreKeywords,
                           svn_depth_t depth, const char *nativeEOL)
 {
     SVN::Pool subPool(pool);
@@ -563,7 +653,7 @@ jlong SVNClient::doExport(const char *srcPath, const char *destPath,
                                    destinationPath.c_str(),
                                    pegRevision.revision(),
                                    revision.revision(), force,
-                                   ignoreExternals, FALSE,
+                                   ignoreExternals, ignoreKeywords,
                                    depth,
                                    nativeEOL, ctx,
                                    subPool.getPool()),
@@ -613,7 +703,7 @@ void SVNClient::doImport(const char *path, const char *url,
                          CommitMessage *message, svn_depth_t depth,
                          bool noIgnore, bool noAutoProps,
                          bool ignoreUnknownNodeTypes,
-                         RevpropTable &revprops,
+                         PropertyTable &revprops,
                          ImportFilterCallback *ifCallback,
                          CommitCallback *commitCallback)
 {
@@ -658,7 +748,7 @@ void SVNClient::merge(const char *path1, Revision &revision1,
                       const char *path2, Revision &revision2,
                       const char *localPath, bool forceDelete, svn_depth_t depth,
                       bool ignoreMergeinfo, bool diffIgnoreAncestry,
-                      bool dryRun, bool recordOnly)
+                      bool dryRun, bool allowMixedRev, bool recordOnly)
 {
     SVN::Pool subPool(pool);
     SVN_JNI_NULL_PTR_EX(path1, "path1", );
@@ -683,14 +773,15 @@ void SVNClient::merge(const char *path1, Revision &revision1,
                                   depth,
                                   ignoreMergeinfo, diffIgnoreAncestry,
                                   forceDelete, recordOnly, dryRun,
-                                  TRUE, NULL, ctx, subPool.getPool()), );
+                                  allowMixedRev, NULL, ctx,
+                                  subPool.getPool()), );
 }
 
 void SVNClient::merge(const char *path, Revision &pegRevision,
                       std::vector<RevisionRange> *rangesToMerge,
                       const char *localPath, bool forceDelete, svn_depth_t depth,
                       bool ignoreMergeinfo, bool diffIgnoreAncestry,
-                      bool dryRun, bool recordOnly)
+                      bool dryRun, bool allowMixedRev, bool recordOnly)
 {
     SVN::Pool subPool(pool);
     SVN_JNI_NULL_PTR_EX(path, "path", );
@@ -718,39 +809,16 @@ void SVNClient::merge(const char *path, Revision &pegRevision,
                                       depth,
                                       ignoreMergeinfo, diffIgnoreAncestry,
                                       forceDelete, recordOnly,
-                                      dryRun, TRUE, NULL, ctx,
+                                      dryRun, allowMixedRev, NULL, ctx,
                                       subPool.getPool()), );
 }
 
-void SVNClient::mergeReintegrate(const char *path, Revision &pegRevision,
-                                 const char *localPath, bool dryRun)
-{
-    SVN::Pool subPool(pool);
-    SVN_JNI_NULL_PTR_EX(path, "path", );
-    SVN_JNI_NULL_PTR_EX(localPath, "localPath", );
-    Path intLocalPath(localPath, subPool);
-    SVN_JNI_ERR(intLocalPath.error_occurred(), );
-
-    Path srcPath(path, subPool);
-    SVN_JNI_ERR(srcPath.error_occurred(), );
-
-    svn_client_ctx_t *ctx = context.getContext(NULL, subPool);
-    if (ctx == NULL)
-        return;
-
-    SVN_JNI_ERR(svn_client_merge_reintegrate(srcPath.c_str(),
-                                             pegRevision.revision(),
-                                             intLocalPath.c_str(),
-                                             dryRun, NULL, ctx,
-                                             subPool.getPool()), );
-}
+/* SVNClient::mergeReintegrate is implemented in deprecated.cpp. */
 
 jobject
 SVNClient::getMergeinfo(const char *target, Revision &pegRevision)
 {
     SVN::Pool subPool(pool);
-    JNIEnv *env = JNIUtil::getEnv();
-
     svn_client_ctx_t *ctx = context.getContext(NULL, subPool);
     if (ctx == NULL)
         return NULL;
@@ -765,57 +833,7 @@ SVNClient::getMergeinfo(const char *target, Revision &pegRevision)
                 NULL);
     if (mergeinfo == NULL)
         return NULL;
-
-    // Transform mergeinfo into Java Mergeinfo object.
-    jclass clazz = env->FindClass(JAVA_PACKAGE "/types/Mergeinfo");
-    if (JNIUtil::isJavaExceptionThrown())
-        return NULL;
-
-    static jmethodID ctor = 0;
-    if (ctor == 0)
-    {
-        ctor = env->GetMethodID(clazz, "<init>", "()V");
-        if (JNIUtil::isJavaExceptionThrown())
-            return NULL;
-    }
-
-    static jmethodID addRevisions = 0;
-    if (addRevisions == 0)
-    {
-        addRevisions = env->GetMethodID(clazz, "addRevisions",
-                                        "(Ljava/lang/String;"
-                                        "Ljava/util/List;)V");
-        if (JNIUtil::isJavaExceptionThrown())
-            return NULL;
-    }
-
-    jobject jmergeinfo = env->NewObject(clazz, ctor);
-    if (JNIUtil::isJavaExceptionThrown())
-        return NULL;
-
-    apr_hash_index_t *hi;
-    for (hi = apr_hash_first(subPool.getPool(), mergeinfo);
-         hi;
-         hi = apr_hash_next(hi))
-    {
-        const void *path;
-        void *val;
-        apr_hash_this(hi, &path, NULL, &val);
-
-        jstring jpath =
-            JNIUtil::makeJString(reinterpret_cast<const char *>(path));
-        jobject jranges =
-            CreateJ::RevisionRangeList(reinterpret_cast<svn_rangelist_t *>(val));
-
-        env->CallVoidMethod(jmergeinfo, addRevisions, jpath, jranges);
-
-        env->DeleteLocalRef(jranges);
-        env->DeleteLocalRef(jpath);
-    }
-
-    env->DeleteLocalRef(clazz);
-
-    return jmergeinfo;
+    return CreateJ::Mergeinfo(mergeinfo, subPool.getPool());
 }
 
 void SVNClient::getMergeinfoLog(int type, const char *pathOrURL,
@@ -954,7 +972,7 @@ void SVNClient::propertySetRemote(const char *path, long base_rev,
                                   const char *name,
                                   CommitMessage *message,
                                   JNIByteArray &value, bool force,
-                                  RevpropTable &revprops,
+                                  PropertyTable &revprops,
                                   CommitCallback *callback)
 {
     SVN::Pool subPool(pool);
@@ -1155,23 +1173,31 @@ SVNClient::diffSummarize(const char *target, Revision &pegRevision,
                                                subPool.getPool()), );
 }
 
-void SVNClient::streamFileContent(const char *path, Revision &revision,
-                                  Revision &pegRevision,
-                                  OutputStream &outputStream)
+apr_hash_t *SVNClient::streamFileContent(const char *path,
+                                         Revision &revision,
+                                         Revision &pegRevision,
+                                         bool expand_keywords,
+                                         bool return_props,
+                                         OutputStream &outputStream)
 {
     SVN::Pool subPool(pool);
-    SVN_JNI_NULL_PTR_EX(path, "path", );
+    SVN_JNI_NULL_PTR_EX(path, "path", NULL);
     Path intPath(path, subPool);
-    SVN_JNI_ERR(intPath.error_occurred(), );
+    SVN_JNI_ERR(intPath.error_occurred(), NULL);
 
     svn_client_ctx_t *ctx = context.getContext(NULL, subPool);
     if (ctx == NULL)
-        return;
+        return NULL;
 
-    SVN_JNI_ERR(svn_client_cat2(outputStream.getStream(subPool),
-                                intPath.c_str(), pegRevision.revision(),
-                                revision.revision(), ctx, subPool.getPool()),
-                );
+    apr_hash_t *props = NULL;
+    SVN_JNI_ERR(svn_client_cat3((return_props ? &props : NULL),
+                                outputStream.getStream(subPool),
+                                intPath.c_str(),
+                                pegRevision.revision(), revision.revision(),
+                                expand_keywords, ctx,
+                                subPool.getPool(), subPool.getPool()),
+        NULL);
+    return props;
 }
 
 jbyteArray SVNClient::revProperty(const char *path,
@@ -1239,7 +1265,7 @@ void SVNClient::relocate(const char *from, const char *to, const char *path,
 void SVNClient::blame(const char *path, Revision &pegRevision,
                       Revision &revisionStart, Revision &revisionEnd,
                       bool ignoreMimeType, bool includeMergedRevisions,
-                      BlameCallback *callback)
+                      BlameCallback *callback, DiffOptions const& options)
 {
     SVN::Pool subPool(pool);
     SVN_JNI_NULL_PTR_EX(path, "path", );
@@ -1253,7 +1279,7 @@ void SVNClient::blame(const char *path, Revision &pegRevision,
     SVN_JNI_ERR(svn_client_blame5(
           intPath.c_str(), pegRevision.revision(), revisionStart.revision(),
           revisionEnd.revision(),
-          svn_diff_file_options_create(subPool.getPool()), ignoreMimeType,
+          options.fileOptions(subPool), ignoreMimeType,
           includeMergedRevisions, BlameCallback::callback, callback, ctx,
           subPool.getPool()),
         );
@@ -1288,15 +1314,17 @@ void SVNClient::removeFromChangelists(Targets &srcPaths, svn_depth_t depth,
 }
 
 void SVNClient::getChangelists(const char *rootPath,
-                               StringArray &changelists,
+                               StringArray *changelists,
                                svn_depth_t depth,
                                ChangelistCallback *callback)
 {
     SVN::Pool subPool(pool);
     svn_client_ctx_t *ctx = context.getContext(NULL, subPool);
 
-    SVN_JNI_ERR(svn_client_get_changelists(rootPath,
-                                           changelists.array(subPool),
+    const apr_array_header_t *cl_array = (!changelists ? NULL
+                                          : changelists->array(subPool));
+
+    SVN_JNI_ERR(svn_client_get_changelists(rootPath, cl_array,
                                            depth, ChangelistCallback::callback,
                                            callback, ctx, subPool.getPool()),
                 );
@@ -1392,10 +1420,10 @@ jstring SVNClient::getVersionInfo(const char *path, const char *trailUrl,
         }
         else
         {
-            char *message = JNIUtil::getFormatBuffer();
-            apr_snprintf(message, JNIUtil::formatBufferSize,
+            char buffer[2048];
+            apr_snprintf(buffer, sizeof(buffer),
                          _("'%s' not versioned, and not exported\n"), path);
-            return JNIUtil::makeJString(message);
+            return JNIUtil::makeJString(buffer);
         }
     }
 
@@ -1465,19 +1493,15 @@ jobject SVNClient::revProperties(const char *path, Revision &revision)
                                         &set_rev, ctx, subPool.getPool()),
                 NULL);
 
-    return CreateJ::PropertyMap(props);
+    return CreateJ::PropertyMap(props, subPool.getPool());
 }
 
-struct info_baton
-{
-    std::vector<info_entry> infoVect;
-    apr_pool_t *pool;
-};
-
 void
-SVNClient::info2(const char *path, Revision &revision, Revision &pegRevision,
-                 svn_depth_t depth, StringArray &changelists,
-                 InfoCallback *callback)
+SVNClient::info(const char *path,
+                Revision &revision, Revision &pegRevision, svn_depth_t depth,
+                svn_boolean_t fetchExcluded, svn_boolean_t fetchActualOnly,
+                svn_boolean_t includeExternals,
+                 StringArray &changelists, InfoCallback *callback)
 {
     SVN_JNI_NULL_PTR_EX(path, "path", );
 
@@ -1489,10 +1513,11 @@ SVNClient::info2(const char *path, Revision &revision, Revision &pegRevision,
     Path checkedPath(path, subPool);
     SVN_JNI_ERR(checkedPath.error_occurred(), );
 
-    SVN_JNI_ERR(svn_client_info3(checkedPath.c_str(),
+    SVN_JNI_ERR(svn_client_info4(checkedPath.c_str(),
                                  pegRevision.revision(),
-                                 revision.revision(),
-                                 depth, FALSE, TRUE,
+                                 revision.revision(), depth,
+                                 fetchExcluded, fetchActualOnly,
+                                 includeExternals,
                                  changelists.array(subPool),
                                  InfoCallback::callback, callback,
                                  ctx, subPool.getPool()), );
@@ -1523,6 +1548,84 @@ SVNClient::patch(const char *patchPath, const char *targetPath, bool dryRun,
                                  ignoreWhitespace, removeTempfiles,
                                  PatchCallback::callback, callback,
                                  ctx, subPool.getPool()), );
+}
+
+void SVNClient::vacuum(const char *path,
+                       bool remove_unversioned_items,
+                       bool remove_ignored_items,
+                       bool fix_recorded_timestamps,
+                       bool remove_unused_pristines,
+                       bool include_externals)
+{
+    SVN_JNI_NULL_PTR_EX(path, "path", );
+
+    SVN::Pool subPool(pool);
+    svn_client_ctx_t *ctx = context.getContext(NULL, subPool);
+    if (ctx == NULL)
+        return;
+
+    SVN_JNI_ERR(svn_client_vacuum(path,
+                                  remove_unversioned_items,
+                                  remove_ignored_items,
+                                  fix_recorded_timestamps,
+                                  remove_unused_pristines,
+                                  include_externals,
+                                  ctx, subPool.getPool()), );
+}
+
+jobject
+SVNClient::openRemoteSession(const char* path, int retryAttempts)
+{
+    static const svn_opt_revision_t HEAD = { svn_opt_revision_head, {0}};
+    static const svn_opt_revision_t NONE = { svn_opt_revision_unspecified, {0}};
+
+    SVN_JNI_NULL_PTR_EX(path, "path", NULL);
+
+    SVN::Pool subPool(pool);
+    svn_client_ctx_t *ctx = context.getContext(NULL, subPool);
+    if (ctx == NULL)
+        return NULL;
+
+    Path checkedPath(path, subPool);
+    SVN_JNI_ERR(checkedPath.error_occurred(), NULL);
+
+    struct PathInfo
+    {
+        std::string url;
+        std::string uuid;
+        static svn_error_t *callback(void *baton,
+                                     const char *,
+                                     const svn_client_info2_t *info,
+                                     apr_pool_t *)
+          {
+              PathInfo* const pi = static_cast<PathInfo*>(baton);
+              pi->url = info->URL;
+              pi->uuid = info->repos_UUID;
+              return SVN_NO_ERROR;
+          }
+    } path_info;
+
+    SVN_JNI_ERR(svn_client_info4(
+                    checkedPath.c_str(), &NONE,
+                    (svn_path_is_url(checkedPath.c_str()) ? &HEAD : &NONE),
+                    svn_depth_empty, FALSE, TRUE, FALSE, NULL,
+                    PathInfo::callback, &path_info,
+                    ctx, subPool.getPool()),
+                NULL);
+
+    /* Decouple the RemoteSession's context from SVNClient's context
+       by creating a copy of the prompter here. */
+
+    jobject jremoteSession = RemoteSession::open(
+        retryAttempts, path_info.url.c_str(), path_info.uuid.c_str(),
+        context.getConfigDirectory(),
+        context.getUsername(), context.getPassword(),
+        context.clonePrompter(), context.getSelf(),
+        context.getConfigEventHandler(), context.getTunnelCallback());
+    if (JNIUtil::isJavaExceptionThrown())
+      jremoteSession = NULL;
+
+    return jremoteSession;
 }
 
 ClientContext &

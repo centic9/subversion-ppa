@@ -17,6 +17,7 @@
   svn_close_fn_t,
   svn_stream_mark_fn_t,
   svn_stream_seek_fn_t,
+  svn_stream_data_available_fn_t,
   svn_stream_lazyopen_func_t,
   svn_io_walk_func_t
 };
@@ -27,6 +28,7 @@
   svn_close_fn_t *,
   svn_stream_mark_fn_t *,
   svn_stream_seek_fn_t *,
+  svn_stream_data_available_fn_t *,
   svn_stream_lazyopen_func_t *,
   svn_io_walk_func_t *
 };
@@ -89,6 +91,11 @@ static svn_error_t * svn_stream_invoke_seek_fn(
   return _obj(baton, mark);
 }
 
+static svn_error_t * svn_stream_invoke_data_available_fn(
+  svn_stream_data_available_fn_t _obj, void *baton, svn_boolean_t *data_available) {
+  return _obj(baton, data_available);
+}
+
 static svn_error_t * svn_stream_invoke_lazyopen_func(
   svn_stream_lazyopen_func_t _obj, svn_stream_t **stream, void *baton, apr_pool_t *result_pool, apr_pool_t *scratch_pool) {
   return _obj(stream, baton, result_pool, scratch_pool);
@@ -108,6 +115,7 @@ static svn_error_t * svn_io_invoke_walk_func(
 %funcptr_proxy(svn_close_fn_t, svn_close_invoke_fn);
 %funcptr_proxy(svn_stream_mark_fn_t, svn_stream_invoke_mark_fn);
 %funcptr_proxy(svn_stream_seek_fn_t, svn_stream_invoke_seek_fn);
+%funcptr_proxy(svn_stream_data_available_fn_t, svn_stream_invoke_data_available_fn);
 %funcptr_proxy(svn_stream_lazyopen_func_t, svn_stream_invoke_lazyopen_func);
 %funcptr_proxy(svn_io_walk_func_t, svn_io_invoke_walk_func);
 
