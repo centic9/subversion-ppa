@@ -13,18 +13,20 @@
 %apply CALLABLE_CALLBACK {
   svn_repos_authz_func_t,
   svn_repos_authz_callback_t,
-  svn_repos_file_rev_handler_t,
   svn_repos_notify_func_t,
   svn_repos_freeze_func_t,
-  svn_repos_history_func_t
+  svn_repos_history_func_t,
+  svn_repos_file_rev_handler_t,
+  svn_repos_verify_callback_t
 };
 %apply CALLABLE_CALLBACK * {
   svn_repos_authz_func_t *,
   svn_repos_authz_callback_t *,
-  svn_repos_file_rev_handler_t *,
   svn_repos_notify_func_t *,
   svn_repos_freeze_func_t *,
-  svn_repos_history_func_t *
+  svn_repos_history_func_t *,
+  svn_repos_file_rev_handler_t *,
+  svn_repos_verify_callback_t *
 };
 #endif
 
@@ -45,6 +47,8 @@
   void *history_baton,
   void *receiver_baton,
   void *handler_baton,
+  void *lock_baton,
+  void *verify_baton,
   void *parse_baton,
   void *revision_baton,
   void *node_baton
@@ -196,11 +200,6 @@ static svn_error_t * svn_repos_invoke_authz_callback(
   return _obj(required, allowed, root, path, baton, pool);
 }
 
-static svn_error_t * svn_repos_invoke_file_rev_handler(
-  svn_repos_file_rev_handler_t _obj, void *baton, const char *path, svn_revnum_t rev, apr_hash_t *rev_props, svn_txdelta_window_handler_t *delta_handler, void **delta_baton, apr_array_header_t *prop_diffs, apr_pool_t *pool) {
-  return _obj(baton, path, rev, rev_props, delta_handler, delta_baton, prop_diffs, pool);
-}
-
 static void svn_repos_invoke_notify_func(
   svn_repos_notify_func_t _obj, void *baton, const svn_repos_notify_t *notify, apr_pool_t *scratch_pool) {
   _obj(baton, notify, scratch_pool);
@@ -214,6 +213,16 @@ static svn_error_t * svn_repos_invoke_freeze_func(
 static svn_error_t * svn_repos_invoke_history_func(
   svn_repos_history_func_t _obj, void *baton, const char *path, svn_revnum_t revision, apr_pool_t *pool) {
   return _obj(baton, path, revision, pool);
+}
+
+static svn_error_t * svn_repos_invoke_file_rev_handler(
+  svn_repos_file_rev_handler_t _obj, void *baton, const char *path, svn_revnum_t rev, apr_hash_t *rev_props, svn_txdelta_window_handler_t *delta_handler, void **delta_baton, apr_array_header_t *prop_diffs, apr_pool_t *pool) {
+  return _obj(baton, path, rev, rev_props, delta_handler, delta_baton, prop_diffs, pool);
+}
+
+static svn_error_t * svn_repos_invoke_verify_callback(
+  svn_repos_verify_callback_t _obj, void *baton, svn_revnum_t revision, svn_error_t *verify_err, apr_pool_t *scratch_pool) {
+  return _obj(baton, revision, verify_err, scratch_pool);
 }
 
 %}
@@ -244,9 +253,10 @@ static svn_error_t * svn_repos_invoke_history_func(
 %funcptr_member_proxy(svn_repos_parse_fns2_t, close_revision, svn_repos_parse_fns2_invoke_close_revision);
 %funcptr_proxy(svn_repos_authz_func_t, svn_repos_invoke_authz_func);
 %funcptr_proxy(svn_repos_authz_callback_t, svn_repos_invoke_authz_callback);
-%funcptr_proxy(svn_repos_file_rev_handler_t, svn_repos_invoke_file_rev_handler);
 %funcptr_proxy(svn_repos_notify_func_t, svn_repos_invoke_notify_func);
 %funcptr_proxy(svn_repos_freeze_func_t, svn_repos_invoke_freeze_func);
 %funcptr_proxy(svn_repos_history_func_t, svn_repos_invoke_history_func);
+%funcptr_proxy(svn_repos_file_rev_handler_t, svn_repos_invoke_file_rev_handler);
+%funcptr_proxy(svn_repos_verify_callback_t, svn_repos_invoke_verify_callback);
 
 #endif

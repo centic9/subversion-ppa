@@ -29,7 +29,6 @@
 #ifdef SWIGPYTHON
 %apply void *PY_AS_VOID {
   void *baton,
-  void *cleanup_baton,
   void *walk_baton
 };
 #endif
@@ -69,8 +68,8 @@ static svn_boolean_t svn_config_invoke_enumerator2(
 }
 
 static svn_error_t * svn_config_invoke_auth_walk_func(
-  svn_config_auth_walk_func_t _obj, svn_boolean_t *delete_cred, void *cleanup_baton, const char *cred_kind, const char *realmstring, apr_hash_t *hash, apr_pool_t *scratch_pool) {
-  return _obj(delete_cred, cleanup_baton, cred_kind, realmstring, hash, scratch_pool);
+  svn_config_auth_walk_func_t _obj, svn_boolean_t *delete_cred, void *walk_baton, const char *cred_kind, const char *realmstring, apr_hash_t *hash, apr_pool_t *scratch_pool) {
+  return _obj(delete_cred, walk_baton, cred_kind, realmstring, hash, scratch_pool);
 }
 
 %}

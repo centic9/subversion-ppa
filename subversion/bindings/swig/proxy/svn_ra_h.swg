@@ -22,6 +22,9 @@
   svn_ra_progress_notify_func_t,
   svn_ra_replay_revstart_callback_t,
   svn_ra_replay_revfinish_callback_t,
+  svn_ra_check_tunnel_func_t,
+  svn_ra_close_tunnel_func_t,
+  svn_ra_open_tunnel_func_t,
   svn_ra_init_func_t
 };
 %apply CALLABLE_CALLBACK * {
@@ -37,6 +40,9 @@
   svn_ra_progress_notify_func_t *,
   svn_ra_replay_revstart_callback_t *,
   svn_ra_replay_revfinish_callback_t *,
+  svn_ra_check_tunnel_func_t *,
+  svn_ra_close_tunnel_func_t *,
+  svn_ra_open_tunnel_func_t *,
   svn_ra_init_func_t *
 };
 #endif
@@ -48,6 +54,9 @@
   void *session_baton,
   void *replay_baton,
   void *edit_baton,
+  void *tunnel_baton,
+  void *close_baton,
+  void *cancel_baton,
   void *report_baton,
   void *callback_baton,
   void *progress_baton,
@@ -328,6 +337,21 @@ static svn_error_t * svn_ra_invoke_replay_revfinish_callback(
   return _obj(revision, replay_baton, editor, edit_baton, rev_props, pool);
 }
 
+static svn_boolean_t svn_ra_invoke_check_tunnel_func(
+  svn_ra_check_tunnel_func_t _obj, void *tunnel_baton, const char *tunnel_name) {
+  return _obj(tunnel_baton, tunnel_name);
+}
+
+static void svn_ra_invoke_close_tunnel_func(
+  svn_ra_close_tunnel_func_t _obj, void *close_baton, void *tunnel_baton) {
+  _obj(close_baton, tunnel_baton);
+}
+
+static svn_error_t * svn_ra_invoke_open_tunnel_func(
+  svn_ra_open_tunnel_func_t _obj, svn_stream_t **request, svn_stream_t **response, svn_ra_close_tunnel_func_t *close_func, void **close_baton, void *tunnel_baton, const char *tunnel_name, const char *user, const char *hostname, int port, svn_cancel_func_t cancel_func, void *cancel_baton, apr_pool_t *pool) {
+  return _obj(request, response, close_func, close_baton, tunnel_baton, tunnel_name, user, hostname, port, cancel_func, cancel_baton, pool);
+}
+
 static svn_error_t * svn_ra_invoke_init_func(
   svn_ra_init_func_t _obj, int abi_version, apr_pool_t *pool, apr_hash_t *hash) {
   return _obj(abi_version, pool, hash);
@@ -385,6 +409,9 @@ static svn_error_t * svn_ra_invoke_init_func(
 %funcptr_proxy(svn_ra_progress_notify_func_t, svn_ra_invoke_progress_notify_func);
 %funcptr_proxy(svn_ra_replay_revstart_callback_t, svn_ra_invoke_replay_revstart_callback);
 %funcptr_proxy(svn_ra_replay_revfinish_callback_t, svn_ra_invoke_replay_revfinish_callback);
+%funcptr_proxy(svn_ra_check_tunnel_func_t, svn_ra_invoke_check_tunnel_func);
+%funcptr_proxy(svn_ra_close_tunnel_func_t, svn_ra_invoke_close_tunnel_func);
+%funcptr_proxy(svn_ra_open_tunnel_func_t, svn_ra_invoke_open_tunnel_func);
 %funcptr_proxy(svn_ra_init_func_t, svn_ra_invoke_init_func);
 
 #endif

@@ -23,10 +23,10 @@
 #    under the License.
 # ====================================================================
 #
-# $HeadURL: http://svn.apache.org/repos/asf/subversion/branches/1.8.x/tools/dev/which-error.py $
-# $LastChangedDate: 2012-03-30 20:29:32 +0000 (Fri, 30 Mar 2012) $
-# $LastChangedBy: danielsh $
-# $LastChangedRevision: 1307598 $
+# $HeadURL: http://svn.apache.org/repos/asf/subversion/branches/1.9.x/tools/dev/which-error.py $
+# $LastChangedDate: 2013-12-05 00:42:34 +0000 (Thu, 05 Dec 2013) $
+# $LastChangedBy: breser $
+# $LastChangedRevision: 1547977 $
 #
 
 import errno
@@ -72,7 +72,11 @@ def get_errors():
   ## errno values.
   errs.update(errno.errorcode)
   ## APR-defined errors, from apr_errno.h.
-  for line in open(os.path.join(os.path.dirname(sys.argv[0]), 'aprerr.txt')):
+  dirname = os.path.dirname(os.path.realpath(__file__))
+  for line in open(os.path.join(dirname, 'aprerr.txt')):
+    # aprerr.txt parsing duplicated in gen_base.py:write_errno_table()
+    if line.startswith('#'):
+       continue
     key, _, val = line.split()
     errs[int(val)] = key
   ## Subversion errors, from svn_error_codes.h.

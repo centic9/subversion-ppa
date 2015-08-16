@@ -140,7 +140,7 @@ class Processor(object):
 
       # '/'+1 == '0'
       line = re.sub(
-            r'IS_STRICT_DESCENDANT_OF[(]([A-Za-z_.]+), ([?][0-9]+)[)]',
+            r'IS_STRICT_DESCENDANT_OF[(]([?]?[A-Za-z0-9_.]+), ([?]?[A-Za-z0-9_.]+)[)]',
             r"(((\1) > (CASE (\2) WHEN '' THEN '' ELSE (\2) || '/' END))" +
             r" AND ((\1) < CASE (\2) WHEN '' THEN X'FFFF' ELSE (\2) || '0' END))",
             line)
@@ -148,6 +148,12 @@ class Processor(object):
       # RELPATH_SKIP_JOIN(x, y, z) skips the x prefix from z and the joins the
       # result after y. In other words it replaces x with y, but follows the
       # relpath rules.
+      #
+      # This matches the C version of:
+      #     svn_relpath_join(y, svn_relpath_skip_ancestor(x, z), pool)
+      # but returns an SQL NULL in case z is not below x.
+      #
+
       line = re.sub(
              r'RELPATH_SKIP_JOIN[(]([?]?[A-Za-z0-9_.]+), ' +
                                  r'([?]?[A-Za-z0-9_.]+), ' +
@@ -188,14 +194,14 @@ class Processor(object):
             line)
 
       # Another preprocessing.
-      for symbol, string in self.token_map.iteritems():
+      for symbol, string in self.token_map.items():
         # ### This doesn't sql-escape 'string'
         line = re.sub(r'\b%s\b' % re.escape(symbol), "'%s'" % string, line)
 
       if line.strip():
         handled = False
 
-        for regex, handler in self._directives.iteritems():
+        for regex, handler in self._directives.items():
           match = regex.match(line)
           if match:
             handler(match)

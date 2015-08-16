@@ -72,7 +72,7 @@ typedef struct server_conf_t {
 
 /* A tri-state enum used for per directory on/off flags.  Note that
    it's important that CONF_FLAG_DEFAULT is 0 to make
-   dav_svn_merge_dir_config do the right thing. */
+   merge_dir_config in mod_dav_svn do the right thing. */
 enum conf_flag {
   CONF_FLAG_DEFAULT,
   CONF_FLAG_ON,
@@ -105,6 +105,7 @@ typedef struct dir_conf_t {
   enum conf_flag txdelta_cache;      /* whether to enable txdelta caching */
   enum conf_flag fulltext_cache;     /* whether to enable fulltext caching */
   enum conf_flag revprop_cache;      /* whether to enable revprop caching */
+  enum conf_flag block_read;         /* whether to enable block read mode */
   const char *hooks_env;             /* path to hook script env config file */
 } dir_conf_t;
 
@@ -142,6 +143,25 @@ init(apr_pool_t *p, apr_pool_t *plog, apr_pool_t *ptemp, server_rec *s)
   return OK;
 }
 
+static svn_error_t *
+malfunction_handler(svn_boolean_t can_return,
+                    const char *file, int line,
+                    const char *expr)
+{
+  if (expr)
+    ap_log_error(APLOG_MARK, APLOG_CRIT, 0, NULL,
+                 "mod_dav_svn: file '%s', line %d, assertion \"%s\" failed",
+                 file, line, expr);
+  else
+    ap_log_error(APLOG_MARK, APLOG_CRIT, 0, NULL,
+                 "mod_dav_svn: file '%s', line %d, internal malfunction",
+                 file, line);
+  abort();
+
+  /* Should not be reached. */
+  return SVN_NO_ERROR;
+}
+
 static int
 init_dso(apr_pool_t *pconf, apr_pool_t *plog, apr_pool_t *ptemp)
 {
@@ -160,6 +180,8 @@ init_dso(apr_pool_t *pconf, apr_pool_t *plog, apr_pool_t *ptemp)
       svn_error_clear(serr);
       return HTTP_INTERNAL_SERVER_ERROR;
     }
+
+  svn_error_set_malfunction_handler(malfunction_handler);
 
   return OK;
 }
@@ -215,8 +237,9 @@ create_dir_config(apr_pool_t *p, char *dir)
   if (dir)
     conf->root_dir = svn_urlpath__canonicalize(dir, p);
   conf->bulk_updates = CONF_BULKUPD_DEFAULT;
-  conf->v2_protocol = CONF_FLAG_ON;
+  conf->v2_protocol = CONF_FLAG_DEFAULT;
   conf->hooks_env = NULL;
+  conf->txdelta_cache = CONF_FLAG_DEFAULT;
 
   return conf;
 }
@@ -247,6 +270,7 @@ merge_dir_config(apr_pool_t *p, void *base, void *overrides)
   newconf->txdelta_cache = INHERIT_VALUE(parent, child, txdelta_cache);
   newconf->fulltext_cache = INHERIT_VALUE(parent, child, fulltext_cache);
   newconf->revprop_cache = INHERIT_VALUE(parent, child, revprop_cache);
+  newconf->block_read = INHERIT_VALUE(parent, child, block_read);
   newconf->root_dir = INHERIT_VALUE(parent, child, root_dir);
   newconf->hooks_env = INHERIT_VALUE(parent, child, hooks_env);
 
@@ -543,6 +567,19 @@ SVNCacheRevProps_cmd(cmd_parms *cmd, void *config, int arg)
 }
 
 static const char *
+SVNBlockRead_cmd(cmd_parms *cmd, void *config, int arg)
+{
+  dir_conf_t *conf = config;
+
+  if (arg)
+    conf->block_read = CONF_FLAG_ON;
+  else
+    conf->block_read = CONF_FLAG_OFF;
+
+  return NULL;
+}
+
+static const char *
 SVNInMemoryCacheSize_cmd(cmd_parms *cmd, void *config, const char *arg1)
 {
   svn_cache_config_t settings = *svn_cache_config_get();
@@ -612,6 +649,16 @@ SVNHooksEnv_cmd(cmd_parms *cmd, void *config, const char *arg1)
   return NULL;
 }
 
+static svn_boolean_t
+get_conf_flag(enum conf_flag flag, svn_boolean_t default_value)
+{
+  if (flag == CONF_FLAG_ON)
+    return TRUE;
+  else if (flag == CONF_FLAG_OFF)
+    return FALSE;
+  else /* CONF_FLAG_DEFAULT*/
+    return default_value;
+}
 
 /** Accessor functions for the module's configuration state **/
 
@@ -636,9 +683,10 @@ dav_svn__get_fs_parent_path(request_rec *r)
 
 
 AP_MODULE_DECLARE(dav_error *)
-dav_svn_get_repos_path(request_rec *r,
-                       const char *root_path,
-                       const char **repos_path)
+dav_svn_get_repos_path2(request_rec *r,
+                        const char *root_path,
+                        const char **repos_path,
+                        apr_pool_t *pool)
 {
 
   const char *fs_path;
@@ -666,19 +714,26 @@ dav_svn_get_repos_path(request_rec *r,
 
   /* Split the svn URI to get the name of the repository below
      the parent path. */
-  derr = dav_svn_split_uri(r, r->uri, root_path,
-                           &ignored_cleaned_uri, &ignored_had_slash,
-                           &repos_name,
-                           &ignored_relative, &ignored_path_in_repos);
+  derr = dav_svn_split_uri2(r, r->uri, root_path,
+                            &ignored_cleaned_uri, &ignored_had_slash,
+                            &repos_name,
+                            &ignored_relative, &ignored_path_in_repos, pool);
   if (derr)
     return derr;
 
   /* Construct the full path from the parent path base directory
      and the repository name. */
-  *repos_path = svn_dirent_join(fs_parent_path, repos_name, r->pool);
+  *repos_path = svn_dirent_join(fs_parent_path, repos_name, pool);
   return NULL;
 }
 
+AP_MODULE_DECLARE(dav_error *)
+dav_svn_get_repos_path(request_rec *r,
+                       const char *root_path,
+                       const char **repos_path)
+{
+  return dav_svn_get_repos_path2(r, root_path, repos_path, r->pool);
+}
 
 const char *
 dav_svn__get_repo_name(request_rec *r)
@@ -745,7 +800,7 @@ const char *
 dav_svn__get_me_resource_uri(request_rec *r)
 {
   return apr_pstrcat(r->pool, dav_svn__get_special_uri(r), "/me",
-                     (char *)NULL);
+                     SVN_VA_NULL);
 }
 
 
@@ -753,7 +808,7 @@ const char *
 dav_svn__get_rev_stub(request_rec *r)
 {
   return apr_pstrcat(r->pool, dav_svn__get_special_uri(r), "/rev",
-                     (char *)NULL);
+                     SVN_VA_NULL);
 }
 
 
@@ -761,7 +816,7 @@ const char *
 dav_svn__get_rev_root_stub(request_rec *r)
 {
   return apr_pstrcat(r->pool, dav_svn__get_special_uri(r), "/rvr",
-                     (char *)NULL);
+                     SVN_VA_NULL);
 }
 
 
@@ -769,14 +824,14 @@ const char *
 dav_svn__get_txn_stub(request_rec *r)
 {
   return apr_pstrcat(r->pool, dav_svn__get_special_uri(r), "/txn",
-                     (char *)NULL);
+                     SVN_VA_NULL);
 }
 
 
 const char *
 dav_svn__get_txn_root_stub(request_rec *r)
 {
-  return apr_pstrcat(r->pool, dav_svn__get_special_uri(r), "/txr", (char *)NULL);
+  return apr_pstrcat(r->pool, dav_svn__get_special_uri(r), "/txr", SVN_VA_NULL);
 }
 
 
@@ -784,7 +839,7 @@ const char *
 dav_svn__get_vtxn_stub(request_rec *r)
 {
   return apr_pstrcat(r->pool, dav_svn__get_special_uri(r), "/vtxn",
-                     (char *)NULL);
+                     SVN_VA_NULL);
 }
 
 
@@ -792,7 +847,7 @@ const char *
 dav_svn__get_vtxn_root_stub(request_rec *r)
 {
   return apr_pstrcat(r->pool, dav_svn__get_special_uri(r), "/vtxr",
-                     (char *)NULL);
+                     SVN_VA_NULL);
 }
 
 
@@ -828,7 +883,7 @@ dav_svn__check_httpv2_support(request_rec *r)
   svn_boolean_t available;
 
   conf = ap_get_module_config(r->per_dir_config, &dav_svn_module);
-  available = conf->v2_protocol == CONF_FLAG_ON;
+  available = get_conf_flag(conf->v2_protocol, TRUE);
 
   /* If our configuration says that HTTPv2 is available, but we are
      proxying requests to a master Subversion server which lacks
@@ -911,7 +966,9 @@ dav_svn__get_txdelta_cache_flag(request_rec *r)
   dir_conf_t *conf;
 
   conf = ap_get_module_config(r->per_dir_config, &dav_svn_module);
-  return conf->txdelta_cache == CONF_FLAG_ON;
+
+  /* txdelta caching is enabled by default. */
+  return get_conf_flag(conf->txdelta_cache, TRUE);
 }
 
 
@@ -934,6 +991,15 @@ dav_svn__get_revprop_cache_flag(request_rec *r)
   return conf->revprop_cache == CONF_FLAG_ON;
 }
 
+
+svn_boolean_t
+dav_svn__get_block_read_flag(request_rec *r)
+{
+  dir_conf_t *conf;
+
+  conf = ap_get_module_config(r->per_dir_config, &dav_svn_module);
+  return conf->block_read == CONF_FLAG_ON;
+}
 
 int
 dav_svn__get_compression_level(request_rec *r)
@@ -984,7 +1050,6 @@ merge_xml_filter_insert(request_rec *r)
 typedef struct merge_ctx_t {
   apr_bucket_brigade *bb;
   apr_xml_parser *parser;
-  apr_pool_t *pool;
 } merge_ctx_t;
 
 
@@ -1014,7 +1079,6 @@ merge_xml_in_filter(ap_filter_t *f,
       f->ctx = ctx = apr_palloc(r->pool, sizeof(*ctx));
       ctx->parser = apr_xml_parser_create(r->pool);
       ctx->bb = apr_brigade_create(r->pool, r->connection->bucket_alloc);
-      apr_pool_create(&ctx->pool, r->pool);
     }
 
   rv = ap_get_brigade(f->next, ctx->bb, mode, block, readbytes);
@@ -1103,10 +1167,11 @@ static int dav_svn__handler(request_rec *r)
 
 /* Fill the filename on the request with a bogus path since we aren't serving
  * a file off the disk.  This means that <Directory> blocks will not match and
- * that %f in logging formats will show as "svn:/path/to/repo/path/in/repo". */
+ * %f in logging formats will show as "dav_svn:/path/to/repo/path/in/repo".
+ */
 static int dav_svn__translate_name(request_rec *r)
 {
-  const char *fs_path, *repos_basename, *repos_path, *slash;
+  const char *fs_path, *repos_basename, *repos_path;
   const char *ignore_cleaned_uri, *ignore_relative_path;
   int ignore_had_slash;
   dir_conf_t *conf = ap_get_module_config(r->per_dir_config, &dav_svn_module);
@@ -1148,19 +1213,11 @@ static int dav_svn__translate_name(request_rec *r)
       fs_path = conf->fs_path;
     }
 
-  /* Avoid a trailing slash on the bogus path when repos_path is just "/" and
-   * ensure that there is always a slash between fs_path and repos_path as
-   * long as the repos_path is not an empty path. */
-  slash = "";
-  if (repos_path)
-    {
-      if ('/' == repos_path[0] && '\0' == repos_path[1])
-        repos_path = NULL;
-      else if ('/' != repos_path[0] && '\0' != repos_path[0])
-        slash = "/";
-    }
+  /* Avoid a trailing slash on the bogus path when repos_path is just "/" */
+  if (repos_path && '/' == repos_path[0] && '\0' == repos_path[1])
+    repos_path = NULL;
 
-  /* Combine 'svn:', fs_path and repos_path to produce the bogus path we're
+  /* Combine 'dav_svn:', fs_path and repos_path to produce the bogus path we're
    * placing in r->filename.  We can't use our standard join helpers such
    * as svn_dirent_join.  fs_path is a dirent and repos_path is a fspath
    * (that can be trivially converted to a relpath by skipping the leading
@@ -1168,7 +1225,7 @@ static int dav_svn__translate_name(request_rec *r)
    * repository is 'trunk/c:hi' this results in a non canonical dirent on
    * Windows. Instead we just cat them together. */
   r->filename = apr_pstrcat(r->pool,
-                            "svn:", fs_path, slash, repos_path, NULL);
+                            "dav_svn:", fs_path, repos_path, SVN_VA_NULL);
 
   /* Leave a note to ourselves so that we know not to decline in the
    * map_to_storage hook. */
@@ -1268,7 +1325,7 @@ static const command_rec cmds[] =
                ACCESS_CONF|RSRC_CONF,
                "speeds up data access to older revisions by caching "
                "delta information if sufficient in-memory cache is "
-               "available (default is Off)."),
+               "available (default is On)."),
 
   /* per directory/location */
   AP_INIT_FLAG("SVNCacheFullTexts", SVNCacheFullTexts_cmd, NULL,
@@ -1285,12 +1342,19 @@ static const command_rec cmds[] =
                "in the documentation"
                "(default is Off)."),
 
+  /* per directory/location */
+  AP_INIT_FLAG("SVNBlockRead", SVNBlockRead_cmd, NULL,
+               ACCESS_CONF|RSRC_CONF,
+               "speeds up operations of FSFS 1.9+ repositories if large"
+               "caches (see SVNInMemoryCacheSize) have been configured."
+               "(default is Off)."),
+
   /* per server */
   AP_INIT_TAKE1("SVNInMemoryCacheSize", SVNInMemoryCacheSize_cmd, NULL,
                 RSRC_CONF,
                 "specifies the maximum size in kB per process of Subversion's "
-                "in-memory object cache (default value is 16384; 0 deactivates "
-                "the cache)."),
+                "in-memory object cache (default value is 16384; 0 switches "
+                "to dynamically sized caches)."),
   /* per server */
   AP_INIT_TAKE1("SVNCompressionLevel", SVNCompressionLevel_cmd, NULL,
                 RSRC_CONF,
@@ -1344,6 +1408,9 @@ register_hooks(apr_pool_t *pconf)
 
   /* general request handler for methods which mod_dav DECLINEs. */
   ap_hook_handler(dav_svn__handler, NULL, NULL, APR_HOOK_LAST);
+
+  /* Handler to GET Subversion's FSFS cache stats, a bit like mod_status. */
+  ap_hook_handler(dav_svn__status, NULL, NULL, APR_HOOK_MIDDLE);
 
   /* live property handling */
   dav_hook_gather_propsets(dav_svn__gather_propsets, NULL, NULL,

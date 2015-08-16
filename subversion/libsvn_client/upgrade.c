@@ -138,7 +138,7 @@ svn_client_upgrade(const char *path,
 
           svn_pool_clear(iterpool);
 
-          ext_abspath = svn__apr_hash_index_key(hi);
+          ext_abspath = apr_hash_this_key(hi);
 
           SVN_ERR(svn_wc__read_external_info(&kind, NULL, NULL, NULL, NULL,
                                              ctx->wc_ctx, local_abspath,
@@ -209,8 +209,8 @@ upgrade_externals_from_properties(svn_client_ctx_t *ctx,
       const char *externals_parent_url;
       const char *externals_parent_repos_root_url;
       const char *externals_parent_repos_relpath;
-      const char *externals_parent = svn__apr_hash_index_key(hi);
-      svn_string_t *external_desc = svn__apr_hash_index_val(hi);
+      const char *externals_parent = apr_hash_this_key(hi);
+      svn_string_t *external_desc = apr_hash_this_val(hi);
       apr_array_header_t *externals_p;
       svn_error_t *err;
 

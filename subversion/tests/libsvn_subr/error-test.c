@@ -205,8 +205,12 @@ test_error_symbolic_name(apr_pool_t *pool)
     { SVN_ERR_WC_NOT_WORKING_COPY, "SVN_ERR_WC_NOT_WORKING_COPY" },
     /* Test an implementation detail. */
     { SVN_ERR_BAD_CATEGORY_START, "SVN_ERR_BAD_CONTAINING_POOL" },
+#ifdef SVN_DEBUG
+    { ENOENT, "ENOENT" },
+    { APR_ENOPOOL, "APR_ENOPOOL" },
+#endif
     /* Test non-errors. */
-    { 1, NULL },
+    { -1, NULL },
     { SVN_ERR_WC_CATEGORY_START - 1, NULL },
     /* Whitebox-test exceptional cases. */
     { SVN_WARNING, "SVN_WARNING" },
@@ -225,7 +229,9 @@ test_error_symbolic_name(apr_pool_t *pool)
 
 /* The test table.  */
 
-struct svn_test_descriptor_t test_funcs[] =
+static int max_threads = 1;
+
+static struct svn_test_descriptor_t test_funcs[] =
   {
     SVN_TEST_NULL,
     SVN_TEST_PASS2(test_error_root_cause,
@@ -236,3 +242,5 @@ struct svn_test_descriptor_t test_funcs[] =
                    "test svn_error_symbolic_name"),
     SVN_TEST_NULL
   };
+
+SVN_TEST_MAIN
