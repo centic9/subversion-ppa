@@ -31,21 +31,23 @@
 */
 #ifdef SWIGPERL
 %typemap(out) long long {
-    char temp[30];
+    char temp[256];
     sprintf(temp, "%" APR_INT64_T_FMT, (apr_int64_t) $1);
-    %append_output(sv_2mortal(newSVpv(temp, 0)));
+    ST(argvi) = sv_newmortal();
+    sv_setpv((SV*)ST(argvi++), temp);
 }
 
 %typemap(out) unsigned long long {
-    char temp[30];
+    char temp[256];
     sprintf(temp, "%" APR_UINT64_T_FMT, (apr_uint64_t) $1);
-    %append_output(sv_2mortal(newSVpv(temp, 0)));
+    ST(argvi) = sv_newmortal();
+    sv_setpv((SV*)ST(argvi++), temp);
 }
 
 %typemap(in, numinputs=0) long long *OUTPUT (apr_int64_t temp)
     "$1 = &temp;";
 %typemap(argout) long long *OUTPUT {
-  char temp[30];
+  char temp[256];
   sprintf(temp, "%" APR_INT64_T_FMT, (apr_int64_t)*($1));
   %append_output(sv_2mortal(newSVpv(temp, 0)));
 }
@@ -53,7 +55,7 @@
 %typemap(in, numinputs=0) unsigned long long *OUTPUT (apr_uint64_t temp)
     "$1 = &temp;";
 %typemap(argout) unsigned long long *OUTPUT {
-  char temp[30];
+  char temp[256];
   sprintf(temp, "%" APR_UINT64_T_FMT, (apr_uint64_t)*($1));
   %append_output(sv_2mortal(newSVpv(temp, 0)));
 }

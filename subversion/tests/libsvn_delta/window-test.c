@@ -29,7 +29,6 @@
 #include "svn_error.h"
 #include "svn_delta.h"
 
-#include "private/svn_subr_private.h"
 
 static svn_error_t *
 stream_window_test(apr_pool_t *pool)
@@ -70,7 +69,7 @@ stream_window_test(apr_pool_t *pool)
   target_str.len = 109000;
   target_stream = svn_stream_from_string(&target_str, pool);
 
-  svn_txdelta2(&txstream, source_stream, target_stream, TRUE, pool);
+  svn_txdelta(&txstream, source_stream, target_stream, pool);
 
   while (1)
     {
@@ -83,8 +82,8 @@ stream_window_test(apr_pool_t *pool)
       /* ### examine the window */
     }
 
-  actual = svn_checksum__from_digest_md5(svn_txdelta_md5_digest(txstream),
-                                         pool);
+  actual = svn_checksum__from_digest(svn_txdelta_md5_digest(txstream),
+                                     svn_checksum_md5, pool);
   printf("  actual: %s\n", svn_checksum_to_cstring(actual, pool));
 
   if (!svn_checksum_match(expected, actual))

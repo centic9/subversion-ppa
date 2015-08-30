@@ -54,7 +54,8 @@ svn_lock_dup(const svn_lock_t *lock, apr_pool_t *pool)
   new_l->path = apr_pstrdup(pool, new_l->path);
   new_l->token = apr_pstrdup(pool, new_l->token);
   new_l->owner = apr_pstrdup(pool, new_l->owner);
-  new_l->comment = apr_pstrdup(pool, new_l->comment);
+  if (new_l->comment)
+    new_l->comment = apr_pstrdup(pool, new_l->comment);
 
   return new_l;
 }

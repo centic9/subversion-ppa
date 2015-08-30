@@ -41,8 +41,6 @@
 
 #define SVNRDUMP_PROP_LOCK SVN_PROP_PREFIX "rdump-lock"
 
-#define ARE_VALID_COPY_ARGS(p,r) ((p) && SVN_IS_VALID_REVNUM(r))
-
 #if 0
 #define LDR_DBG(x) SVN_DBG(x)
 #else
@@ -104,15 +102,6 @@ struct directory_baton
   void *baton;
   const char *relpath;
   int depth;
-
-  /* The copy-from source of this directory, no matter whether it is
-     copied explicitly (the root node of a copy) or implicitly (being an
-     existing child of a copied directory). For a node that is newly
-     added (without history), even inside a copied parent, these are
-     NULL and SVN_INVALID_REVNUM. */
-  const char *copyfrom_path;
-  svn_revnum_t copyfrom_rev;
-
   struct directory_baton *parent;
 };
 
@@ -126,19 +115,11 @@ struct node_baton
   svn_node_kind_t kind;
   enum svn_node_action action;
 
-  /* Is this directory explicitly added? If not, then it already existed
-     or is a child of a copy. */
-  svn_boolean_t is_added;
-
   svn_revnum_t copyfrom_rev;
   const char *copyfrom_path;
-  const char *copyfrom_url;
 
   void *file_baton;
   const char *base_checksum;
-
-  /* (const char *name) -> (svn_prop_t *) */
-  apr_hash_t *prop_changes;
 
   struct revision_baton *rb;
 };
@@ -218,7 +199,7 @@ prefix_mergeinfo_paths(svn_string_t **mergeinfo_val,
       path = svn_fspath__canonicalize(svn_relpath_join(parent_dir,
                                                        merge_source, pool),
                                       pool);
-      svn_hash_sets(prefixed_mergeinfo, path, rangelist);
+      apr_hash_set(prefixed_mergeinfo, path, APR_HASH_KEY_STRING, rangelist);
     }
   return svn_mergeinfo_to_string(mergeinfo_val, prefixed_mergeinfo, pool);
 }
@@ -269,7 +250,7 @@ renumber_mergeinfo_revs(svn_string_t **final_val,
 
   for (hi = apr_hash_first(subpool, mergeinfo); hi; hi = apr_hash_next(hi))
     {
-      svn_rangelist_t *rangelist;
+      apr_array_header_t *rangelist;
       struct parse_baton *pb = rb->pb;
       int i;
       const void *path;
@@ -331,11 +312,20 @@ renumber_mergeinfo_revs(svn_string_t **final_val,
 
   if (predates_stream_mergeinfo)
     {
-      SVN_ERR(svn_mergeinfo_merge2(final_mergeinfo, predates_stream_mergeinfo,
-                                   subpool, subpool));
+      SVN_ERR(svn_mergeinfo_merge(final_mergeinfo, predates_stream_mergeinfo,
+                                  subpool));
     }
 
-  SVN_ERR(svn_mergeinfo__canonicalize_ranges(final_mergeinfo, subpool));
+  SVN_ERR(svn_mergeinfo_sort(final_mergeinfo, subpool));
+
+  /* Mergeinfo revision sources for r0 and r1 are invalid; you can't merge r0
+     or r1.  However, svndumpfilter can be abused to produce r1 merge source
+     revs.  So if we encounter any, then strip them out, no need to put them
+     into the load target. */
+  SVN_ERR(svn_mergeinfo__filter_mergeinfo_by_ranges(&final_mergeinfo,
+                                                    final_mergeinfo,
+                                                    1, 0, FALSE,
+                                                    subpool, subpool));
 
   SVN_ERR(svn_mergeinfo_to_string(final_val, final_mergeinfo, pool));
   svn_pool_destroy(subpool);
@@ -394,123 +384,9 @@ lock_retry_func(void *baton,
                             reposlocktoken->data);
 }
 
-
-static svn_error_t *
-fetch_base_func(const char **filename,
-                void *baton,
-                const char *path,
-                svn_revnum_t base_revision,
-                apr_pool_t *result_pool,
-                apr_pool_t *scratch_pool)
-{
-  struct revision_baton *rb = baton;
-  svn_stream_t *fstream;
-  svn_error_t *err;
-
-  if (! SVN_IS_VALID_REVNUM(base_revision))
-    base_revision = rb->rev - 1;
-
-  SVN_ERR(svn_stream_open_unique(&fstream, filename, NULL,
-                                 svn_io_file_del_on_pool_cleanup,
-                                 result_pool, scratch_pool));
-
-  err = svn_ra_get_file(rb->pb->aux_session, path, base_revision,
-                        fstream, NULL, NULL, scratch_pool);
-  if (err && err->apr_err == SVN_ERR_FS_NOT_FOUND)
-    {
-      svn_error_clear(err);
-      SVN_ERR(svn_stream_close(fstream));
-
-      *filename = NULL;
-      return SVN_NO_ERROR;
-    }
-  else if (err)
-    return svn_error_trace(err);
-
-  SVN_ERR(svn_stream_close(fstream));
-
-  return SVN_NO_ERROR;
-}
-
-static svn_error_t *
-fetch_props_func(apr_hash_t **props,
-                 void *baton,
-                 const char *path,
-                 svn_revnum_t base_revision,
-                 apr_pool_t *result_pool,
-                 apr_pool_t *scratch_pool)
-{
-  struct revision_baton *rb = baton;
-  svn_node_kind_t node_kind;
-
-  if (! SVN_IS_VALID_REVNUM(base_revision))
-    base_revision = rb->rev - 1;
-
-  SVN_ERR(svn_ra_check_path(rb->pb->aux_session, path, base_revision,
-                            &node_kind, scratch_pool));
-
-  if (node_kind == svn_node_file)
-    {
-      SVN_ERR(svn_ra_get_file(rb->pb->aux_session, path, base_revision,
-                              NULL, NULL, props, result_pool));
-    }
-  else if (node_kind == svn_node_dir)
-    {
-      apr_array_header_t *tmp_props;
-
-      SVN_ERR(svn_ra_get_dir2(rb->pb->aux_session, NULL, NULL, props, path,
-                              base_revision, 0 /* Dirent fields */,
-                              result_pool));
-      tmp_props = svn_prop_hash_to_array(*props, result_pool);
-      SVN_ERR(svn_categorize_props(tmp_props, NULL, NULL, &tmp_props,
-                                   result_pool));
-      *props = svn_prop_array_to_hash(tmp_props, result_pool);
-    }
-  else
-    {
-      *props = apr_hash_make(result_pool);
-    }
-
-  return SVN_NO_ERROR;
-}
-
-static svn_error_t *
-fetch_kind_func(svn_node_kind_t *kind,
-                void *baton,
-                const char *path,
-                svn_revnum_t base_revision,
-                apr_pool_t *scratch_pool)
-{
-  struct revision_baton *rb = baton;
-
-  if (! SVN_IS_VALID_REVNUM(base_revision))
-    base_revision = rb->rev - 1;
-
-  SVN_ERR(svn_ra_check_path(rb->pb->aux_session, path, base_revision,
-                            kind, scratch_pool));
-
-  return SVN_NO_ERROR;
-}
-
-static svn_delta_shim_callbacks_t *
-get_shim_callbacks(struct revision_baton *rb,
-                   apr_pool_t *pool)
-{
-  svn_delta_shim_callbacks_t *callbacks =
-                        svn_delta_shim_callbacks_default(pool);
-
-  callbacks->fetch_props_func = fetch_props_func;
-  callbacks->fetch_kind_func = fetch_kind_func;
-  callbacks->fetch_base_func = fetch_base_func;
-  callbacks->fetch_baton = rb;
-
-  return callbacks;
-}
-
 /* Acquire a lock (of sorts) on the repository associated with the
  * given RA SESSION. This lock is just a revprop change attempt in a
- * time-delay loop. This function is duplicated by svnsync in
- * svnsync/svnsync.c
+ * time-delay loop. This function is duplicated by svnsync in main.c.
  *
  * ### TODO: Make this function more generic and
  * expose it through a header for use by other Subversion
@@ -560,7 +436,6 @@ new_revision_record(void **revision_baton,
   pb = parse_baton;
   rb->pool = svn_pool_create(pool);
   rb->pb = pb;
-  rb->db = NULL;
 
   for (hi = apr_hash_first(pool, headers); hi; hi = apr_hash_next(hi))
     {
@@ -577,7 +452,7 @@ new_revision_record(void **revision_baton,
      several separate operations. It is highly susceptible to race conditions.
      Calculate the revision 'offset' for finding copyfrom sources.
      It might be positive or negative. */
-  rb->rev_offset = (apr_int32_t) ((rb->rev) - (head_rev + 1));
+  rb->rev_offset = (apr_int32_t) (rb->rev) - (head_rev + 1);
 
   /* Stash the oldest (non-zero) dumpstream revision seen. */
   if ((rb->rev > 0) && (!SVN_IS_VALID_REVNUM(pb->oldest_dumpstream_rev)))
@@ -594,14 +469,6 @@ new_revision_record(void **revision_baton,
 }
 
 static svn_error_t *
-magic_header_record(int version,
-            void *parse_baton,
-            apr_pool_t *pool)
-{
-  return SVN_NO_ERROR;
-}
-
-static svn_error_t *
 uuid_record(const char *uuid,
             void *parse_baton,
             apr_pool_t *pool)
@@ -610,47 +477,6 @@ uuid_record(const char *uuid,
   pb = parse_baton;
   pb->uuid = apr_pstrdup(pool, uuid);
   return SVN_NO_ERROR;
-}
-
-/* Push information about another directory onto the linked list RB->db.
- *
- * CHILD_BATON is the baton returned by the commit editor. RELPATH is the
- * repository-relative path of this directory. IS_ADDED is true iff this
- * directory is being added (with or without history). If added with
- * history then COPYFROM_PATH/COPYFROM_REV are the copyfrom source, else
- * are NULL/SVN_INVALID_REVNUM.
- */
-static void
-push_directory(struct revision_baton *rb,
-               void *child_baton,
-               const char *relpath,
-               svn_boolean_t is_added,
-               const char *copyfrom_path,
-               svn_revnum_t copyfrom_rev)
-{
-  struct directory_baton *child_db = apr_pcalloc(rb->pool, sizeof (*child_db));
-
-  SVN_ERR_ASSERT_NO_RETURN(
-    is_added || (copyfrom_path == NULL && copyfrom_rev == SVN_INVALID_REVNUM));
-
-  /* If this node is an existing (not newly added) child of a copied node,
-     calculate where it was copied from. */
-  if (!is_added
-      && ARE_VALID_COPY_ARGS(rb->db->copyfrom_path, rb->db->copyfrom_rev))
-    {
-      const char *name = svn_relpath_basename(relpath, NULL);
-
-      copyfrom_path = svn_relpath_join(rb->db->copyfrom_path, name,
-                                       rb->pool);
-      copyfrom_rev = rb->db->copyfrom_rev;
-    }
-
-  child_db->baton = child_baton;
-  child_db->relpath = relpath;
-  child_db->copyfrom_path = copyfrom_path;
-  child_db->copyfrom_rev = copyfrom_rev;
-  child_db->parent = rb->db;
-  rb->db = child_db;
 }
 
 static svn_error_t *
@@ -663,17 +489,17 @@ new_node_record(void **node_baton,
   const struct svn_delta_editor_t *commit_editor = rb->pb->commit_editor;
   void *commit_edit_baton = rb->pb->commit_edit_baton;
   struct node_baton *nb;
+  struct directory_baton *child_db;
   apr_hash_index_t *hi;
   void *child_baton;
+  char *relpath_compose;
   const char *nb_dirname;
 
   nb = apr_pcalloc(rb->pool, sizeof(*nb));
   nb->rb = rb;
-  nb->is_added = FALSE;
+
   nb->copyfrom_path = NULL;
-  nb->copyfrom_url = NULL;
   nb->copyfrom_rev = SVN_INVALID_REVNUM;
-  nb->prop_changes = apr_hash_make(rb->pool);
 
   /* If the creation of commit_editor is pending, create it now and
      open_root on it; also create a top-level directory baton. */
@@ -687,11 +513,11 @@ new_node_record(void **node_baton,
          commit_editor. We'll set them separately using the RA API
          after closing the editor (see close_revision). */
 
-      svn_hash_sets(rb->revprop_table, SVN_PROP_REVISION_AUTHOR, NULL);
-      svn_hash_sets(rb->revprop_table, SVN_PROP_REVISION_DATE, NULL);
+      apr_hash_set(rb->revprop_table, SVN_PROP_REVISION_AUTHOR,
+                   APR_HASH_KEY_STRING, NULL);
+      apr_hash_set(rb->revprop_table, SVN_PROP_REVISION_DATE,
+                   APR_HASH_KEY_STRING, NULL);
 
-      SVN_ERR(svn_ra__register_editor_shim_callbacks(rb->pb->session,
-                                    get_shim_callbacks(rb, rb->pool)));
       SVN_ERR(svn_ra_get_commit_editor3(rb->pb->session, &commit_editor,
                                         &commit_edit_baton, rb->revprop_table,
                                         commit_callback, revision_baton,
@@ -706,9 +532,13 @@ new_node_record(void **node_baton,
 
       LDR_DBG(("Opened root %p\n", child_baton));
 
-      /* child_baton corresponds to the root directory baton here */
-      push_directory(rb, child_baton, "", TRUE /*is_added*/,
-                     NULL, SVN_INVALID_REVNUM);
+      /* child_db corresponds to the root directory baton here */
+      child_db = apr_pcalloc(rb->pool, sizeof(*child_db));
+      child_db->baton = child_baton;
+      child_db->depth = 0;
+      child_db->relpath = "";
+      child_db->parent = NULL;
+      rb->db = child_db;
     }
 
   for (hi = apr_hash_first(rb->pool, headers); hi; hi = apr_hash_next(hi))
@@ -749,7 +579,6 @@ new_node_record(void **node_baton,
       apr_size_t residual_close_count;
       apr_array_header_t *residual_open_path;
       int i;
-      apr_size_t n;
 
       /* Before attempting to handle the action, call open_directory
          for all the path components and set the directory baton
@@ -766,7 +595,7 @@ new_node_record(void **node_baton,
 
       /* First close all as many directories as there are after
          skip_ancestor, and then open fresh directories */
-      for (n = 0; n < residual_close_count; n ++)
+      for (i = 0; i < residual_close_count; i ++)
         {
           /* Don't worry about destroying the actual rb->db object,
              since the pool we're using has the lifetime of one
@@ -778,7 +607,7 @@ new_node_record(void **node_baton,
 
       for (i = 0; i < residual_open_path->nelts; i ++)
         {
-          char *relpath_compose =
+          relpath_compose =
             svn_relpath_join(rb->db->relpath,
                              APR_ARRAY_IDX(residual_open_path, i, const char *),
                              rb->pool);
@@ -787,8 +616,12 @@ new_node_record(void **node_baton,
                                                 rb->rev - rb->rev_offset - 1,
                                                 rb->pool, &child_baton));
           LDR_DBG(("Opened dir %p\n", child_baton));
-          push_directory(rb, child_baton, relpath_compose, TRUE /*is_added*/,
-                         NULL, SVN_INVALID_REVNUM);
+          child_db = apr_pcalloc(rb->pool, sizeof(*child_db));
+          child_db->baton = child_baton;
+          child_db->depth = rb->db->depth + 1;
+          child_db->relpath = relpath_compose;
+          child_db->parent = rb->db;
+          rb->db = child_db;
         }
     }
 
@@ -816,7 +649,7 @@ new_node_record(void **node_baton,
       if (rb->pb->parent_dir)
         nb->copyfrom_path = svn_relpath_join(rb->pb->parent_dir,
                                              nb->copyfrom_path, rb->pool);
-      nb->copyfrom_url = svn_path_url_add_component2(rb->pb->root_url,
+      nb->copyfrom_path = svn_path_url_add_component2(rb->pb->root_url,
                                                       nb->copyfrom_path,
                                                       rb->pool);
     }
@@ -827,20 +660,18 @@ new_node_record(void **node_baton,
     case svn_node_action_delete:
     case svn_node_action_replace:
       LDR_DBG(("Deleting entry %s in %p\n", nb->path, rb->db->baton));
-      SVN_ERR(commit_editor->delete_entry(nb->path,
-                                          rb->rev - rb->rev_offset - 1,
+      SVN_ERR(commit_editor->delete_entry(nb->path, rb->rev - rb->rev_offset,
                                           rb->db->baton, rb->pool));
       if (nb->action == svn_node_action_delete)
         break;
       else
         /* FALL THROUGH */;
     case svn_node_action_add:
-      nb->is_added = TRUE;
       switch (nb->kind)
         {
         case svn_node_file:
           SVN_ERR(commit_editor->add_file(nb->path, rb->db->baton,
-                                          nb->copyfrom_url,
+                                          nb->copyfrom_path,
                                           nb->copyfrom_rev,
                                           rb->pool, &(nb->file_baton)));
           LDR_DBG(("Added file %s to dir %p as %p\n",
@@ -848,13 +679,17 @@ new_node_record(void **node_baton,
           break;
         case svn_node_dir:
           SVN_ERR(commit_editor->add_directory(nb->path, rb->db->baton,
-                                               nb->copyfrom_url,
+                                               nb->copyfrom_path,
                                                nb->copyfrom_rev,
                                                rb->pool, &child_baton));
           LDR_DBG(("Added dir %s to dir %p as %p\n",
                    nb->path, rb->db->baton, child_baton));
-          push_directory(rb, child_baton, nb->path, TRUE /*is_added*/,
-                         nb->copyfrom_path, nb->copyfrom_rev);
+          child_db = apr_pcalloc(rb->pool, sizeof(*child_db));
+          child_db->baton = child_baton;
+          child_db->depth = rb->db->depth + 1;
+          child_db->relpath = apr_pstrdup(rb->pool, nb->path);
+          child_db->parent = rb->db;
+          rb->db = child_db;
           break;
         default:
           break;
@@ -872,8 +707,12 @@ new_node_record(void **node_baton,
           SVN_ERR(commit_editor->open_directory(nb->path, rb->db->baton,
                                                 rb->rev - rb->rev_offset - 1,
                                                 rb->pool, &child_baton));
-          push_directory(rb, child_baton, nb->path, FALSE /*is_added*/,
-                         NULL, SVN_INVALID_REVNUM);
+          child_db = apr_pcalloc(rb->pool, sizeof(*child_db));
+          child_db->baton = child_baton;
+          child_db->depth = rb->db->depth + 1;
+          child_db->relpath = apr_pstrdup(rb->pool, nb->path);
+          child_db->parent = rb->db;
+          rb->db = child_db;
           break;
         }
       break;
@@ -891,14 +730,13 @@ set_revision_property(void *baton,
   struct revision_baton *rb = baton;
 
   SVN_ERR(svn_rdump__normalize_prop(name, &value, rb->pool));
-
+  
   SVN_ERR(svn_repos__validate_prop(name, value, rb->pool));
 
   if (rb->rev > 0)
     {
-      svn_hash_sets(rb->revprop_table,
-                    apr_pstrdup(rb->pool, name),
-                    svn_string_dup(value, rb->pool));
+      apr_hash_set(rb->revprop_table, apr_pstrdup(rb->pool, name),
+                   APR_HASH_KEY_STRING, svn_string_dup(value, rb->pool));
     }
   else if (rb->rev_offset == -1)
     {
@@ -925,8 +763,8 @@ set_node_property(void *baton,
                   const svn_string_t *value)
 {
   struct node_baton *nb = baton;
+  const struct svn_delta_editor_t *commit_editor = nb->rb->pb->commit_editor;
   apr_pool_t *pool = nb->rb->pool;
-  svn_prop_t *prop;
 
   if (value && strcmp(name, SVN_PROP_MERGEINFO) == 0)
     {
@@ -976,11 +814,21 @@ set_node_property(void *baton,
 
   SVN_ERR(svn_repos__validate_prop(name, value, pool));
 
-  prop = apr_palloc(nb->rb->pool, sizeof (*prop));
-  prop->name = apr_pstrdup(pool, name);
-  prop->value = value ? svn_string_dup(value, pool) : NULL;
-  svn_hash_sets(nb->prop_changes, prop->name, prop);
-
+  switch (nb->kind)
+    {
+    case svn_node_file:
+      LDR_DBG(("Applying properties on %p\n", nb->file_baton));
+      SVN_ERR(commit_editor->change_file_prop(nb->file_baton, name,
+                                              value, pool));
+      break;
+    case svn_node_dir:
+      LDR_DBG(("Applying properties on %p\n", nb->rb->db->baton));
+      SVN_ERR(commit_editor->change_dir_prop(nb->rb->db->baton, name,
+                                             value, pool));
+      break;
+    default:
+      break;
+    }
   return SVN_NO_ERROR;
 }
 
@@ -989,90 +837,50 @@ delete_node_property(void *baton,
                      const char *name)
 {
   struct node_baton *nb = baton;
+  const struct svn_delta_editor_t *commit_editor = nb->rb->pb->commit_editor;
   apr_pool_t *pool = nb->rb->pool;
-  svn_prop_t *prop;
 
   SVN_ERR(svn_repos__validate_prop(name, NULL, pool));
 
-  prop = apr_palloc(pool, sizeof (*prop));
-  prop->name = apr_pstrdup(pool, name);
-  prop->value = NULL;
-  svn_hash_sets(nb->prop_changes, prop->name, prop);
+  if (nb->kind == svn_node_file)
+    SVN_ERR(commit_editor->change_file_prop(nb->file_baton, name,
+                                            NULL, pool));
+  else
+    SVN_ERR(commit_editor->change_dir_prop(nb->rb->db->baton, name,
+                                           NULL, pool));
 
   return SVN_NO_ERROR;
 }
 
-/* Delete all the properties of the node, if any.
- *
- * The commit editor doesn't have a method to delete a node's properties
- * without knowing what they are, so we have to first find out what
- * properties the node would have had. If it's copied (explicitly or
- * implicitly), we look at the copy source. If it's only being changed,
- * we look at the node's current path in the head revision.
- */
 static svn_error_t *
 remove_node_props(void *baton)
 {
   struct node_baton *nb = baton;
-  struct revision_baton *rb = nb->rb;
   apr_pool_t *pool = nb->rb->pool;
   apr_hash_index_t *hi;
   apr_hash_t *props;
-  const char *orig_path;
-  svn_revnum_t orig_rev;
-
-  /* Find the path and revision that has the node's original properties */
-  if (ARE_VALID_COPY_ARGS(nb->copyfrom_path, nb->copyfrom_rev))
-    {
-      LDR_DBG(("using nb->copyfrom  %s@%ld", nb->copyfrom_path, nb->copyfrom_rev));
-      orig_path = nb->copyfrom_path;
-      orig_rev = nb->copyfrom_rev;
-    }
-  else if (!nb->is_added
-           && ARE_VALID_COPY_ARGS(rb->db->copyfrom_path, rb->db->copyfrom_rev))
-    {
-      /* If this is a dir, then it's described by rb->db;
-         if this is a file, then it's a child of the dir in rb->db. */
-      LDR_DBG(("using rb->db->copyfrom (k=%d) %s@%ld",
-                 nb->kind, rb->db->copyfrom_path, rb->db->copyfrom_rev));
-      orig_path = (nb->kind == svn_node_dir)
-                    ? rb->db->copyfrom_path
-                    : svn_relpath_join(rb->db->copyfrom_path,
-                                       svn_relpath_basename(nb->path, NULL),
-                                       rb->pool);
-      orig_rev = rb->db->copyfrom_rev;
-    }
-  else
-    {
-      LDR_DBG(("using self.path@head  %s@%ld", nb->path, SVN_INVALID_REVNUM));
-      /* ### Should we query at a known, fixed, "head" revision number
-         instead of passing SVN_INVALID_REVNUM and getting a moving target? */
-      orig_path = nb->path;
-      orig_rev = SVN_INVALID_REVNUM;
-    }
-  LDR_DBG(("Trying %s@%ld", orig_path, orig_rev));
 
   if ((nb->action == svn_node_action_add
             || nb->action == svn_node_action_replace)
-      && ! ARE_VALID_COPY_ARGS(orig_path, orig_rev))
+      && ! SVN_IS_VALID_REVNUM(nb->copyfrom_rev))
     /* Add-without-history; no "old" properties to worry about. */
     return SVN_NO_ERROR;
 
   if (nb->kind == svn_node_file)
     {
-      SVN_ERR(svn_ra_get_file(nb->rb->pb->aux_session,
-                              orig_path, orig_rev, NULL, NULL, &props, pool));
+      SVN_ERR(svn_ra_get_file(nb->rb->pb->aux_session, nb->path,
+                              SVN_INVALID_REVNUM, NULL, NULL, &props, pool));
     }
   else  /* nb->kind == svn_node_dir */
     {
       SVN_ERR(svn_ra_get_dir2(nb->rb->pb->aux_session, NULL, NULL, &props,
-                              orig_path, orig_rev, 0, pool));
+                              nb->path, SVN_INVALID_REVNUM, 0, pool));
     }
 
   for (hi = apr_hash_first(pool, props); hi; hi = apr_hash_next(hi))
     {
       const char *name = svn__apr_hash_index_key(hi);
-      svn_prop_kind_t kind = svn_property_kind2(name);
+      svn_prop_kind_t kind = svn_property_kind(NULL, name);
 
       if (kind == svn_prop_regular_kind)
         SVN_ERR(set_node_property(nb, name, NULL));
@@ -1120,29 +928,6 @@ close_node(void *baton)
 {
   struct node_baton *nb = baton;
   const struct svn_delta_editor_t *commit_editor = nb->rb->pb->commit_editor;
-  apr_pool_t *pool = nb->rb->pool;
-  apr_hash_index_t *hi;
-
-  for (hi = apr_hash_first(pool, nb->prop_changes);
-       hi; hi = apr_hash_next(hi))
-    {
-      const char *name = svn__apr_hash_index_key(hi);
-      svn_prop_t *prop = svn__apr_hash_index_val(hi);
-
-      switch (nb->kind)
-        {
-        case svn_node_file:
-          SVN_ERR(commit_editor->change_file_prop(nb->file_baton,
-                                                  name, prop->value, pool));
-          break;
-        case svn_node_dir:
-          SVN_ERR(commit_editor->change_dir_prop(nb->rb->db->baton,
-                                                 name, prop->value, pool));
-          break;
-        default:
-          break;
-        }
-    }
 
   /* Pass a file node closure through to the editor *unless* we
      deleted the file (which doesn't require us to open it). */
@@ -1248,7 +1033,7 @@ svn_rdump__load_dumpstream(svn_stream_t *stream,
                            void *cancel_baton,
                            apr_pool_t *pool)
 {
-  svn_repos_parse_fns3_t *parser;
+  svn_repos_parse_fns2_t *parser;
   struct parse_baton *parse_baton;
   const svn_string_t *lock_string;
   svn_boolean_t be_atomic;
@@ -1265,9 +1050,8 @@ svn_rdump__load_dumpstream(svn_stream_t *stream,
                                            session_url, pool));
 
   parser = apr_pcalloc(pool, sizeof(*parser));
-  parser->magic_header_record = magic_header_record;
-  parser->uuid_record = uuid_record;
   parser->new_revision_record = new_revision_record;
+  parser->uuid_record = uuid_record;
   parser->new_node_record = new_node_record;
   parser->set_revision_property = set_revision_property;
   parser->set_node_property = set_node_property;
@@ -1288,7 +1072,7 @@ svn_rdump__load_dumpstream(svn_stream_t *stream,
   parse_baton->last_rev_mapped = SVN_INVALID_REVNUM;
   parse_baton->oldest_dumpstream_rev = SVN_INVALID_REVNUM;
 
-  err = svn_repos_parse_dumpstream3(stream, parser, parse_baton, FALSE,
+  err = svn_repos_parse_dumpstream2(stream, parser, parse_baton,
                                     cancel_func, cancel_baton, pool);
 
   /* If all goes well, or if we're cancelled cleanly, don't leave a

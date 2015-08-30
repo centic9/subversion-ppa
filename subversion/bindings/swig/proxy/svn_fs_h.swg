@@ -1,6 +1,5 @@
 /* Proxy classes for svn_fs.h
- * DO NOT EDIT -- AUTOMATICALLY GENERATED
- * BY build/generator/swig/header_wrappers.py */
+ * DO NOT EDIT -- AUTOMATICALLY GENERATED */
 
 /* No default constructors for opaque structs */
 #ifdef SWIGPYTHON
@@ -16,17 +15,11 @@
 #ifdef SWIGPYTHON
 %apply CALLABLE_CALLBACK {
   svn_fs_warning_callback_t,
-  svn_fs_progress_notify_func_t,
-  svn_fs_freeze_func_t,
-  svn_fs_process_contents_func_t,
   svn_fs_get_locks_callback_t,
   svn_fs_pack_notify_t
 };
 %apply CALLABLE_CALLBACK * {
   svn_fs_warning_callback_t *,
-  svn_fs_progress_notify_func_t *,
-  svn_fs_freeze_func_t *,
-  svn_fs_process_contents_func_t *,
   svn_fs_get_locks_callback_t *,
   svn_fs_pack_notify_t *
 };
@@ -38,7 +31,6 @@
   void *baton,
   void *warning_baton,
   void *cancel_baton,
-  void *freeze_baton,
   void *get_locks_baton,
   void *notify_baton
 };
@@ -71,21 +63,6 @@ static void svn_fs_invoke_warning_callback(
   _obj(baton, err);
 }
 
-static void svn_fs_invoke_progress_notify_func(
-  svn_fs_progress_notify_func_t _obj, svn_revnum_t revision, void *baton, apr_pool_t *pool) {
-  _obj(revision, baton, pool);
-}
-
-static svn_error_t * svn_fs_invoke_freeze_func(
-  svn_fs_freeze_func_t _obj, void *baton, apr_pool_t *pool) {
-  return _obj(baton, pool);
-}
-
-static svn_error_t * svn_fs_invoke_process_contents_func(
-  svn_fs_process_contents_func_t _obj, const unsigned char *contents, apr_size_t len, void *baton, apr_pool_t *scratch_pool) {
-  return _obj(contents, len, baton, scratch_pool);
-}
-
 static svn_error_t * svn_fs_invoke_get_locks_callback(
   svn_fs_get_locks_callback_t _obj, void *baton, svn_lock_t *lock, apr_pool_t *pool) {
   return _obj(baton, lock, pool);
@@ -100,9 +77,6 @@ static svn_error_t * svn_fs_invoke_pack_notify(
 
 #ifdef SWIGPYTHON
 %funcptr_proxy(svn_fs_warning_callback_t, svn_fs_invoke_warning_callback);
-%funcptr_proxy(svn_fs_progress_notify_func_t, svn_fs_invoke_progress_notify_func);
-%funcptr_proxy(svn_fs_freeze_func_t, svn_fs_invoke_freeze_func);
-%funcptr_proxy(svn_fs_process_contents_func_t, svn_fs_invoke_process_contents_func);
 %funcptr_proxy(svn_fs_get_locks_callback_t, svn_fs_invoke_get_locks_callback);
 %funcptr_proxy(svn_fs_pack_notify_t, svn_fs_invoke_pack_notify);
 

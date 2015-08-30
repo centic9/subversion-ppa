@@ -28,7 +28,6 @@
 #include <apr_pools.h>
 #include <apr_file_io.h>
 
-#include "svn_hash.h"
 #include "svn_pools.h"
 #include "svn_fs.h"
 #include "svn_path.h"
@@ -65,8 +64,6 @@
 
 #include "../libsvn_fs/fs-loader.h"
 #include "private/svn_fs_util.h"
-#include "private/svn_subr_private.h"
-
 
 
 /* Checking for return values, and reporting errors.  */
@@ -336,10 +333,9 @@ bdb_write_config(svn_fs_t *fs)
     "#\n"
     "# Make sure you read the documentation at:\n"
     "#\n"
-    "#   http://docs.oracle.com/cd/E17076_02/html/programmer_reference/lock_max.html\n"
+    "#   http://www.oracle.com/technology/documentation/berkeley-db/db/ref/lock/max.html\n"
     "#\n"
     "# before tweaking these values.\n"
-    "#\n"
     "set_lk_max_locks   2000\n"
     "set_lk_max_lockers 2000\n"
     "set_lk_max_objects 2000\n"
@@ -348,9 +344,9 @@ bdb_write_config(svn_fs_t *fs)
     "#\n"
     "# Make sure you read the documentation at:\n"
     "#\n"
-    "#   http://docs.oracle.com/cd/E17076_02/html/api_reference/C/envset_lg_bsize.html\n"
-    "#   http://docs.oracle.com/cd/E17076_02/html/api_reference/C/envset_lg_max.html\n"
-    "#   http://docs.oracle.com/cd/E17076_02/html/programmer_reference/log_limits.html\n"
+    "#   http://www.oracle.com/technology/documentation/berkeley-db/db/api_c/env_set_lg_bsize.html\n"
+    "#   http://www.oracle.com/technology/documentation/berkeley-db/db/api_c/env_set_lg_max.html\n"
+    "#   http://www.oracle.com/technology/documentation/berkeley-db/db/ref/log/limits.html\n"
     "#\n"
     "# Increase the size of the in-memory log buffer from the default\n"
     "# of 32 Kbytes to 256 Kbytes.  Decrease the log file size from\n"
@@ -358,28 +354,24 @@ bdb_write_config(svn_fs_t *fs)
     "# space required for hot backups.  The size of the log file must be\n"
     "# at least four times the size of the in-memory log buffer.\n"
     "#\n"
-    "# Note: Decreasing the in-memory buffer size below 256 Kbytes will hurt\n"
-    "# hurt commit performance. For details, see:\n"
+    "# Note: Decreasing the in-memory buffer size below 256 Kbytes\n"
+    "# will hurt commit performance. For details, see this post from\n"
+    "# Daniel Berlin <dan@dberlin.org>:\n"
     "#\n"
-    "#   http://svn.haxx.se/dev/archive-2002-02/0141.shtml\n"
-    "#\n"
+    "# http://subversion.tigris.org/servlets/ReadMsg?list=dev&msgId=161960\n"
     "set_lg_bsize     262144\n"
     "set_lg_max      1048576\n"
     "#\n"
     "# If you see \"log region out of memory\" errors, bump lg_regionmax.\n"
-    "# For more information, see:\n"
-    "#\n"
-    "#   http://docs.oracle.com/cd/E17076_02/html/programmer_reference/log_config.html\n"
-    "#   http://svn.haxx.se/users/archive-2004-10/1000.shtml\n"
-    "#\n"
+    "# See http://www.oracle.com/technology/documentation/berkeley-db/db/ref/log/config.html\n"
+    "# and http://svn.haxx.se/users/archive-2004-10/1001.shtml for more.\n"
     "set_lg_regionmax 131072\n"
     "#\n"
     /* ### Configure this with "svnadmin create --bdb-cache-size" */
     "# The default cache size in BDB is only 256k. As explained in\n"
-    "# http://svn.haxx.se/dev/archive-2004-12/0368.shtml, this is too\n"
+    "# http://svn.haxx.se/dev/archive-2004-12/0369.shtml, this is too\n"
     "# small for most applications. Bump this number if \"db_stat -m\"\n"
     "# shows too many cache misses.\n"
-    "#\n"
     "set_cachesize    0 1048576 1\n";
 
   /* Run-time configurable options.
@@ -405,12 +397,11 @@ bdb_write_config(svn_fs_t *fs)
       "# Disable fsync of log files on transaction commit. Read the\n"
       "# documentation about DB_TXN_NOSYNC at:\n"
       "#\n"
-      "#   http://docs.oracle.com/cd/E17076_02/html/programmer_reference/log_config.html\n"
+      "#   http://www.oracle.com/technology/documentation/berkeley-db/db/ref/log/config.html\n"
       "#\n"
-      "# [requires Berkeley DB 4.0]\n"
-      "#\n",
+      "# [requires Berkeley DB 4.0]\n",
       /* inactive */
-      "#set_flags DB_TXN_NOSYNC\n",
+      "# set_flags DB_TXN_NOSYNC\n",
       /* active */
       "set_flags DB_TXN_NOSYNC\n" },
     /* Controlled by "svnadmin create --bdb-log-keep" */
@@ -420,12 +411,11 @@ bdb_write_config(svn_fs_t *fs)
       "# Enable automatic removal of unused transaction log files.\n"
       "# Read the documentation about DB_LOG_AUTOREMOVE at:\n"
       "#\n"
-      "#   http://docs.oracle.com/cd/E17076_02/html/programmer_reference/log_config.html\n"
+      "#   http://www.oracle.com/technology/documentation/berkeley-db/db/ref/log/config.html\n"
       "#\n"
-      "# [requires Berkeley DB 4.2]\n"
-      "#\n",
+      "# [requires Berkeley DB 4.2]\n",
       /* inactive */
-      "#set_flags DB_LOG_AUTOREMOVE\n",
+      "# set_flags DB_LOG_AUTOREMOVE\n",
       /* active */
       "set_flags DB_LOG_AUTOREMOVE\n" },
   };
@@ -449,7 +439,9 @@ bdb_write_config(svn_fs_t *fs)
 
       if (fs->config)
         {
-          value = svn_hash_gets(fs->config, dbconfig_options[i].config_key);
+          value = apr_hash_get(fs->config,
+                               dbconfig_options[i].config_key,
+                               APR_HASH_KEY_STRING);
         }
 
       SVN_ERR(svn_io_file_write_full(dbconfig_file,
@@ -472,22 +464,15 @@ bdb_write_config(svn_fs_t *fs)
   return svn_io_file_close(dbconfig_file, fs->pool);
 }
 
+
+
 static svn_error_t *
-base_bdb_verify_root(svn_fs_root_t *root,
-                     apr_pool_t *scratch_pool)
+base_serialized_init(svn_fs_t *fs, apr_pool_t *common_pool, apr_pool_t *pool)
 {
-  /* Verifying is currently a no op for BDB. */
+  /* Nothing to do here. */
   return SVN_NO_ERROR;
 }
 
-static svn_error_t *
-base_bdb_freeze(svn_fs_t *fs,
-                svn_fs_freeze_func_t freeze_func,
-                void *freeze_baton,
-                apr_pool_t *pool)
-{
-  SVN__NOT_IMPLEMENTED();
-}
 
 
 /* Creating a new filesystem */
@@ -497,6 +482,7 @@ static fs_vtable_t fs_vtable = {
   svn_fs_base__revision_prop,
   svn_fs_base__revision_proplist,
   svn_fs_base__change_rev_prop,
+  svn_fs_base__get_uuid,
   svn_fs_base__set_uuid,
   svn_fs_base__revision_root,
   svn_fs_base__begin_txn,
@@ -509,8 +495,6 @@ static fs_vtable_t fs_vtable = {
   svn_fs_base__unlock,
   svn_fs_base__get_lock,
   svn_fs_base__get_locks,
-  base_bdb_verify_root,
-  base_bdb_freeze,
   base_bdb_set_errcall,
 };
 
@@ -571,62 +555,62 @@ open_databases(svn_fs_t *fs,
 
   /* Create the databases in the environment.  */
   SVN_ERR(BDB_WRAP(fs, (create
-                        ? N_("creating 'nodes' table")
-                        : N_("opening 'nodes' table")),
+                        ? "creating 'nodes' table"
+                        : "opening 'nodes' table"),
                    svn_fs_bdb__open_nodes_table(&bfd->nodes,
                                                 bfd->bdb->env,
                                                 create)));
   SVN_ERR(BDB_WRAP(fs, (create
-                        ? N_("creating 'revisions' table")
-                        : N_("opening 'revisions' table")),
+                        ? "creating 'revisions' table"
+                        : "opening 'revisions' table"),
                    svn_fs_bdb__open_revisions_table(&bfd->revisions,
                                                     bfd->bdb->env,
                                                     create)));
   SVN_ERR(BDB_WRAP(fs, (create
-                        ? N_("creating 'transactions' table")
-                        : N_("opening 'transactions' table")),
+                        ? "creating 'transactions' table"
+                        : "opening 'transactions' table"),
                    svn_fs_bdb__open_transactions_table(&bfd->transactions,
                                                        bfd->bdb->env,
                                                        create)));
   SVN_ERR(BDB_WRAP(fs, (create
-                        ? N_("creating 'copies' table")
-                        : N_("opening 'copies' table")),
+                        ? "creating 'copies' table"
+                        : "opening 'copies' table"),
                    svn_fs_bdb__open_copies_table(&bfd->copies,
                                                  bfd->bdb->env,
                                                  create)));
   SVN_ERR(BDB_WRAP(fs, (create
-                        ? N_("creating 'changes' table")
-                        : N_("opening 'changes' table")),
+                        ? "creating 'changes' table"
+                        : "opening 'changes' table"),
                    svn_fs_bdb__open_changes_table(&bfd->changes,
                                                   bfd->bdb->env,
                                                   create)));
   SVN_ERR(BDB_WRAP(fs, (create
-                        ? N_("creating 'representations' table")
-                        : N_("opening 'representations' table")),
+                        ? "creating 'representations' table"
+                        : "opening 'representations' table"),
                    svn_fs_bdb__open_reps_table(&bfd->representations,
                                                bfd->bdb->env,
                                                create)));
   SVN_ERR(BDB_WRAP(fs, (create
-                        ? N_("creating 'strings' table")
-                        : N_("opening 'strings' table")),
+                        ? "creating 'strings' table"
+                        : "opening 'strings' table"),
                    svn_fs_bdb__open_strings_table(&bfd->strings,
                                                   bfd->bdb->env,
                                                   create)));
   SVN_ERR(BDB_WRAP(fs, (create
-                        ? N_("creating 'uuids' table")
-                        : N_("opening 'uuids' table")),
+                        ? "creating 'uuids' table"
+                        : "opening 'uuids' table"),
                    svn_fs_bdb__open_uuids_table(&bfd->uuids,
                                                 bfd->bdb->env,
                                                 create)));
   SVN_ERR(BDB_WRAP(fs, (create
-                        ? N_("creating 'locks' table")
-                        : N_("opening 'locks' table")),
+                        ? "creating 'locks' table"
+                        : "opening 'locks' table"),
                    svn_fs_bdb__open_locks_table(&bfd->locks,
                                                 bfd->bdb->env,
                                                 create)));
   SVN_ERR(BDB_WRAP(fs, (create
-                        ? N_("creating 'lock-tokens' table")
-                        : N_("opening 'lock-tokens' table")),
+                        ? "creating 'lock-tokens' table"
+                        : "opening 'lock-tokens' table"),
                    svn_fs_bdb__open_lock_tokens_table(&bfd->lock_tokens,
                                                       bfd->bdb->env,
                                                       create)));
@@ -634,8 +618,8 @@ open_databases(svn_fs_t *fs,
   if (format >= SVN_FS_BASE__MIN_NODE_ORIGINS_FORMAT)
     {
       SVN_ERR(BDB_WRAP(fs, (create
-                            ? N_("creating 'node-origins' table")
-                            : N_("opening 'node-origins' table")),
+                            ? "creating 'node-origins' table"
+                            : "opening 'node-origins' table"),
                        svn_fs_bdb__open_node_origins_table(&bfd->node_origins,
                                                            bfd->bdb->env,
                                                            create)));
@@ -644,8 +628,8 @@ open_databases(svn_fs_t *fs,
   if (format >= SVN_FS_BASE__MIN_MISCELLANY_FORMAT)
     {
       SVN_ERR(BDB_WRAP(fs, (create
-                            ? N_("creating 'miscellaneous' table")
-                            : N_("opening 'miscellaneous' table")),
+                            ? "creating 'miscellaneous' table"
+                            : "opening 'miscellaneous' table"),
                        svn_fs_bdb__open_miscellaneous_table(&bfd->miscellaneous,
                                                             bfd->bdb->env,
                                                             create)));
@@ -654,8 +638,8 @@ open_databases(svn_fs_t *fs,
   if (format >= SVN_FS_BASE__MIN_REP_SHARING_FORMAT)
     {
       SVN_ERR(BDB_WRAP(fs, (create
-                            ? N_("creating 'checksum-reps' table")
-                            : N_("opening 'checksum-reps' table")),
+                            ? "creating 'checksum-reps' table"
+                            : "opening 'checksum-reps' table"),
                        svn_fs_bdb__open_checksum_reps_table(&bfd->checksum_reps,
                                                             bfd->bdb->env,
                                                             create)));
@@ -664,15 +648,6 @@ open_databases(svn_fs_t *fs,
   return SVN_NO_ERROR;
 }
 
-
-/* Called by functions that initialize an svn_fs_t struct, after that
-   initialization is done, to populate svn_fs_t->uuid. */
-static svn_error_t *
-populate_opened_fs(svn_fs_t *fs, apr_pool_t *scratch_pool)
-{
-  SVN_ERR(svn_fs_base__populate_uuid(fs, scratch_pool));
-  return SVN_NO_ERROR;
-}
 
 static svn_error_t *
 base_create(svn_fs_t *fs, const char *path, apr_pool_t *pool,
@@ -684,11 +659,14 @@ base_create(svn_fs_t *fs, const char *path, apr_pool_t *pool,
   /* See if compatibility with older versions was explicitly requested. */
   if (fs->config)
     {
-      if (svn_hash_gets(fs->config, SVN_FS_CONFIG_PRE_1_4_COMPATIBLE))
+      if (apr_hash_get(fs->config, SVN_FS_CONFIG_PRE_1_4_COMPATIBLE,
+                                   APR_HASH_KEY_STRING))
         format = 1;
-      else if (svn_hash_gets(fs->config, SVN_FS_CONFIG_PRE_1_5_COMPATIBLE))
+      else if (apr_hash_get(fs->config, SVN_FS_CONFIG_PRE_1_5_COMPATIBLE,
+                                        APR_HASH_KEY_STRING))
         format = 2;
-      else if (svn_hash_gets(fs->config, SVN_FS_CONFIG_PRE_1_6_COMPATIBLE))
+      else if (apr_hash_get(fs->config, SVN_FS_CONFIG_PRE_1_6_COMPATIBLE,
+                                        APR_HASH_KEY_STRING))
         format = 3;
     }
 
@@ -706,9 +684,7 @@ base_create(svn_fs_t *fs, const char *path, apr_pool_t *pool,
   if (svn_err) goto error;
 
   ((base_fs_data_t *) fs->fsap_data)->format = format;
-
-  SVN_ERR(populate_opened_fs(fs, pool));
-  return SVN_NO_ERROR;;
+  return base_serialized_init(fs, common_pool, pool);
 
 error:
   svn_error_clear(cleanup_fs(fs));
@@ -792,8 +768,7 @@ base_open(svn_fs_t *fs, const char *path, apr_pool_t *pool,
       if (svn_err) goto error;
     }
 
-  SVN_ERR(populate_opened_fs(fs, pool));
-  return SVN_NO_ERROR;
+  return base_serialized_init(fs, common_pool, pool);
 
  error:
   svn_error_clear(cleanup_fs(fs));
@@ -898,21 +873,6 @@ base_upgrade(svn_fs_t *fs, const char *path, apr_pool_t *pool,
 }
 
 static svn_error_t *
-base_verify(svn_fs_t *fs, const char *path,
-            svn_revnum_t start,
-            svn_revnum_t end,
-            svn_fs_progress_notify_func_t notify_func,
-            void *notify_baton,
-            svn_cancel_func_t cancel_func,
-            void *cancel_baton,
-            apr_pool_t *pool,
-            apr_pool_t *common_pool)
-{
-  /* Verifying is currently a no op for BDB. */
-  return SVN_NO_ERROR;
-}
-
-static svn_error_t *
 base_bdb_recover(svn_fs_t *fs,
                  svn_cancel_func_t cancel_func, void *cancel_baton,
                  apr_pool_t *pool)
@@ -929,8 +889,7 @@ base_bdb_pack(svn_fs_t *fs,
               void *notify_baton,
               svn_cancel_func_t cancel,
               void *cancel_baton,
-              apr_pool_t *pool,
-              apr_pool_t *common_pool)
+              apr_pool_t *pool)
 {
   /* Packing is currently a no op for BDB. */
   return SVN_NO_ERROR;
@@ -1025,7 +984,7 @@ svn_fs_base__clean_logs(const char *live_path,
                                                  sub_pool));
 
           /* If log files do not match, go to the next log file. */
-          if (!files_match)
+          if (files_match == FALSE)
             continue;
         }
 
@@ -1133,7 +1092,7 @@ copy_db_file_safely(const char *src_dir,
   /* Open source file.  If it's missing and that's allowed, there's
      nothing more to do here. */
   err = svn_io_file_open(&s, file_src_path,
-                         (APR_READ | APR_LARGEFILE),
+                         (APR_READ | APR_LARGEFILE | APR_BINARY),
                          APR_OS_DEFAULT, pool);
   if (err && APR_STATUS_IS_ENOENT(err->apr_err) && allow_missing)
     {
@@ -1144,7 +1103,7 @@ copy_db_file_safely(const char *src_dir,
 
   /* Open destination file. */
   SVN_ERR(svn_io_file_open(&d, file_dst_path, (APR_WRITE | APR_CREATE |
-                                               APR_LARGEFILE),
+                                               APR_LARGEFILE | APR_BINARY),
                            APR_OS_DEFAULT, pool));
 
   /* Allocate our read/write buffer. */
@@ -1195,25 +1154,15 @@ copy_db_file_safely(const char *src_dir,
 
 
 static svn_error_t *
-base_hotcopy(svn_fs_t *src_fs,
-             svn_fs_t *dst_fs,
-             const char *src_path,
+base_hotcopy(const char *src_path,
              const char *dest_path,
              svn_boolean_t clean_logs,
-             svn_boolean_t incremental,
-             svn_cancel_func_t cancel_func,
-             void *cancel_baton,
              apr_pool_t *pool)
 {
   svn_error_t *err;
   u_int32_t pagesize;
   svn_boolean_t log_autoremove = FALSE;
   int format;
-
-  if (incremental)
-    return svn_error_createf(SVN_ERR_UNSUPPORTED_FEATURE, NULL,
-                             _("BDB repositories do not support incremental "
-                               "hotcopy"));
 
   /* Check the FS format number to be certain that we know how to
      hotcopy this FS.  Pre-1.2 filesystems did not have a format file (you
@@ -1383,15 +1332,6 @@ base_get_description(void)
   return _("Module for working with a Berkeley DB repository.");
 }
 
-static svn_error_t *
-base_set_svn_fs_open(svn_fs_t *fs,
-                     svn_error_t *(*svn_fs_open_)(svn_fs_t **,
-                                                  const char *,
-                                                  apr_hash_t *,
-                                                  apr_pool_t *))
-{
-  return SVN_NO_ERROR;
-}
 
 
 /* Base FS library vtable, used by the FS loader library. */
@@ -1401,15 +1341,13 @@ static fs_library_vtable_t library_vtable = {
   base_open,
   base_open_for_recovery,
   base_upgrade,
-  base_verify,
   base_delete_fs,
   base_hotcopy,
   base_get_description,
   base_bdb_recover,
   base_bdb_pack,
   base_bdb_logfiles,
-  svn_fs_base__id_parse,
-  base_set_svn_fs_open
+  svn_fs_base__id_parse
 };
 
 svn_error_t *
@@ -1429,7 +1367,7 @@ svn_fs_base__init(const svn_version_t *loader_version,
     return svn_error_createf(SVN_ERR_VERSION_MISMATCH, NULL,
                              _("Unsupported FS loader version (%d) for bdb"),
                              loader_version->major);
-  SVN_ERR(svn_ver_check_list2(base_version(), checklist, svn_ver_equal));
+  SVN_ERR(svn_ver_check_list(base_version(), checklist));
   SVN_ERR(check_bdb_version());
   SVN_ERR(svn_fs_bdb__init(common_pool));
 

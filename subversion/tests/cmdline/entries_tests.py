@@ -33,9 +33,7 @@
 # test tries to pick up the straggly little edge cases.
 #
 
-import os, logging
-
-logger = logging.getLogger()
+import os
 
 import svntest
 
@@ -51,22 +49,22 @@ SCHEDULE_REPLACE = 3
 def validate(entry, **kw):
   for key, value in kw.items():
     if getattr(entry, key) != value:
-      logger.warn("Entry '%s' has an incorrect value for .%s", entry.name, key)
-      logger.warn("  Expected: %s", value)
-      logger.warn("    Actual: %s", getattr(entry, key))
+      print("Entry '%s' has an incorrect value for .%s" % (entry.name, key))
+      print("  Expected: %s" % value)
+      print("    Actual: %s" % getattr(entry, key))
       raise svntest.Failure
 
 
 def check_names(entries, *names):
   if entries is None:
-    logger.warn('entries-dump probably exited with a failure.')
+    print('entries-dump probably exited with a failure.')
     raise svntest.Failure
   have = set(entries.keys())
   want = set(names)
   missing = want - have
   if missing:
-    logger.warn("Entry name(s) not found: %s",
-          ', '.join("'%s'" % name for name in missing))
+    print("Entry name(s) not found: %s"
+          % ', '.join("'%s'" % name for name in missing))
     raise svntest.Failure
 
 
@@ -185,8 +183,11 @@ def obstructed_entries(sbox):
   entries = svntest.main.run_entriesdump(D_path)
   check_names(entries, 'H')
 
-  # Data is not missing in single-db
-  validate(entries['H'], revision=1)
+  if svntest.main.wc_is_singledb(wc_dir):
+    # Data is not missing in single-db
+    validate(entries['H'], revision=1)
+  else:
+    validate(entries['H'], revision=-1)
 
   ### need to get svn_wc__db_read_info() to generate obstructed_add
 

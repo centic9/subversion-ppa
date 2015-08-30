@@ -37,7 +37,6 @@
 #include "svn_pools.h"
 #include "svn_dirent_uri.h"
 #include "private/svn_fspath.h"
-#include "private/svn_cert.h"
 
 #include "../svn_test.h"
 
@@ -619,11 +618,6 @@ test_uri_dirname(apr_pool_t *pool)
     { "http://server", "http://server" },
     { "file:///a/b", "file:///a" },
     { "file:///a", "file://" },
-    { "file://", "file://" },
-#ifdef WIN32
-    { "file:///A:/dir", "file:///A:" },
-    { "file:///A:", "file://" },
-#endif
   };
 
   for (i = 0; i < COUNT_OF(tests); i++)
@@ -676,7 +670,6 @@ test_dirent_canonicalize(apr_pool_t *pool)
     { "foo/../",              "foo/.." },
     { "foo/../.",             "foo/.." },
     { "foo//.//bar",          "foo/bar" },
-    { "//foo",                "/foo" },
     { "///foo",               "/foo" },
     { "/.//./.foo",           "/.foo" },
     { ".///.foo",             ".foo" },
@@ -750,7 +743,6 @@ test_relpath_canonicalize(apr_pool_t *pool)
     { "foo/../",              "foo/.." },
     { "foo/../.",             "foo/.." },
     { "foo//.//bar",          "foo/bar" },
-    { "//foo",                "foo" },
     { "///foo",               "foo" },
     { "/.//./.foo",           ".foo" },
     { ".///.foo",             ".foo" },
@@ -890,31 +882,15 @@ static const testcase_canonicalize_t uri_canonical_tests[] =
     { "https://SERVER:80/",    "https://server:80" },
     { "svn://server:80",       "svn://server:80" },
     { "svn://SERVER:443/",     "svn://server:443" },
-    { "file:///C%7C/temp/REPOS", "file:///C%7C/temp/REPOS" },
-    { "file:///C|/temp/REPOS", "file:///C%7C/temp/REPOS" },
-    { "file:///C:/",           "file:///C:" },
-    { "http://[::1]/",         "http://[::1]" },
-    { "http://[::1]:80/",      "http://[::1]" },
-    { "https://[::1]:443",     "https://[::1]" },
-    { "http://[::1]/",         "http://[::1]" },
-    { "http://[::1]:80/",      "http://[::1]" },
-    { "https://[::1]:443",     "https://[::1]" },
-    { "http://[FACE:B00C::]/s","http://[face:b00c::]/s" },
-    { "svn+ssh://b@[1:2::3]/s","svn+ssh://b@[1:2::3]/s" },
 #ifdef SVN_USE_DOS_PATHS
     { "file:///c:/temp/repos", "file:///C:/temp/repos" },
     { "file:///c:/temp/REPOS", "file:///C:/temp/REPOS" },
     { "file:///C:/temp/REPOS", "file:///C:/temp/REPOS" },
-    { "file:///c:/",           "file:///C:" },
 #else /* !SVN_USE_DOS_PATHS */
     { "file:///c:/temp/repos", "file:///c:/temp/repos" },
     { "file:///c:/temp/REPOS", "file:///c:/temp/REPOS" },
     { "file:///C:/temp/REPOS", "file:///C:/temp/REPOS" },
-    { "file:///c:/",           "file:///c:" },
 #endif /* SVN_USE_DOS_PATHS */
-    /* Hostnames that look like non-canonical paths */
-    { "file://./foo",             "file://./foo" },
-    { "http://./foo",             "http://./foo" },
   /* svn_uri_is_canonical() was a private function in the 1.6 API, and
      has since taken a MAJOR change of direction, namely that only
      absolute URLs are considered canonical uris now. */
@@ -941,7 +917,6 @@ static const testcase_canonicalize_t uri_canonical_tests[] =
     { "foo/../",                         NULL },
     { "foo/../.",                        NULL },
     { "foo//.//bar",                     NULL },
-    { "//foo",                           NULL },
     { "///foo",                          NULL },
     { "/.//./.foo",                      NULL },
     { ".///.foo",                        NULL },
@@ -1029,7 +1004,6 @@ test_dirent_is_canonical(apr_pool_t *pool)
     { "foo/../",               FALSE },
     { "foo/../.",              FALSE },
     { "foo//.//bar",           FALSE },
-    { "//foo",                 FALSE },
     { "///foo",                FALSE },
     { "/.//./.foo",            FALSE },
     { ".///.foo",              FALSE },
@@ -1130,7 +1104,6 @@ test_relpath_is_canonical(apr_pool_t *pool)
     { "foo/../",               FALSE },
     { "foo/../.",              FALSE },
     { "foo//.//bar",           FALSE },
-    { "//foo",                 FALSE },
     { "///foo",                FALSE },
     { "/.//./.foo",            FALSE },
     { ".///.foo",              FALSE },
@@ -1474,6 +1447,28 @@ static const testcase_ancestor_t relpath_ancestor_tests[] =
     { "X:",             "X:/foo",           "foo" },
     { "X:foo",          "X:bar",            NULL },
   };
+
+static svn_error_t *
+test_relpath_is_ancestor(apr_pool_t *pool)
+{
+  const testcase_ancestor_t *t;
+
+  for (t = relpath_ancestor_tests;
+       t < relpath_ancestor_tests + COUNT_OF(relpath_ancestor_tests);
+       t++)
+    {
+      svn_boolean_t retval;
+
+      retval = svn_relpath__is_ancestor(t->path1, t->path2);
+      if (!!t->result != retval)
+        return svn_error_createf
+          (SVN_ERR_TEST_FAILED, NULL,
+           "svn_relpath_is_ancestor (%s, %s) returned %s instead of %s",
+           t->path1, t->path2, retval ? "TRUE" : "FALSE",
+           t->result ? "TRUE" : "FALSE");
+    }
+  return SVN_NO_ERROR;
+}
 
 static const testcase_ancestor_t uri_ancestor_tests[] =
   {
@@ -1874,6 +1869,133 @@ test_dirent_is_child(apr_pool_t *pool)
 }
 
 static svn_error_t *
+test_relpath_is_child(apr_pool_t *pool)
+{
+  int i, j;
+
+  static const char * const paths[] = {
+    "",
+    "foo",
+    "foo/bar",
+    "foo/bars",
+    "foo/baz",
+    "foo/bar/baz",
+    "flu/blar/blaz",
+    "foo/bar/baz/bing/boom",
+    ".foo",
+    ":",
+    "foo2",
+    "food",
+    "bar",
+    "baz",
+    "ba",
+    "bad"
+    };
+
+  /* Maximum number of path[] items for all platforms */
+#define MAX_PATHS 32
+
+  static const char * const
+    remainders[COUNT_OF(paths)][MAX_PATHS] = {
+    { 0, "foo", "foo/bar", "foo/bars", "foo/baz", "foo/bar/baz",
+      "flu/blar/blaz", "foo/bar/baz/bing/boom", ".foo", ":", "foo2", "food",
+      "bar", "baz", "ba", "bad" },
+    { 0, 0, "bar", "bars", "baz", "bar/baz", 0, "bar/baz/bing/boom", 0, 0, 0,
+      0, 0, 0, 0, 0 },
+    { 0, 0, 0, 0, 0, "baz", 0, "baz/bing/boom", 0, 0, 0, 0, 0, 0, 0, 0 },
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+    { 0, 0, 0, 0, 0, 0, 0, "bing/boom", 0, 0, 0, 0, 0, 0, 0, 0 },
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+  };
+
+  for (i = 0; i < COUNT_OF(paths); i++)
+    {
+      for (j = 0; j < COUNT_OF(paths); j++)
+        {
+          const char *remainder;
+
+          remainder = svn_dirent_is_child(paths[i], paths[j], pool);
+
+          if (strcmp(paths[j], "foodbar") == 0)
+            SVN_ERR_MALFUNCTION();
+
+          if (((remainder) && (! remainders[i][j]))
+              || ((! remainder) && (remainders[i][j]))
+              || (remainder && strcmp(remainder, remainders[i][j])))
+            return svn_error_createf
+              (SVN_ERR_TEST_FAILED, NULL,
+               "svn_relpath_is_child(%s, %s) returned '%s' instead of '%s'",
+               paths[i], paths[j],
+               remainder ? remainder : "(null)",
+               remainders[i][j] ? remainders[i][j] : "(null)" );
+        }
+    }
+
+#undef NUM_TEST_PATHS
+  return SVN_NO_ERROR;
+}
+
+
+static svn_error_t *
+test_uri_is_child(apr_pool_t *pool)
+{
+  int i, j;
+
+  static const char * const paths[] = {
+    "http://foo/bar",
+    "http://foo/bar%20bell",
+    "http://foo/baz",
+    "http://foo",
+    "http://f",
+    "file://foo/bar",
+    "file://foo/bar/baz%20bol",
+    };
+
+  static const char * const
+    remainders[COUNT_OF(paths)][COUNT_OF(paths)] = {
+    { 0, 0, 0, 0, 0, 0, 0 },
+    { 0, 0, 0, 0, 0, 0, 0 },
+    { 0, 0, 0, 0, 0, 0, 0 },
+    { "bar", "bar bell", "baz", 0, 0, 0, 0 },
+    { 0, 0, 0, 0, 0, 0, 0 },
+    { 0, 0, 0, 0, 0, 0, "baz bol" },
+    { 0, 0, 0, 0, 0, 0, 0 },
+  };
+
+  for (i = 0; i < COUNT_OF(paths); i++)
+    {
+      for (j = 0; j < COUNT_OF(paths); j++)
+        {
+          const char *remainder;
+
+          remainder = svn_uri__is_child(paths[i], paths[j], pool);
+
+          if (((remainder) && (! remainders[i][j]))
+              || ((! remainder) && (remainders[i][j]))
+              || (remainder && strcmp(remainder, remainders[i][j])))
+            return svn_error_createf
+              (SVN_ERR_TEST_FAILED, NULL,
+               "svn_uri_is_child (%s, %s) [%d,%d] "
+               "returned '%s' instead of '%s'",
+               paths[i], paths[j], i, j,
+               remainder ? remainder : "(null)",
+               remainders[i][j] ? remainders[i][j] : "(null)" );
+        }
+    }
+
+  return SVN_NO_ERROR;
+}
+
+static svn_error_t *
 test_dirent_get_absolute(apr_pool_t *pool)
 {
   int i;
@@ -2053,33 +2175,14 @@ test_dirent_condense_targets(apr_pool_t *pool)
       const char* common;
       apr_array_header_t *hdr = apr_array_make(pool, 8, sizeof(const char*));
       apr_array_header_t *condensed;
-      svn_boolean_t skip = FALSE;
 
       for (j = 0; j < COUNT_OF(tests[i].paths); j++)
         {
           if (tests[i].paths[j] != NULL)
-            {
-              APR_ARRAY_PUSH(hdr, const char*) = tests[i].paths[j];
-#ifdef SVN_USE_DOS_PATHS
-              /* For tests that are referencing a D: drive, specifically test
-                 if such a drive exists on the system.  If not, skip the test
-                 (svn_dirent_condense_targets will fail, because
-                 apr_filepath_merge will produce an APR_EBADPATH error). */
-              if (strncmp(tests[i].paths[j], "D:", 2) == 0
-                  && GetDriveType("D:\\") == DRIVE_NO_ROOT_DIR)
-                {
-                  /* There is no D: drive, skip this. */
-                  skip = TRUE;
-                  break;
-                }
-#endif
-            }
+            APR_ARRAY_PUSH(hdr, const char*) = tests[i].paths[j];
           else
             break;
         }
-
-      if (skip)
-        continue;
 
       SVN_ERR(svn_dirent_condense_targets(&common, &condensed, hdr,
                                           FALSE, pool, pool));
@@ -2594,7 +2697,7 @@ test_fspath_join(apr_pool_t *pool)
 }
 
 static svn_error_t *
-test_fspath_skip_ancestor(apr_pool_t *pool)
+test_fspath_is_child(apr_pool_t *pool)
 {
   int i, j;
 
@@ -2609,12 +2712,12 @@ test_fspath_skip_ancestor(apr_pool_t *pool)
 
   static const char * const
     remainders[COUNT_OF(paths)][COUNT_OF(paths)] = {
-    { "", "f",  "foo",  "foo/bar",  "foo/bars", "foo/bar/baz" },
-    { 0,  "",   0,      0,          0,          0             },
-    { 0,  0,    "",     "bar",      "bars",     "bar/baz"     },
-    { 0,  0,    0,      "",         0,          "baz"         },
-    { 0,  0,    0,      0,          "",         0             },
-    { 0,  0,    0,      0,          0,          ""            },
+    { 0,  "f",  "foo",  "foo/bar",  "foo/bars", "foo/bar/baz" },
+    { 0,  0,    0,      0,          0,          0             },
+    { 0,  0,    0,      "bar",      "bars",     "bar/baz"     },
+    { 0,  0,    0,      0,          0,          "baz"         },
+    { 0,  0,    0,      0,          0,          0             },
+    { 0,  0,    0,      0,          0,          0             },
   };
 
   for (i = 0; i < COUNT_OF(paths); i++)
@@ -2622,7 +2725,7 @@ test_fspath_skip_ancestor(apr_pool_t *pool)
       for (j = 0; j < COUNT_OF(paths); j++)
         {
           const char *remainder
-            = svn_fspath__skip_ancestor(paths[i], paths[j]);
+            = svn_fspath__is_child(paths[i], paths[j], pool);
 
           SVN_TEST_STRING_ASSERT(remainder, remainders[i][j]);
         }
@@ -2715,145 +2818,6 @@ test_fspath_get_longest_ancestor(apr_pool_t *pool)
   return SVN_NO_ERROR;
 }
 
-struct cert_match_dns_test {
-  const char *pattern;
-  const char *hostname;
-  svn_boolean_t expected;
-};
-
-static svn_error_t *
-run_cert_match_dns_tests(struct cert_match_dns_test *tests, apr_pool_t *pool)
-{
-  struct cert_match_dns_test *ct;
-  apr_pool_t *iterpool = svn_pool_create(pool);
-
-  for (ct = tests; ct->pattern; ct++)
-    {
-      svn_boolean_t result;
-      svn_string_t *pattern, *hostname;
-
-      svn_pool_clear(iterpool);
-
-      pattern = svn_string_create(ct->pattern, iterpool);
-      hostname = svn_string_create(ct->hostname, iterpool);
-
-      result = svn_cert__match_dns_identity(pattern, hostname);
-      if (result != ct->expected)
-        return svn_error_createf(SVN_ERR_TEST_FAILED, NULL,
-                                 "Expected %s but got %s for pattern '%s' on "
-                                 "hostname '%s'",
-                                 ct->expected ? "match" : "no match",
-                                 result ? "match" : "no match",
-                                 pattern->data, hostname->data);
-
-    }
-
-  svn_pool_destroy(iterpool);
-
-  return SVN_NO_ERROR;
-}
-
-static struct cert_match_dns_test cert_match_dns_tests[] = {
-  { "foo.example.com", "foo.example.com", TRUE }, /* exact match */
-  { "foo.example.com", "FOO.EXAMPLE.COM", TRUE }, /* case differences */
-  { "FOO.EXAMPLE.COM", "foo.example.com", TRUE },
-  { "*.example.com", "FoO.ExAmPlE.CoM", TRUE },
-  { "*.ExAmPlE.CoM", "foo.example.com", TRUE },
-  { "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz", TRUE },
-  { "abcdefghijklmnopqrstuvwxyz", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", TRUE },
-  { "foo.example.com", "bar.example.com", FALSE }, /* difference at start */
-  { "foo.example.com", "foo.example.net", FALSE }, /* difference at end */
-  { "foo.example.com", "foo.example.commercial", FALSE }, /* hostname longer */
-  { "foo.example.commercial", "foo.example.com", FALSE }, /* pattern longer */
-  { "foo.example.comcom", "foo.example.com", FALSE }, /* repeated suffix */
-  { "foo.example.com", "foo.example.comcom", FALSE },
-  { "foo.example.com.com", "foo.example.com", FALSE },
-  { "foo.example.com", "foo.example.com.com", FALSE },
-  { "foofoo.example.com", "foo.example.com", FALSE }, /* repeated prefix */
-  { "foo.example.com", "foofoo.example.com", FALSE },
-  { "foo.foo.example.com", "foo.example.com", FALSE },
-  { "foo.example.com", "foo.foo.example.com", FALSE },
-  { "foo.*.example.com", "foo.bar.example.com", FALSE }, /* RFC 6125 s. 6.4.3
-                                                            Rule 1 */
-  { "*.example.com", "foo.example.com", TRUE }, /* RFC 6125 s. 6.4.3 Rule 2 */
-  { "*.example.com", "bar.foo.example.com", FALSE }, /* Rule 2 */
-  { "*.example.com", "example.com", FALSE }, /* Rule 2 */
-  { "*.example.com", ".example.com", FALSE }, /* RFC doesn't say what to do
-                                                 here and a leading period on
-                                                 a hostname doesn't make sense
-                                                 so we'll just reject this. */
-  { "*", "foo.example.com", FALSE }, /* wildcard must be left-most label,
-                                        implies that there must be more than
-                                        one label. */
-  { "*", "example.com", FALSE },
-  { "*", "com", FALSE },
-  { "*.example.com", "foo.example.net", FALSE }, /* difference in literal text
-                                                    with a wildcard. */
-  { "*.com", "example.com", TRUE }, /* See Errata ID 3090 for RFC 6125,
-                                       probably shouldn't allow this but
-                                       we do for now. */
-  { "*.", "example.com", FALSE }, /* test some dubious 2 character wildcard
-                                     patterns */
-  { "*.", "example.", TRUE }, /* This one feels questionable */
-  { "*.", "example", FALSE },
-  { "*.", ".", FALSE },
-  { "a", "a", TRUE }, /* check that single letter exact matches work */
-  { "a", "b", FALSE }, /* and single letter not matches shouldn't */
-  { "*.*.com", "foo.example.com", FALSE }, /* unsupported wildcards */
-  { "*.*.com", "example.com", FALSE },
-  { "**.example.com", "foo.example.com", FALSE },
-  { "**.example.com", "example.com", FALSE },
-  { "f*.example.com", "foo.example.com", FALSE },
-  { "f*.example.com", "bar.example.com", FALSE },
-  { "*o.example.com", "foo.example.com", FALSE },
-  { "*o.example.com", "bar.example.com", FALSE },
-  { "f*o.example.com", "foo.example.com", FALSE },
-  { "f*o.example.com", "bar.example.com", FALSE },
-  { "foo.e*.com", "foo.example.com", FALSE },
-  { "foo.*e.com", "foo.example.com", FALSE },
-  { "foo.e*e.com", "foo.example.com", FALSE },
-  { "foo.example.com", "foo.example.com.", TRUE }, /* trailing dot */
-  { "*.example.com", "foo.example.com.", TRUE },
-  { "foo", "foo.", TRUE },
-  { "foo.example.com.", "foo.example.com", FALSE },
-  { "*.example.com.", "foo.example.com", FALSE },
-  { "foo.", "foo", FALSE },
-  { "foo.example.com", "foo.example.com..", FALSE },
-  { "*.example.com", "foo.example.com..", FALSE },
-  { "foo", "foo..", FALSE },
-  { "foo.example.com..", "foo.example.com", FALSE },
-  { "*.example.com..", "foo.example.com", FALSE },
-  { "foo..", "foo", FALSE },
-  { NULL }
-};
-
-static svn_error_t *
-test_cert_match_dns_identity(apr_pool_t *pool)
-{
-  return run_cert_match_dns_tests(cert_match_dns_tests, pool);
-}
-
-/* This test table implements results that should happen if we supported
- * RFC 6125 s. 6.4.3 Rule 3.  We don't so it's expected to fail for now. */
-static struct cert_match_dns_test rule3_tests[] = {
-  { "baz*.example.net", "baz1.example.net", TRUE },
-  { "*baz.example.net", "foobaz.example.net", TRUE },
-  { "b*z.example.net", "buuz.example.net", TRUE },
-  { "b*z.example.net", "bz.example.net", FALSE }, /* presume wildcard can't
-                                                     match nothing */
-  { "baz*.example.net", "baz.example.net", FALSE },
-  { "*baz.example.net", "baz.example.net", FALSE },
-  { "b*z.example.net", "buuzuuz.example.net", TRUE }, /* presume wildcard
-                                                         should be greedy */
-  { NULL }
-};
-
-static svn_error_t *
-test_rule3(apr_pool_t *pool)
-{
-  return run_cert_match_dns_tests(rule3_tests, pool);
-}
-
 
 /* The test table.  */
 
@@ -2908,8 +2872,14 @@ struct svn_test_descriptor_t test_funcs[] =
                    "test svn_uri_get_longest_ancestor"),
     SVN_TEST_PASS2(test_dirent_is_child,
                    "test svn_dirent_is_child"),
+    SVN_TEST_PASS2(test_relpath_is_child,
+                   "test svn_relpath_is_child"),
+    SVN_TEST_PASS2(test_uri_is_child,
+                   "test svn_uri_is_child"),
     SVN_TEST_PASS2(test_dirent_is_ancestor,
                    "test svn_dirent_is_ancestor"),
+    SVN_TEST_PASS2(test_relpath_is_ancestor,
+                   "test svn_relpath_is_ancestor"),
     SVN_TEST_PASS2(test_uri_is_ancestor,
                    "test svn_uri_is_ancestor"),
     SVN_TEST_PASS2(test_dirent_skip_ancestor,
@@ -2946,15 +2916,11 @@ struct svn_test_descriptor_t test_funcs[] =
                    "test svn_fspath__is_canonical"),
     SVN_TEST_PASS2(test_fspath_join,
                    "test svn_fspath__join"),
-    SVN_TEST_PASS2(test_fspath_skip_ancestor,
-                   "test svn_fspath__skip_ancestor"),
+    SVN_TEST_PASS2(test_fspath_is_child,
+                   "test svn_fspath__is_child"),
     SVN_TEST_PASS2(test_fspath_dirname_basename_split,
                    "test svn_fspath__dirname/basename/split"),
     SVN_TEST_PASS2(test_fspath_get_longest_ancestor,
                    "test svn_fspath__get_longest_ancestor"),
-    SVN_TEST_PASS2(test_cert_match_dns_identity,
-                   "test svn_cert__match_dns_identity"),
-    SVN_TEST_XFAIL2(test_rule3,
-                    "test match with RFC 6125 s. 6.4.3 Rule 3"),
     SVN_TEST_NULL
   };

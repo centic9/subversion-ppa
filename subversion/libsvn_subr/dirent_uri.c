@@ -38,7 +38,6 @@
 
 #include "dirent_uri.h"
 #include "private/svn_fspath.h"
-#include "private/svn_cert.h"
 
 /* The canonical empty path.  Can this be changed?  Well, change the empty
    test below and the path library will work, not so sure about the fs/wc
@@ -105,7 +104,7 @@ canonicalize_to_lower(char c)
   if (c < 'A' || c > 'Z')
     return c;
   else
-    return (char)(c - 'A' + 'a');
+    return c - 'A' + 'a';
 }
 
 /* Locale insensitive toupper() for converting parts of dirents and urls
@@ -116,7 +115,7 @@ canonicalize_to_upper(char c)
   if (c < 'a' || c > 'z')
     return c;
   else
-    return (char)(c - 'a' + 'A');
+    return c - 'a' + 'A';
 }
 
 /* Calculates the length of the dirent absolute or non absolute root in
@@ -360,24 +359,8 @@ canonicalize(path_type_t type, const char *path, apr_pool_t *pool)
             src = seg;
 
           /* Found a hostname, convert to lowercase and copy to dst. */
-          if (*src == '[')
-            {
-             *(dst++) = *(src++); /* Copy '[' */
-
-              while (*src == ':'
-                     || (*src >= '0' && (*src <= '9'))
-                     || (*src >= 'a' && (*src <= 'f'))
-                     || (*src >= 'A' && (*src <= 'F')))
-                {
-                  *(dst++) = canonicalize_to_lower((*src++));
-                }
-
-              if (*src == ']')
-                *(dst++) = *(src++); /* Copy ']' */
-            }
-          else
-            while (*src && (*src != '/') && (*src != ':'))
-              *(dst++) = canonicalize_to_lower((*src++));
+          while (*src && (*src != '/') && (*src != ':'))
+            *(dst++) = canonicalize_to_lower((*src++));
 
           if (*src == ':')
             {
@@ -901,10 +884,10 @@ svn_dirent_local_style(const char *dirent, apr_pool_t *pool)
 }
 
 const char *
-svn_relpath__internal_style(const char *relpath,
-                            apr_pool_t *pool)
+svn_relpath__internal_style(const char *dirent,
+                           apr_pool_t *pool)
 {
-  return svn_relpath_canonicalize(internal_style(relpath, pool), pool);
+  return svn_relpath_canonicalize(internal_style(dirent, pool), pool);
 }
 
 
@@ -928,7 +911,7 @@ svn_dirent_is_root(const char *dirent, apr_size_t len)
       && dirent[len - 1] != '/')
     {
       int segments = 0;
-      apr_size_t i;
+      int i;
       for (i = len; i >= 2; i--)
         {
           if (dirent[i] == '/')
@@ -1312,17 +1295,25 @@ svn_uri_basename(const char *uri, apr_pool_t *pool)
 {
   apr_size_t len = strlen(uri);
   apr_size_t start;
+  const char *base_name;
 
   assert(svn_uri_is_canonical(uri, NULL));
 
   if (svn_uri_is_root(uri, len))
     return "";
+  else
+    {
+      start = len;
+      while (start > 0 && uri[start - 1] != '/')
+        --start;
+    }
 
-  start = len;
-  while (start > 0 && uri[start - 1] != '/')
-    --start;
+  if (pool)
+    base_name = apr_pstrmemdup(pool, uri + start, len - start);
+  else
+    base_name = uri + start;
 
-  return svn_path_uri_decode(uri + start, pool);
+  return svn_path_uri_decode(base_name, pool);
 }
 
 void
@@ -1409,6 +1400,34 @@ svn_dirent_is_child(const char *parent_dirent,
                     apr_pool_t *pool)
 {
   return is_child(type_dirent, parent_dirent, child_dirent, pool);
+}
+
+const char *
+svn_relpath__is_child(const char *parent_relpath,
+                      const char *child_relpath,
+                      apr_pool_t *pool)
+{
+  /* assert(relpath_is_canonical(parent_relpath)); */
+  /* assert(relpath_is_canonical(child_relpath)); */
+
+  return is_child(type_relpath, parent_relpath, child_relpath, pool);
+}
+
+const char *
+svn_uri__is_child(const char *parent_uri,
+                  const char *child_uri,
+                  apr_pool_t *pool)
+{
+  const char *relpath;
+
+  assert(pool); /* hysterical raisins. */
+  assert(svn_uri_is_canonical(parent_uri, NULL));
+  assert(svn_uri_is_canonical(child_uri, NULL));
+
+  relpath = is_child(type_uri, parent_uri, child_uri, pool);
+  if (relpath)
+    relpath = svn_path_uri_decode(relpath, pool);
+  return relpath;
 }
 
 const char *
@@ -1525,6 +1544,12 @@ svn_boolean_t
 svn_dirent_is_ancestor(const char *parent_dirent, const char *child_dirent)
 {
   return svn_dirent_skip_ancestor(parent_dirent, child_dirent) != NULL;
+}
+
+svn_boolean_t
+svn_relpath__is_ancestor(const char *parent_relpath, const char *child_relpath)
+{
+  return svn_relpath_skip_ancestor(parent_relpath, child_relpath) != NULL;
 }
 
 svn_boolean_t
@@ -1650,7 +1675,7 @@ svn_dirent_canonicalize(const char *dirent, apr_pool_t *pool)
 }
 
 svn_boolean_t
-svn_dirent_is_canonical(const char *dirent, apr_pool_t *scratch_pool)
+svn_dirent_is_canonical(const char *dirent, apr_pool_t *pool)
 {
   const char *ptr = dirent;
   if (*ptr == '/')
@@ -1663,8 +1688,7 @@ svn_dirent_is_canonical(const char *dirent, apr_pool_t *scratch_pool)
           /* TODO: Scan hostname and sharename and fall back to part code */
 
           /* ### Fall back to old implementation */
-          return (strcmp(dirent, svn_dirent_canonicalize(dirent, scratch_pool))
-                  == 0);
+          return (strcmp(dirent, svn_dirent_canonicalize(dirent, pool)) == 0);
         }
 #endif /* SVN_USE_DOS_PATHS */
     }
@@ -1738,7 +1762,7 @@ svn_relpath_is_canonical(const char *relpath)
 }
 
 svn_boolean_t
-svn_uri_is_canonical(const char *uri, apr_pool_t *scratch_pool)
+svn_uri_is_canonical(const char *uri, apr_pool_t *pool)
 {
   const char *ptr = uri, *seg = uri;
   const char *schema_data = NULL;
@@ -1791,28 +1815,12 @@ svn_uri_is_canonical(const char *uri, apr_pool_t *scratch_pool)
 
   /* Found a hostname, check that it's all lowercase. */
   ptr = seg;
-
-  if (*ptr == '[')
+  while (*ptr && *ptr != '/' && *ptr != ':')
     {
-      ptr++;
-      while (*ptr == ':'
-             || (*ptr >= '0' && *ptr <= '9')
-             || (*ptr >= 'a' && *ptr <= 'f'))
-        {
-          ptr++;
-        }
-
-      if (*ptr != ']')
+      if (*ptr >= 'A' && *ptr <= 'Z')
         return FALSE;
       ptr++;
     }
-  else
-    while (*ptr && *ptr != '/' && *ptr != ':')
-      {
-        if (*ptr >= 'A' && *ptr <= 'Z')
-          return FALSE;
-        ptr++;
-      }
 
   /* Found a portnumber */
   if (*ptr == ':')
@@ -1858,9 +1866,6 @@ svn_uri_is_canonical(const char *uri, apr_pool_t *scratch_pool)
 #endif /* SVN_USE_DOS_PATHS */
 
   /* Now validate the rest of the URI. */
-  seg = ptr;
-  while (*ptr && (*ptr != '/'))
-    ptr++;
   while(1)
     {
       apr_size_t seglen = ptr - seg;
@@ -1879,8 +1884,9 @@ svn_uri_is_canonical(const char *uri, apr_pool_t *scratch_pool)
 
       if (*ptr == '/')
         ptr++;
-
       seg = ptr;
+
+
       while (*ptr && (*ptr != '/'))
         ptr++;
     }
@@ -2485,6 +2491,21 @@ svn_fspath__is_root(const char *fspath, apr_size_t len)
 
 
 const char *
+svn_fspath__is_child(const char *parent_fspath,
+                     const char *child_fspath,
+                     apr_pool_t *pool)
+{
+  const char *result;
+  assert(svn_fspath__is_canonical(parent_fspath));
+  assert(svn_fspath__is_canonical(child_fspath));
+
+  result = svn_relpath__is_child(parent_fspath + 1, child_fspath + 1, pool);
+
+  assert(result == NULL || svn_relpath_is_canonical(result));
+  return result;
+}
+
+const char *
 svn_fspath__skip_ancestor(const char *parent_fspath,
                           const char *child_fspath)
 {
@@ -2492,6 +2513,16 @@ svn_fspath__skip_ancestor(const char *parent_fspath,
   assert(svn_fspath__is_canonical(child_fspath));
 
   return svn_relpath_skip_ancestor(parent_fspath + 1, child_fspath + 1);
+}
+
+svn_boolean_t
+svn_fspath__is_ancestor(const char *parent_fspath,
+                        const char *child_fspath)
+{
+  assert(svn_fspath__is_canonical(parent_fspath));
+  assert(svn_fspath__is_canonical(child_fspath));
+
+  return svn_relpath__is_ancestor(parent_fspath + 1, child_fspath + 1);
 }
 
 
@@ -2597,82 +2628,4 @@ svn_urlpath__canonicalize(const char *uri,
       uri = svn_path_uri_encode(uri, pool);
     }
   return uri;
-}
-
-
-/* -------------- The cert API (see private/svn_cert.h) ------------- */
-
-svn_boolean_t
-svn_cert__match_dns_identity(svn_string_t *pattern, svn_string_t *hostname)
-{
-  apr_size_t pattern_pos = 0, hostname_pos = 0;
-
-  /* support leading wildcards that composed of the only character in the
-   * left-most label. */
-  if (pattern->len >= 2 &&
-      pattern->data[pattern_pos] == '*' &&
-      pattern->data[pattern_pos + 1] == '.')
-    {
-      while (hostname_pos < hostname->len &&
-             hostname->data[hostname_pos] != '.')
-        {
-          hostname_pos++;
-        }
-      /* Assume that the wildcard must match something.  Rule 2 says
-       * that *.example.com should not match example.com.  If the wildcard
-       * ends up not matching anything then it matches .example.com which
-       * seems to be essentially the same as just example.com */
-      if (hostname_pos == 0)
-        return FALSE;
-
-      pattern_pos++;
-    }
-
-  while (pattern_pos < pattern->len && hostname_pos < hostname->len)
-    {
-      char pattern_c = pattern->data[pattern_pos];
-      char hostname_c = hostname->data[hostname_pos];
-
-      /* fold case as described in RFC 4343.
-       * Note: We actually convert to lowercase, since our URI
-       * canonicalization code converts to lowercase and generally
-       * most certs are issued with lowercase DNS names, meaning
-       * this avoids the fold operation in most cases.  The RFC
-       * suggests the opposite transformation, but doesn't require
-       * any specific implementation in any case.  It is critical
-       * that this folding be locale independent so you can't use
-       * tolower(). */
-      pattern_c = canonicalize_to_lower(pattern_c);
-      hostname_c = canonicalize_to_lower(hostname_c);
-
-      if (pattern_c != hostname_c)
-        {
-          /* doesn't match */
-          return FALSE;
-        }
-      else
-        {
-          /* characters match so skip both */
-          pattern_pos++;
-          hostname_pos++;
-        }
-    }
-
-  /* ignore a trailing period on the hostname since this has no effect on the
-   * security of the matching.  See the following for the long explanation as
-   * to why:
-   * https://bugzilla.mozilla.org/show_bug.cgi?id=134402#c28
-   */
-  if (pattern_pos == pattern->len &&
-      hostname_pos == hostname->len - 1 &&
-      hostname->data[hostname_pos] == '.')
-    hostname_pos++;
-
-  if (pattern_pos != pattern->len || hostname_pos != hostname->len)
-    {
-      /* end didn't match */
-      return FALSE;
-    }
-
-  return TRUE;
 }

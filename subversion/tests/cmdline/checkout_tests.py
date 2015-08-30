@@ -27,12 +27,10 @@
 
 # General modules
 import sys, re, os, time, subprocess
-import datetime
 
 # Our testing module
 import svntest
 from svntest import wc, actions
-import logging
 
 # (abbreviation)
 Skip = svntest.testcase.Skip_deco
@@ -43,8 +41,6 @@ Issue = svntest.testcase.Issue_deco
 Wimp = svntest.testcase.Wimp_deco
 Item = wc.StateItem
 
-logger = logging.getLogger()
-
 #----------------------------------------------------------------------
 # Helper function for testing stderr from co.
 # If none of the strings in STDERR list matches the regular expression
@@ -54,9 +50,10 @@ def test_stderr(re_string, stderr):
   for line in stderr:
     if exp_err_re.search(line):
       return
-  for x in stderr:
-    logger.debug(x[:-1])
-  logger.info("Expected stderr reg-ex: '" + re_string + "'")
+  if svntest.main.options.verbose:
+    for x in stderr:
+      sys.stdout.write(x)
+    print("Expected stderr reg-ex: '" + re_string + "'")
   raise svntest.Failure("Checkout failed but not in the expected way")
 
 #----------------------------------------------------------------------
@@ -661,28 +658,11 @@ def checkout_peg_rev_date(sbox):
   sbox.build()
   wc_dir = sbox.wc_dir
 
-  ## Get svn:date.
-  exit_code, output, errput = svntest.main.run_svn(None, 'propget', 'svn:date',
-                                                   '--revprop', '-r1',
-                                                   '--strict',
-                                                   sbox.repo_url)
-  if exit_code or errput != [] or len(output) != 1:
-    raise svntest.Failure("svn:date propget failed")
-  r1_string = output[0]
+  # note the current time to use it as peg revision date.
+  current_time = time.strftime("%Y-%m-%dT%H:%M:%S")
 
-  ## Increment the svn:date date by one microsecond.
-  # TODO: pass tzinfo=UTC to datetime.datetime()
-  date_pattern = re.compile(r'(\d+)-(\d+)-(\d+)T(\d\d):(\d\d):(\d\d)\.(\d+)Z$')
-  r1_time = datetime.datetime(*map(int, date_pattern.match(r1_string).groups()))
-  peg_time = r1_time + datetime.timedelta(microseconds=1)
-  assert r1_time != peg_time
-  # peg_string is, by all likelihood, younger than r1's svn:date and older than
-  # r2's svn:date.  It is also not equal to either of them, so we test the
-  # binary search of svn:date values.
-  peg_string = '%04d-%02d-%02dT%02d:%02d:%02d.%06dZ' % \
-               tuple(getattr(peg_time, x)
-                     for x in ["year", "month", "day", "hour", "minute",
-                               "second", "microsecond"])
+  # sleep till the next second.
+  time.sleep(1.1)
 
   # create a new revision
   mu_path = os.path.join(wc_dir, 'A', 'mu')
@@ -691,7 +671,7 @@ def checkout_peg_rev_date(sbox):
   svntest.actions.run_and_verify_svn(None, None, [],
                                      'ci', '-m', 'changed file mu', wc_dir)
 
-  # now checkout the repo@peg_string in another folder, this should create our
+  # now checkout the repo@current_time in another folder, this should create our
   # initial wc without the change in mu.
   checkout_target = sbox.add_wc_path('checkout')
   os.mkdir(checkout_target)
@@ -704,24 +684,7 @@ def checkout_peg_rev_date(sbox):
 
   # use an old date to checkout, that way we're sure we get the first revision
   svntest.actions.run_and_verify_checkout(sbox.repo_url +
-                                          '@{' + peg_string + '}',
-                                          checkout_target,
-                                          expected_output,
-                                          expected_wc)
-
-  # now try another checkout with repo@r1_string 
-  checkout_target = sbox.add_wc_path('checkout2')
-  os.mkdir(checkout_target)
-
-  expected_output = svntest.main.greek_state.copy()
-  expected_output.wc_dir = checkout_target
-  expected_output.tweak(status='A ', contents=None)
-
-  expected_wc = svntest.main.greek_state.copy()
-
-  # use an old date to checkout, that way we're sure we get the first revision
-  svntest.actions.run_and_verify_checkout(sbox.repo_url +
-                                          '@{' + r1_string + '}',
+                                          '@{' + current_time + '}',
                                           checkout_target,
                                           expected_output,
                                           expected_wc)
@@ -1087,7 +1050,7 @@ def checkout_wc_from_drive(sbox):
   svntest.main.safe_rmtree(sbox.wc_dir)
   os.mkdir(sbox.wc_dir)
 
-  # create a virtual drive to the repository folder
+  # create a virtual drive to the working copy folder
   drive = find_the_next_available_drive_letter()
   if drive is None:
     raise svntest.Skip
@@ -1123,49 +1086,8 @@ def checkout_wc_from_drive(sbox):
     })
     svntest.actions.run_and_verify_checkout(repo_url, wc_dir,
                                             expected_output, expected_wc,
-                                            None, None, None, None)
-
-    wc2_dir = sbox.add_wc_path('2')
-    expected_output = wc.State(wc2_dir, {
-      'D'                 : Item(status='A '),
-      'D/H'               : Item(status='A '),
-      'D/H/psi'           : Item(status='A '),
-      'D/H/chi'           : Item(status='A '),
-      'D/H/omega'         : Item(status='A '),
-      'D/G'               : Item(status='A '),
-      'D/G/tau'           : Item(status='A '),
-      'D/G/pi'            : Item(status='A '),
-      'D/G/rho'           : Item(status='A '),
-      'D/gamma'           : Item(status='A '),
-      'C'                 : Item(status='A '),
-      'mu'                : Item(status='A '),
-      'B'                 : Item(status='A '),
-      'B/E'               : Item(status='A '),
-      'B/E/alpha'         : Item(status='A '),
-      'B/E/beta'          : Item(status='A '),
-      'B/F'               : Item(status='A '),
-      'B/lambda'          : Item(status='A '),
-    })
-    svntest.actions.run_and_verify_checkout(repo_url + '/A', wc2_dir,
-                                            expected_output, None,
-                                            None, None, None, None)
-
-    wc3_dir = sbox.add_wc_path('3')
-    expected_output = wc.State(wc3_dir, {
-      'H'                 : Item(status='A '),
-      'H/psi'             : Item(status='A '),
-      'H/chi'             : Item(status='A '),
-      'H/omega'           : Item(status='A '),
-      'G'                 : Item(status='A '),
-      'G/tau'             : Item(status='A '),
-      'G/pi'              : Item(status='A '),
-      'G/rho'             : Item(status='A '),
-      'gamma'             : Item(status='A '),
-    })
-
-    svntest.actions.run_and_verify_checkout(repo_url + '/A/D', wc3_dir,
-                                            expected_output, None,
-                                            None, None, None, None)
+                                            None, None, None, None,
+                                            '--force')
 
   finally:
     os.chdir(was_cwd)
