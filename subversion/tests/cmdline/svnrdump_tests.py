@@ -94,13 +94,15 @@ def compare_repos_dumps(svnrdump_sbox, svnadmin_dumpfile):
 
 def run_dump_test(sbox, dumpfile_name, expected_dumpfile_name = None,
                   subdir = None, bypass_prop_validation = False,
-                  ignore_base_checksums = False):
+                  ignore_base_checksums = False, extra_options = []):
+
   """Load a dumpfile using 'svnadmin load', dump it with 'svnrdump
   dump' and check that the same dumpfile is produced or that
   expected_dumpfile_name is produced if provided. Additionally, the
-  subdir argument appends itself to the URL"""
+  subdir argument appends itself to the URL.  EXTRA_OPTIONS is an
+  array of optional additional options to pass to 'svnrdump dump'."""
 
-  # Create an empty sanbox repository
+  # Create an empty sandbox repository
   build_repos(sbox)
 
   # This directory contains all the dump files
@@ -121,10 +123,10 @@ def run_dump_test(sbox, dumpfile_name, expected_dumpfile_name = None,
     repo_url = repo_url + subdir
 
   # Create a dump file using svnrdump
+  opts = extra_options + ['-q', 'dump', repo_url]
   svnrdump_dumpfile = \
       svntest.actions.run_and_verify_svnrdump(None, svntest.verify.AnyOutput,
-                                              [], 0, '-q', 'dump',
-                                              repo_url)
+                                              [], 0, *opts)
 
   if expected_dumpfile_name:
     svnadmin_dumpfile = open(os.path.join(svnrdump_tests_dir,
@@ -136,13 +138,17 @@ def run_dump_test(sbox, dumpfile_name, expected_dumpfile_name = None,
                                     if not l.startswith('Text-delta-base-md5')]
       svnrdump_dumpfile = [l for l in svnrdump_dumpfile
                                     if not l.startswith('Text-delta-base-md5')]
+    svnadmin_dumpfile = [l for l in svnadmin_dumpfile
+                                  if not mismatched_headers_re.match(l)]
+    svnrdump_dumpfile = [l for l in svnrdump_dumpfile
+                                  if not mismatched_headers_re.match(l)]
 
     svnadmin_dumpfile = svntest.verify.UnorderedOutput(svnadmin_dumpfile)
 
     svntest.verify.compare_and_display_lines(
       "Dump files", "DUMP", svnadmin_dumpfile, svnrdump_dumpfile,
-      None, mismatched_headers_re)
-    
+      None)
+
   else:
     compare_repos_dumps(sbox, svnadmin_dumpfile)
 
@@ -197,7 +203,6 @@ def run_load_test(sbox, dumpfile_name, expected_dumpfile_name = None,
 ######################################################################
 # Tests
 
-@Skip(svntest.main.is_ra_type_dav_serf)
 def basic_dump(sbox):
   "dump: standard sbox repos"
   sbox.build(read_only = True, create_wc = False)
@@ -210,7 +215,6 @@ def basic_dump(sbox):
   if not out[0].startswith('SVN-fs-dump-format-version:'):
     raise svntest.Failure('No valid output')
 
-@Skip(svntest.main.is_ra_type_dav_serf)
 def revision_0_dump(sbox):
   "dump: revision zero"
   run_dump_test(sbox, "revision-0.dump")
@@ -229,7 +233,6 @@ def revision_0_load(sbox):
 #     docs/         (Added r6)
 #       README      (Added r6)
 
-@Skip(svntest.main.is_ra_type_dav_serf)
 def skeleton_dump(sbox):
   "dump: skeleton repository"
   run_dump_test(sbox, "skeleton.dump")
@@ -238,7 +241,6 @@ def skeleton_load(sbox):
   "load: skeleton repository"
   run_load_test(sbox, "skeleton.dump")
 
-@Skip(svntest.main.is_ra_type_dav_serf)
 def sparse_propchanges_dump(sbox):
   "dump: sparse file/dir propchanges"
   run_dump_test(sbox, "sparse-propchanges.dump")
@@ -248,7 +250,6 @@ def sparse_propchanges_load(sbox):
   "load: sparse file/dir propchanges"
   run_load_test(sbox, "sparse-propchanges.dump")
 
-@Skip(svntest.main.is_ra_type_dav_serf)
 def copy_and_modify_dump(sbox):
   "dump: copy and modify"
   run_dump_test(sbox, "copy-and-modify.dump")
@@ -257,7 +258,6 @@ def copy_and_modify_load(sbox):
   "load: copy and modify"
   run_load_test(sbox, "copy-and-modify.dump")
 
-@Skip(svntest.main.is_ra_type_dav_serf)
 def no_author_dump(sbox):
   "dump: copy revs with no svn:author revprops"
   run_dump_test(sbox, "no-author.dump")
@@ -266,7 +266,6 @@ def no_author_load(sbox):
   "load: copy revs with no svn:author revprops"
   run_load_test(sbox, "no-author.dump")
 
-@Skip(svntest.main.is_ra_type_dav_serf)
 def copy_from_previous_version_and_modify_dump(sbox):
   "dump: copy from previous version and modify"
   run_dump_test(sbox, "copy-from-previous-version-and-modify.dump")
@@ -275,7 +274,6 @@ def copy_from_previous_version_and_modify_load(sbox):
   "load: copy from previous version and modify"
   run_load_test(sbox, "copy-from-previous-version-and-modify.dump")
 
-@Skip(svntest.main.is_ra_type_dav_serf)
 def modified_in_place_dump(sbox):
   "dump: modified in place"
   run_dump_test(sbox, "modified-in-place.dump")
@@ -284,7 +282,6 @@ def modified_in_place_load(sbox):
   "load: modified in place"
   run_load_test(sbox, "modified-in-place.dump")
 
-@Skip(svntest.main.is_ra_type_dav_serf)
 def move_and_modify_in_the_same_revision_dump(sbox):
   "dump: move parent & modify child file in same rev"
   run_dump_test(sbox, "move-and-modify.dump")
@@ -293,7 +290,6 @@ def move_and_modify_in_the_same_revision_load(sbox):
   "load: move parent & modify child file in same rev"
   run_load_test(sbox, "move-and-modify.dump")
 
-@Skip(svntest.main.is_ra_type_dav_serf)
 def tag_empty_trunk_dump(sbox):
   "dump: tag empty trunk"
   run_dump_test(sbox, "tag-empty-trunk.dump")
@@ -302,7 +298,6 @@ def tag_empty_trunk_load(sbox):
   "load: tag empty trunk"
   run_load_test(sbox, "tag-empty-trunk.dump")
 
-@Skip(svntest.main.is_ra_type_dav_serf)
 def tag_trunk_with_file_dump(sbox):
   "dump: tag trunk containing a file"
   run_dump_test(sbox, "tag-trunk-with-file.dump")
@@ -311,7 +306,6 @@ def tag_trunk_with_file_load(sbox):
   "load: tag trunk containing a file"
   run_load_test(sbox, "tag-trunk-with-file.dump")
 
-@Skip(svntest.main.is_ra_type_dav_serf)
 def tag_trunk_with_file2_dump(sbox):
   "dump: tag trunk containing a file (#2)"
   run_dump_test(sbox, "tag-trunk-with-file2.dump")
@@ -320,7 +314,6 @@ def tag_trunk_with_file2_load(sbox):
   "load: tag trunk containing a file (#2)"
   run_load_test(sbox, "tag-trunk-with-file2.dump")
 
-@Skip(svntest.main.is_ra_type_dav_serf)
 def dir_prop_change_dump(sbox):
   "dump: directory property changes"
   run_dump_test(sbox, "dir-prop-change.dump")
@@ -329,7 +322,6 @@ def dir_prop_change_load(sbox):
   "load: directory property changes"
   run_load_test(sbox, "dir-prop-change.dump")
 
-@Skip(svntest.main.is_ra_type_dav_serf)
 def copy_parent_modify_prop_dump(sbox):
   "dump: copy parent and modify prop"
   run_dump_test(sbox, "copy-parent-modify-prop.dump")
@@ -338,7 +330,6 @@ def copy_parent_modify_prop_load(sbox):
   "load: copy parent and modify prop"
   run_load_test(sbox, "copy-parent-modify-prop.dump")
 
-@Skip(svntest.main.is_ra_type_dav_serf)
 def copy_revprops_dump(sbox):
   "dump: copy revprops other than svn:*"
   run_dump_test(sbox, "revprops.dump")
@@ -347,19 +338,16 @@ def copy_revprops_load(sbox):
   "load: copy revprops other than svn:*"
   run_load_test(sbox, "revprops.dump")
 
-@Skip(svntest.main.is_ra_type_dav_serf)
 def only_trunk_dump(sbox):
   "dump: subdirectory"
   run_dump_test(sbox, "trunk-only.dump", subdir="/trunk",
                 expected_dumpfile_name="trunk-only.expected.dump")
 
-@Skip(svntest.main.is_ra_type_dav_serf)
 def only_trunk_A_with_changes_dump(sbox):
   "dump: subdirectory with changes on root"
   run_dump_test(sbox, "trunk-A-changes.dump", subdir="/trunk/A",
            expected_dumpfile_name="trunk-A-changes.expected.dump")
 
-@Skip(svntest.main.is_ra_type_dav_serf)
 def url_encoding_dump(sbox):
   "dump: url encoding issues"
   run_dump_test(sbox, "url-encoding-bug.dump")
@@ -368,7 +356,6 @@ def url_encoding_load(sbox):
   "load: url encoding issues"
   run_load_test(sbox, "url-encoding-bug.dump")
 
-@Skip(svntest.main.is_ra_type_dav_serf)
 def copy_bad_line_endings_dump(sbox):
   "dump: inconsistent line endings in svn:* props"
   run_dump_test(sbox, "copy-bad-line-endings.dump",
@@ -380,15 +367,13 @@ def copy_bad_line_endings_load(sbox):
   "load: inconsistent line endings in svn:* props"
   run_load_test(sbox, "copy-bad-line-endings.dump",
                 expected_dumpfile_name="copy-bad-line-endings.expected.dump")
-          
-@Skip(svntest.main.is_ra_type_dav_serf)
+
 def copy_bad_line_endings2_dump(sbox):
   "dump: non-LF line endings in svn:* props"
   run_dump_test(sbox, "copy-bad-line-endings2.dump",
                 expected_dumpfile_name="copy-bad-line-endings2.expected.dump",
                 bypass_prop_validation=True, ignore_base_checksums=True)
 
-@Skip(svntest.main.is_ra_type_dav_serf)
 def commit_a_copy_of_root_dump(sbox):
   "dump: commit a copy of root"
   run_dump_test(sbox, "repo-with-copy-of-root-dir.dump")
@@ -397,7 +382,6 @@ def commit_a_copy_of_root_load(sbox):
   "load: commit a copy of root"
   run_load_test(sbox, "repo-with-copy-of-root-dir.dump")
 
-@Skip(svntest.main.is_ra_type_dav_serf)
 def descend_into_replace_dump(sbox):
   "dump: descending into replaced dir looks in src"
   run_dump_test(sbox, "descend-into-replace.dump", subdir='/trunk/H',
@@ -408,7 +392,6 @@ def descend_into_replace_load(sbox):
   run_load_test(sbox, "descend-into-replace.dump")
 
 @Issue(3847)
-@Skip(svntest.main.is_ra_type_dav_serf)
 def add_multi_prop_dump(sbox):
   "dump: add with multiple props"
   run_dump_test(sbox, "add-multi-prop.dump")
@@ -423,7 +406,6 @@ def multi_prop_edit_load(sbox):
 # revs in svn:mergeinfo' but uses 'svnrdump load' in place of
 # 'svnadmin load'.
 @Issue(3890)
-@Skip(svntest.main.is_ra_type_dav_serf)
 def reflect_dropped_renumbered_revs(sbox):
   "svnrdump renumbers dropped revs in mergeinfo"
 
@@ -487,7 +469,6 @@ def reflect_dropped_renumbered_revs(sbox):
 # from incremental dump' but uses 'svnrdump [dump|load]' in place of
 # 'svnadmin [dump|load]'.
 @Issue(3890)
-@Skip(svntest.main.is_ra_type_dav_serf)
 def dont_drop_valid_mergeinfo_during_incremental_svnrdump_loads(sbox):
   "don't drop mergeinfo revs in incremental svnrdump"
 
@@ -762,7 +743,179 @@ def svnrdump_load_partial_incremental_dump(sbox):
                                           svntest.verify.AnyOutput,
                                           [], 0, 'load', sbox.repo_url)
 
-  ########################################################################
+
+#----------------------------------------------------------------------
+@Issue(4101)
+def range_dump(sbox):
+  "dump: using -rX:Y"
+  run_dump_test(sbox, "trunk-only.dump",
+                expected_dumpfile_name="root-range.expected.dump",
+                extra_options=['-r2:HEAD'])
+
+@Issue(4101)
+def only_trunk_range_dump(sbox):
+  "dump: subdirectory using -rX:Y"
+  run_dump_test(sbox, "trunk-only.dump", subdir="/trunk",
+                expected_dumpfile_name="trunk-only-range.expected.dump",
+                extra_options=['-r1:HEAD'])
+
+@Issue(4101)
+def only_trunk_A_range_dump(sbox):
+  "dump: deeper subdirectory using -rX:Y"
+  run_dump_test(sbox, "trunk-only.dump", subdir="/trunk/A",
+                expected_dumpfile_name="trunk-A-range.expected.dump",
+                extra_options=['-r2:HEAD'])
+
+
+#----------------------------------------------------------------------
+
+#----------------------------------------------------------------------
+
+# Regression test for issue 4551 "svnrdump load commits wrong properties,
+# or fails, on a non-deltas dumpfile". In this test, the copy source does
+# not exist and the failure mode is to error out.
+@Issue(4551)
+def load_non_deltas_copy_with_props(sbox):
+  "load non-deltas copy with props"
+  sbox.build()
+
+  # Case (1): Copies that do not replace anything: the copy target path
+  # at (new rev - 1) does not exist
+
+  # Set properties on each node to be copied
+  sbox.simple_propset('p', 'v', 'A/mu', 'A/B', 'A/B/E')
+  sbox.simple_propset('q', 'v', 'A/mu', 'A/B', 'A/B/E')
+  sbox.simple_commit()
+  sbox.simple_update()  # avoid mixed-rev
+
+  # Do the copies
+  sbox.simple_copy('A/mu@2', 'A/mu_COPY')
+  sbox.simple_copy('A/B@2', 'A/B_COPY')
+  # Also add new nodes inside the copied dir, to test more code paths
+  sbox.simple_copy('A/B/E@2', 'A/B_COPY/copied')
+  sbox.simple_mkdir('A/B_COPY/added')
+  sbox.simple_copy('A/B/E@2', 'A/B_COPY/added/copied')
+  # On each copied node, delete a prop
+  sbox.simple_propdel('p', 'A/mu_COPY', 'A/B_COPY', 'A/B_COPY/E',
+                           'A/B_COPY/copied', 'A/B_COPY/added/copied')
+
+  sbox.simple_commit()
+
+  # Dump with 'svnadmin' (non-deltas mode)
+  dumpfile = svntest.actions.run_and_verify_dump(sbox.repo_dir, deltas=False)
+
+  # Load with 'svnrdump'. This used to throw an error:
+  # svnrdump: E160013: File not found: revision 2, path '/A/B_COPY'
+  new_repo_dir, new_repo_url = sbox.add_repo_path('new_repo')
+  svntest.main.create_repos(new_repo_dir)
+  svntest.actions.enable_revprop_changes(new_repo_dir)
+  svntest.actions.run_and_verify_svnrdump(dumpfile,
+                                          svntest.verify.AnyOutput,
+                                          [], 0, 'load', new_repo_url)
+
+  # Check that property 'p' really was deleted on each copied node
+  for tgt_path in ['A/mu_COPY', 'A/B_COPY', 'A/B_COPY/E',
+                   'A/B_COPY/copied', 'A/B_COPY/added/copied']:
+    tgt_url = new_repo_url + '/' + tgt_path
+    _, out, _ = svntest.main.run_svn(None, 'proplist', tgt_url)
+    expected = ["Properties on '%s':" % (tgt_url,),
+                'q']
+    actual = map(str.strip, out)
+    svntest.verify.compare_and_display_lines(None, 'PROPS', expected, actual)
+
+# Regression test for issue 4551 "svnrdump load commits wrong properties,
+# or fails, on a non-deltas dumpfile". In this test, the copy source does
+# exist and the failure mode is to fail to delete a property.
+@Issue(4551)
+def load_non_deltas_replace_copy_with_props(sbox):
+  "load non-deltas replace&copy with props"
+  sbox.build()
+
+  # Case (2): Copies that replace something: the copy target path
+  # at (new rev - 1) exists and has no property named 'p'
+
+  # Set props on the copy source nodes (a file, a dir, a child of the dir)
+  sbox.simple_propset('p', 'v', 'A/mu', 'A/B', 'A/B/E')
+  sbox.simple_propset('q', 'v', 'A/mu', 'A/B', 'A/B/E')
+  sbox.simple_commit()
+  sbox.simple_update()  # avoid mixed-rev
+
+  # Do the copies, replacing something
+  sbox.simple_rm('A/D/gamma', 'A/C')
+  sbox.simple_copy('A/mu@2', 'A/D/gamma')
+  sbox.simple_copy('A/B@2', 'A/C')
+  # On the copy, delete a prop that wasn't present on the node that it replaced
+  sbox.simple_propdel('p', 'A/D/gamma', 'A/C', 'A/C/E')
+
+  sbox.simple_commit()
+
+  # Dump with 'svnadmin' (non-deltas mode)
+  dumpfile = svntest.actions.run_and_verify_dump(sbox.repo_dir, deltas=False)
+
+  # Load with 'svnrdump'
+  new_repo_dir, new_repo_url = sbox.add_repo_path('new_repo')
+  svntest.main.create_repos(new_repo_dir)
+  svntest.actions.enable_revprop_changes(new_repo_dir)
+  svntest.actions.run_and_verify_svnrdump(dumpfile,
+                                          svntest.verify.AnyOutput,
+                                          [], 0, 'load', new_repo_url)
+
+  # Check that property 'p' really was deleted on each copied node
+  # This used to fail, finding that property 'p' was still present
+  for tgt_path in ['A/D/gamma', 'A/C', 'A/C/E']:
+    tgt_url = new_repo_url + '/' + tgt_path
+    _, out, _ = svntest.main.run_svn(None, 'proplist', tgt_url)
+    expected = ["Properties on '%s':" % (tgt_url,),
+                'q']
+    actual = map(str.strip, out)
+    svntest.verify.compare_and_display_lines(None, 'PROPS', expected, actual)
+
+# Regression test for issue 4551 "svnrdump load commits wrong properties,
+# or fails, on a non-deltas dumpfile". In this test, a node's props are
+# modified, and the failure mode is that RA-serf would end up deleting
+# properties that should remain on the node.
+@Issue(4551)
+def load_non_deltas_with_props(sbox):
+  "load non-deltas with props"
+  sbox.build()
+
+  # Case (3): A node's props are modified, and at least one of its previous
+  # props remains after the modification. svnrdump made two prop mod method
+  # calls for the same property (delete, then set). RA-serf's commit editor
+  # didn't expect this and performed the deletes after the non-deletes, and
+  # so ended up deleting a property that should not be deleted.
+
+  # Set properties on each node to be modified
+  sbox.simple_propset('p', 'v', 'A/mu')
+  sbox.simple_propset('q', 'v', 'A/mu', 'A/B')
+  sbox.simple_commit()
+
+  # Do the modifications: a different kind of mod on each node
+  sbox.simple_propdel('p', 'A/mu')
+  sbox.simple_propset('q', 'v2', 'A/B')
+  sbox.simple_commit()
+
+  # Dump with 'svnadmin' (non-deltas mode)
+  dumpfile = svntest.actions.run_and_verify_dump(sbox.repo_dir, deltas=False)
+
+  # Load with 'svnrdump'
+  new_repo_dir, new_repo_url = sbox.add_repo_path('new_repo')
+  svntest.main.create_repos(new_repo_dir)
+  svntest.actions.enable_revprop_changes(new_repo_dir)
+  svntest.actions.run_and_verify_svnrdump(dumpfile,
+                                          svntest.verify.AnyOutput,
+                                          [], 0, 'load', new_repo_url)
+
+  # Check that property 'q' remains on each modified node
+  for tgt_path in ['A/mu', 'A/B']:
+    tgt_url = new_repo_url + '/' + tgt_path
+    _, out, _ = svntest.main.run_svn(None, 'proplist', tgt_url)
+    expected = ["Properties on '%s':" % (tgt_url,),
+                'q']
+    actual = map(str.strip, out)
+    svntest.verify.compare_and_display_lines(None, 'PROPS', expected, actual)
+
+########################################################################
 # Run the tests
 
 
@@ -813,6 +966,12 @@ test_list = [ None,
               reflect_dropped_renumbered_revs,
               dont_drop_valid_mergeinfo_during_incremental_svnrdump_loads,
               svnrdump_load_partial_incremental_dump,
+              range_dump,
+              only_trunk_range_dump,
+              only_trunk_A_range_dump,
+              load_non_deltas_copy_with_props,
+              load_non_deltas_replace_copy_with_props,
+              load_non_deltas_with_props,
              ]
 
 if __name__ == '__main__':

@@ -23,6 +23,7 @@
 
 
 #include "svn_private_config.h"
+#include "svn_hash.h"
 #include "svn_pools.h"
 #include "svn_error.h"
 #include "svn_fs.h"
@@ -39,6 +40,7 @@
 
 #include <apr_lib.h>
 
+#include "private/svn_repos_private.h"
 #include "private/svn_fspath.h"
 #include "private/svn_dep_compat.h"
 #include "private/svn_mergeinfo_private.h"
@@ -60,8 +62,14 @@ struct parse_baton
   const char *parent_dir; /* repository relpath, or NULL */
   svn_repos_notify_func_t notify_func;
   void *notify_baton;
-  svn_repos_notify_t *notify;
+  apr_pool_t *notify_pool; /* scratch pool for notifications */
   apr_pool_t *pool;
+
+  /* Start and end (inclusive) of revision range we'll pay attention
+     to, or a pair of SVN_INVALID_REVNUMs if we're not filtering by
+     revisions. */
+  svn_revnum_t start_rev;
+  svn_revnum_t end_rev;
 
   /* A hash mapping copy-from revisions and mergeinfo range revisions
      (svn_revnum_t *) in the dump stream to their corresponding revisions
@@ -84,13 +92,13 @@ struct parse_baton
 struct revision_baton
 {
   svn_revnum_t rev;
-
   svn_fs_txn_t *txn;
   svn_fs_root_t *txn_root;
 
   const svn_string_t *datestamp;
 
   apr_int32_t rev_offset;
+  svn_boolean_t skipped;
 
   struct parse_baton *pb;
   apr_pool_t *pool;
@@ -207,7 +215,7 @@ prefix_mergeinfo_paths(svn_string_t **mergeinfo_val,
       path = svn_fspath__canonicalize(svn_relpath_join(parent_dir,
                                                        merge_source, pool),
                                       pool);
-      apr_hash_set(prefixed_mergeinfo, path, APR_HASH_KEY_STRING, rangelist);
+      svn_hash_sets(prefixed_mergeinfo, path, rangelist);
     }
   return svn_mergeinfo_to_string(mergeinfo_val, prefixed_mergeinfo, pool);
 }
@@ -258,7 +266,7 @@ renumber_mergeinfo_revs(svn_string_t **final_val,
   for (hi = apr_hash_first(subpool, mergeinfo); hi; hi = apr_hash_next(hi))
     {
       const char *merge_source;
-      apr_array_header_t *rangelist;
+      svn_rangelist_t *rangelist;
       struct parse_baton *pb = rb->pb;
       int i;
       const void *key;
@@ -315,24 +323,14 @@ renumber_mergeinfo_revs(svn_string_t **final_val,
           if (SVN_IS_VALID_REVNUM(rev_from_map))
             range->end = rev_from_map;
         }
-      apr_hash_set(final_mergeinfo, merge_source,
-                   APR_HASH_KEY_STRING, rangelist);
+      svn_hash_sets(final_mergeinfo, merge_source, rangelist);
     }
 
   if (predates_stream_mergeinfo)
-      SVN_ERR(svn_mergeinfo_merge(final_mergeinfo, predates_stream_mergeinfo,
-                                  subpool));
+      SVN_ERR(svn_mergeinfo_merge2(final_mergeinfo, predates_stream_mergeinfo,
+                                   subpool, subpool));
 
-  SVN_ERR(svn_mergeinfo_sort(final_mergeinfo, subpool));
-
-  /* Mergeinfo revision sources for r0 and r1 are invalid; you can't merge r0
-     or r1.  However, svndumpfilter can be abused to produce r1 merge source
-     revs.  So if we encounter any, then strip them out, no need to put them
-     into the load target. */
-  SVN_ERR(svn_mergeinfo__filter_mergeinfo_by_ranges(&final_mergeinfo,
-                                                    final_mergeinfo,
-                                                    1, 0, FALSE,
-                                                    subpool, subpool));
+  SVN_ERR(svn_mergeinfo__canonicalize_ranges(final_mergeinfo, subpool));
 
   SVN_ERR(svn_mergeinfo_to_string(final_val, final_mergeinfo, pool));
   svn_pool_destroy(subpool);
@@ -360,8 +358,7 @@ make_node_baton(struct node_baton **node_baton_p,
   nb->kind = svn_node_unknown;
 
   /* Then add info from the headers.  */
-  if ((val = apr_hash_get(headers, SVN_REPOS_DUMPFILE_NODE_PATH,
-                          APR_HASH_KEY_STRING)))
+  if ((val = svn_hash_gets(headers, SVN_REPOS_DUMPFILE_NODE_PATH)))
   {
     val = svn_relpath_canonicalize(val, pool);
     if (rb->pb->parent_dir)
@@ -370,8 +367,7 @@ make_node_baton(struct node_baton **node_baton_p,
       nb->path = val;
   }
 
-  if ((val = apr_hash_get(headers, SVN_REPOS_DUMPFILE_NODE_KIND,
-                          APR_HASH_KEY_STRING)))
+  if ((val = svn_hash_gets(headers, SVN_REPOS_DUMPFILE_NODE_KIND)))
     {
       if (! strcmp(val, "file"))
         nb->kind = svn_node_file;
@@ -380,8 +376,7 @@ make_node_baton(struct node_baton **node_baton_p,
     }
 
   nb->action = (enum svn_node_action)(-1);  /* an invalid action code */
-  if ((val = apr_hash_get(headers, SVN_REPOS_DUMPFILE_NODE_ACTION,
-                          APR_HASH_KEY_STRING)))
+  if ((val = svn_hash_gets(headers, SVN_REPOS_DUMPFILE_NODE_ACTION)))
     {
       if (! strcmp(val, "change"))
         nb->action = svn_node_action_change;
@@ -394,13 +389,11 @@ make_node_baton(struct node_baton **node_baton_p,
     }
 
   nb->copyfrom_rev = SVN_INVALID_REVNUM;
-  if ((val = apr_hash_get(headers, SVN_REPOS_DUMPFILE_NODE_COPYFROM_REV,
-                          APR_HASH_KEY_STRING)))
+  if ((val = svn_hash_gets(headers, SVN_REPOS_DUMPFILE_NODE_COPYFROM_REV)))
     {
       nb->copyfrom_rev = SVN_STR_TO_REV(val);
     }
-  if ((val = apr_hash_get(headers, SVN_REPOS_DUMPFILE_NODE_COPYFROM_PATH,
-                          APR_HASH_KEY_STRING)))
+  if ((val = svn_hash_gets(headers, SVN_REPOS_DUMPFILE_NODE_COPYFROM_PATH)))
     {
       val = svn_relpath_canonicalize(val, pool);
       if (rb->pb->parent_dir)
@@ -409,22 +402,21 @@ make_node_baton(struct node_baton **node_baton_p,
         nb->copyfrom_path = val;
     }
 
-  if ((val = apr_hash_get(headers, SVN_REPOS_DUMPFILE_TEXT_CONTENT_CHECKSUM,
-                          APR_HASH_KEY_STRING)))
+  if ((val = svn_hash_gets(headers, SVN_REPOS_DUMPFILE_TEXT_CONTENT_CHECKSUM)))
     {
       SVN_ERR(svn_checksum_parse_hex(&nb->result_checksum, svn_checksum_md5,
                                      val, pool));
     }
 
-  if ((val = apr_hash_get(headers, SVN_REPOS_DUMPFILE_TEXT_DELTA_BASE_CHECKSUM,
-                          APR_HASH_KEY_STRING)))
+  if ((val = svn_hash_gets(headers,
+                           SVN_REPOS_DUMPFILE_TEXT_DELTA_BASE_CHECKSUM)))
     {
       SVN_ERR(svn_checksum_parse_hex(&nb->base_checksum, svn_checksum_md5, val,
                                      pool));
     }
 
-  if ((val = apr_hash_get(headers, SVN_REPOS_DUMPFILE_TEXT_COPY_SOURCE_CHECKSUM,
-                          APR_HASH_KEY_STRING)))
+  if ((val = svn_hash_gets(headers,
+                           SVN_REPOS_DUMPFILE_TEXT_COPY_SOURCE_CHECKSUM)))
     {
       SVN_ERR(svn_checksum_parse_hex(&nb->copy_source_checksum,
                                      svn_checksum_md5, val, pool));
@@ -449,9 +441,15 @@ make_revision_baton(apr_hash_t *headers,
   rb->pool = pool;
   rb->rev = SVN_INVALID_REVNUM;
 
-  if ((val = apr_hash_get(headers, SVN_REPOS_DUMPFILE_REVISION_NUMBER,
-                          APR_HASH_KEY_STRING)))
-    rb->rev = SVN_STR_TO_REV(val);
+  if ((val = svn_hash_gets(headers, SVN_REPOS_DUMPFILE_REVISION_NUMBER)))
+    {
+      rb->rev = SVN_STR_TO_REV(val);
+
+      /* If we're filtering revisions, is this one we'll skip? */
+      rb->skipped = (SVN_IS_VALID_REVNUM(pb->start_rev)
+                     && ((rb->rev < pb->start_rev) ||
+                         (rb->rev > pb->end_rev)));
+    }
 
   return rb;
 }
@@ -468,15 +466,27 @@ new_revision_record(void **revision_baton,
   svn_revnum_t head_rev;
 
   rb = make_revision_baton(headers, pb, pool);
+
+  /* ### If we're filtering revisions, and this is one we've skipped,
+     ### and we've skipped it because it has a revision number younger
+     ### than the youngest in our acceptable range, then should we
+     ### just bail out here? */
+  /*
+  if (rb->skipped && (rb->rev > pb->end_rev))
+    return svn_error_createf(SVN_ERR_CEASE_INVOCATION, 0,
+                             _("Finished processing acceptable load "
+                               "revision range"));
+  */
+
   SVN_ERR(svn_fs_youngest_rev(&head_rev, pb->fs, pool));
 
   /* FIXME: This is a lame fallback loading multiple segments of dump in
      several separate operations. It is highly susceptible to race conditions.
      Calculate the revision 'offset' for finding copyfrom sources.
      It might be positive or negative. */
-  rb->rev_offset = (apr_int32_t) (rb->rev) - (head_rev + 1);
+  rb->rev_offset = (apr_int32_t) ((rb->rev) - (head_rev + 1));
 
-  if (rb->rev > 0)
+  if ((rb->rev > 0) && (! rb->skipped))
     {
       /* Create a new fs txn. */
       SVN_ERR(svn_fs_begin_txn2(&(rb->txn), pb->fs, head_rev, 0, pool));
@@ -484,14 +494,32 @@ new_revision_record(void **revision_baton,
 
       if (pb->notify_func)
         {
-          pb->notify->action = svn_repos_notify_load_txn_start;
-          pb->notify->old_revision = rb->rev;
-          pb->notify_func(pb->notify_baton, pb->notify, rb->pool);
+          /* ### TODO: Use proper scratch pool instead of pb->notify_pool */
+          svn_repos_notify_t *notify = svn_repos_notify_create(
+                                            svn_repos_notify_load_txn_start,
+                                            pb->notify_pool);
+
+          notify->old_revision = rb->rev;
+          pb->notify_func(pb->notify_baton, notify, pb->notify_pool);
+          svn_pool_clear(pb->notify_pool);
         }
 
       /* Stash the oldest "old" revision committed from the load stream. */
       if (!SVN_IS_VALID_REVNUM(pb->oldest_old_rev))
         pb->oldest_old_rev = rb->rev;
+    }
+
+  /* If we're skipping this revision, try to notify someone. */
+  if (rb->skipped && pb->notify_func)
+    {
+      /* ### TODO: Use proper scratch pool instead of pb->notify_pool */
+      svn_repos_notify_t *notify = svn_repos_notify_create(
+                                        svn_repos_notify_load_skipped_rev,
+                                        pb->notify_pool);
+
+      notify->old_revision = rb->rev;
+      pb->notify_func(pb->notify_baton, notify, pb->notify_pool);
+      svn_pool_clear(pb->notify_pool);
     }
 
   /* If we're parsing revision 0, only the revision are (possibly)
@@ -560,14 +588,26 @@ maybe_add_with_history(struct node_baton *nb,
 
       if (pb->notify_func)
         {
-          pb->notify->action = svn_repos_notify_load_copied_node;
-          pb->notify_func(pb->notify_baton, pb->notify, rb->pool);
+          /* ### TODO: Use proper scratch pool instead of pb->notify_pool */
+          svn_repos_notify_t *notify = svn_repos_notify_create(
+                                            svn_repos_notify_load_copied_node,
+                                            pb->notify_pool);
+
+          pb->notify_func(pb->notify_baton, notify, pb->notify_pool);
+          svn_pool_clear(pb->notify_pool);
         }
     }
 
   return SVN_NO_ERROR;
 }
 
+static svn_error_t *
+magic_header_record(int version,
+                    void *parse_baton,
+                    apr_pool_t *pool)
+{
+  return SVN_NO_ERROR;
+}
 
 static svn_error_t *
 uuid_record(const char *uuid,
@@ -607,6 +647,13 @@ new_node_record(void **node_baton,
 
   SVN_ERR(make_node_baton(&nb, headers, rb, pool));
 
+  /* If we're skipping this revision, we're done here. */
+  if (rb->skipped)
+    {
+      *node_baton = nb;
+      return SVN_NO_ERROR;
+    }
+
   /* Make sure we have an action we recognize. */
   if (nb->action < svn_node_action_change
         || nb->action > svn_node_action_replace)
@@ -616,10 +663,14 @@ new_node_record(void **node_baton,
 
   if (pb->notify_func)
     {
-      pb->notify->action = svn_repos_notify_load_node_start;
-      pb->notify->node_action = nb->action;
-      pb->notify->path = nb->path;
-      pb->notify_func(pb->notify_baton, pb->notify, rb->pool);
+      /* ### TODO: Use proper scratch pool instead of pb->notify_pool */
+      svn_repos_notify_t *notify = svn_repos_notify_create(
+                                        svn_repos_notify_load_node_start,
+                                        pb->notify_pool);
+
+      notify->path = nb->path;
+      pb->notify_func(pb->notify_baton, notify, pb->notify_pool);
+      svn_pool_clear(pb->notify_pool);
     }
 
   switch (nb->action)
@@ -652,6 +703,10 @@ set_revision_property(void *baton,
 {
   struct revision_baton *rb = baton;
 
+  /* If we're skipping this revision, we're done here. */
+  if (rb->skipped)
+    return SVN_NO_ERROR;
+
   if (rb->rev > 0)
     {
       if (rb->pb->validate_props)
@@ -682,6 +737,67 @@ set_revision_property(void *baton,
 }
 
 
+/* Adjust mergeinfo:
+ *   - normalize line endings (if all CRLF, change to LF; but error if mixed);
+ *   - adjust revision numbers (see renumber_mergeinfo_revs());
+ *   - adjust paths (see prefix_mergeinfo_paths()).
+ */
+static svn_error_t *
+adjust_mergeinfo_property(struct revision_baton *rb,
+                          svn_string_t **new_value_p,
+                          const svn_string_t *old_value,
+                          apr_pool_t *result_pool)
+{
+  struct parse_baton *pb = rb->pb;
+  svn_string_t prop_val = *old_value;
+
+  /* Tolerate mergeinfo with "\r\n" line endings because some
+     dumpstream sources might contain as much.  If so normalize
+     the line endings to '\n' and make a notification to
+     PARSE_BATON->FEEDBACK_STREAM that we have made this
+     correction. */
+  if (strstr(prop_val.data, "\r"))
+    {
+      const char *prop_eol_normalized;
+
+      SVN_ERR(svn_subst_translate_cstring2(prop_val.data,
+                                           &prop_eol_normalized,
+                                           "\n",  /* translate to LF */
+                                           FALSE, /* no repair */
+                                           NULL,  /* no keywords */
+                                           FALSE, /* no expansion */
+                                           result_pool));
+      prop_val.data = prop_eol_normalized;
+      prop_val.len = strlen(prop_eol_normalized);
+
+      if (pb->notify_func)
+        {
+          /* ### TODO: Use proper scratch pool instead of pb->notify_pool */
+          svn_repos_notify_t *notify
+                  = svn_repos_notify_create(
+                                svn_repos_notify_load_normalized_mergeinfo,
+                                pb->notify_pool);
+
+          pb->notify_func(pb->notify_baton, notify, pb->notify_pool);
+          svn_pool_clear(pb->notify_pool);
+        }
+    }
+
+  /* Renumber mergeinfo as appropriate. */
+  SVN_ERR(renumber_mergeinfo_revs(new_value_p, &prop_val, rb,
+                                  result_pool));
+  if (pb->parent_dir)
+    {
+      /* Prefix the merge source paths with PB->parent_dir. */
+      /* ASSUMPTION: All source paths are included in the dump stream. */
+      SVN_ERR(prefix_mergeinfo_paths(new_value_p, *new_value_p,
+                                     pb->parent_dir, result_pool));
+    }
+
+  return SVN_NO_ERROR;
+}
+
+
 static svn_error_t *
 set_node_property(void *baton,
                   const char *name,
@@ -691,51 +807,46 @@ set_node_property(void *baton,
   struct revision_baton *rb = nb->rb;
   struct parse_baton *pb = rb->pb;
 
+  /* If we're skipping this revision, we're done here. */
+  if (rb->skipped)
+    return SVN_NO_ERROR;
+
+  /* Adjust mergeinfo. If this fails, presumably because the mergeinfo
+     property has an ill-formed value, then we must not fail to load
+     the repository (at least if it's a simple load with no revision
+     offset adjustments, path changes, etc.) so just warn and leave it
+     as it is. */
   if (strcmp(name, SVN_PROP_MERGEINFO) == 0)
     {
-      svn_string_t *renumbered_mergeinfo;
-      /* ### Need to cast away const. We cannot change the declaration of
-       * ### this function since it is part of svn_repos_parse_fns2_t. */
-      svn_string_t *prop_val = (svn_string_t *)value;
+      svn_string_t *new_value;
+      svn_error_t *err;
 
-      /* Tolerate mergeinfo with "\r\n" line endings because some
-         dumpstream sources might contain as much.  If so normalize
-         the line endings to '\n' and make a notification to
-         PARSE_BATON->FEEDBACK_STREAM that we have made this
-         correction. */
-      if (strstr(prop_val->data, "\r"))
+      err = adjust_mergeinfo_property(rb, &new_value, value, nb->pool);
+      if (err)
         {
-          const char *prop_eol_normalized;
-
-          SVN_ERR(svn_subst_translate_cstring2(prop_val->data,
-                                               &prop_eol_normalized,
-                                               "\n",  /* translate to LF */
-                                               FALSE, /* no repair */
-                                               NULL,  /* no keywords */
-                                               FALSE, /* no expansion */
-                                               nb->pool));
-          prop_val->data = prop_eol_normalized;
-          prop_val->len = strlen(prop_eol_normalized);
-
+          if (pb->validate_props)
+            {
+              return svn_error_quick_wrap(
+                       err,
+                       _("Invalid svn:mergeinfo value"));
+            }
           if (pb->notify_func)
             {
-              pb->notify->action = svn_repos_notify_load_normalized_mergeinfo;
-              pb->notify_func(pb->notify_baton, pb->notify, nb->pool);
-            }
-        }
+              svn_repos_notify_t *notify
+                = svn_repos_notify_create(svn_repos_notify_warning,
+                                          pb->notify_pool);
 
-      /* Renumber mergeinfo as appropriate. */
-      SVN_ERR(renumber_mergeinfo_revs(&renumbered_mergeinfo, prop_val, rb,
-                                      nb->pool));
-      value = renumbered_mergeinfo;
-      if (pb->parent_dir)
+              notify->warning = svn_repos__notify_warning_invalid_mergeinfo;
+              notify->warning_str = _("Invalid svn:mergeinfo value; "
+                                      "leaving unchanged");
+              pb->notify_func(pb->notify_baton, notify, pb->notify_pool);
+              svn_pool_clear(pb->notify_pool);
+            }
+          svn_error_clear(err);
+        }
+      else
         {
-          /* Prefix the merge source paths with PB->parent_dir. */
-          /* ASSUMPTION: All source paths are included in the dump stream. */
-          svn_string_t *mergeinfo_val;
-          SVN_ERR(prefix_mergeinfo_paths(&mergeinfo_val, value,
-                                         pb->parent_dir, nb->pool));
-          value = mergeinfo_val;
+          value = new_value;
         }
     }
 
@@ -751,6 +862,10 @@ delete_node_property(void *baton,
   struct node_baton *nb = baton;
   struct revision_baton *rb = nb->rb;
 
+  /* If we're skipping this revision, we're done here. */
+  if (rb->skipped)
+    return SVN_NO_ERROR;
+
   return change_node_prop(rb->txn_root, nb->path, name, NULL,
                           rb->pb->validate_props, nb->pool);
 }
@@ -763,6 +878,10 @@ remove_node_props(void *baton)
   struct revision_baton *rb = nb->rb;
   apr_hash_t *proplist;
   apr_hash_index_t *hi;
+
+  /* If we're skipping this revision, we're done here. */
+  if (rb->skipped)
+    return SVN_NO_ERROR;
 
   SVN_ERR(svn_fs_node_proplist(&proplist,
                                rb->txn_root, nb->path, nb->pool));
@@ -788,6 +907,13 @@ apply_textdelta(svn_txdelta_window_handler_t *handler,
   struct node_baton *nb = node_baton;
   struct revision_baton *rb = nb->rb;
 
+  /* If we're skipping this revision, we're done here. */
+  if (rb->skipped)
+    {
+      *handler = NULL;
+      return SVN_NO_ERROR;
+    }
+
   return svn_fs_apply_textdelta(handler, handler_baton,
                                 rb->txn_root, nb->path,
                                 svn_checksum_to_cstring(nb->base_checksum,
@@ -805,6 +931,13 @@ set_fulltext(svn_stream_t **stream,
   struct node_baton *nb = node_baton;
   struct revision_baton *rb = nb->rb;
 
+  /* If we're skipping this revision, we're done here. */
+  if (rb->skipped)
+    {
+      *stream = NULL;
+      return SVN_NO_ERROR;
+    }
+
   return svn_fs_apply_text(stream,
                            rb->txn_root, nb->path,
                            svn_checksum_to_cstring(nb->result_checksum,
@@ -820,10 +953,19 @@ close_node(void *baton)
   struct revision_baton *rb = nb->rb;
   struct parse_baton *pb = rb->pb;
 
+  /* If we're skipping this revision, we're done here. */
+  if (rb->skipped)
+    return SVN_NO_ERROR;
+
   if (pb->notify_func)
     {
-      pb->notify->action = svn_repos_notify_load_node_done;
-      pb->notify_func(pb->notify_baton, pb->notify, rb->pool);
+      /* ### TODO: Use proper scratch pool instead of pb->notify_pool */
+      svn_repos_notify_t *notify = svn_repos_notify_create(
+                                            svn_repos_notify_load_node_done,
+                                            pb->notify_pool);
+
+      pb->notify_func(pb->notify_baton, notify, pb->notify_pool);
+      svn_pool_clear(pb->notify_pool);
     }
 
   return SVN_NO_ERROR;
@@ -838,17 +980,33 @@ close_revision(void *baton)
   const char *conflict_msg = NULL;
   svn_revnum_t committed_rev;
   svn_error_t *err;
+  const char *txn_name = NULL;
+  apr_hash_t *hooks_env;
 
-  if (rb->rev <= 0)
+  /* If we're skipping this revision or it has an invalid revision
+     number, we're done here. */
+  if (rb->skipped || (rb->rev <= 0))
     return SVN_NO_ERROR;
+
+  /* Get the txn name and hooks environment if they will be needed. */
+  if (pb->use_pre_commit_hook || pb->use_post_commit_hook)
+    {
+      SVN_ERR(svn_repos__parse_hooks_env(&hooks_env, pb->repos->hooks_env_path,
+                                         rb->pool, rb->pool));
+
+      err = svn_fs_txn_name(&txn_name, rb->txn, rb->pool);
+      if (err)
+        {
+          svn_error_clear(svn_fs_abort_txn(rb->txn, rb->pool));
+          return svn_error_trace(err);
+        }
+    }
 
   /* Run the pre-commit hook, if so commanded. */
   if (pb->use_pre_commit_hook)
     {
-      const char *txn_name;
-      err = svn_fs_txn_name(&txn_name, rb->txn, rb->pool);
-      if (! err)
-        err = svn_repos__hooks_pre_commit(pb->repos, txn_name, rb->pool);
+      err = svn_repos__hooks_pre_commit(pb->repos, hooks_env,
+                                        txn_name, rb->pool);
       if (err)
         {
           svn_error_clear(svn_fs_abort_txn(rb->txn, rb->pool));
@@ -880,7 +1038,8 @@ close_revision(void *baton)
   /* Run post-commit hook, if so commanded.  */
   if (pb->use_post_commit_hook)
     {
-      if ((err = svn_repos__hooks_post_commit(pb->repos, committed_rev,
+      if ((err = svn_repos__hooks_post_commit(pb->repos, hooks_env,
+                                              committed_rev, txn_name,
                                               rb->pool)))
         return svn_error_create
           (SVN_ERR_REPOS_POST_COMMIT_HOOK_FAILED, err,
@@ -925,12 +1084,17 @@ close_revision(void *baton)
 
   if (pb->notify_func)
     {
-      pb->notify->action = svn_repos_notify_load_txn_committed;
-      pb->notify->new_revision = committed_rev;
-      pb->notify->old_revision = ((committed_rev == rb->rev)
+      /* ### TODO: Use proper scratch pool instead of pb->notify_pool */
+      svn_repos_notify_t *notify = svn_repos_notify_create(
+                                        svn_repos_notify_load_txn_committed,
+                                        pb->notify_pool);
+
+      notify->new_revision = committed_rev;
+      notify->old_revision = ((committed_rev == rb->rev)
                                     ? SVN_INVALID_REVNUM
                                     : rb->rev);
-      pb->notify_func(pb->notify_baton, pb->notify, rb->pool);
+      pb->notify_func(pb->notify_baton, notify, pb->notify_pool);
+      svn_pool_clear(pb->notify_pool);
     }
 
   return SVN_NO_ERROR;
@@ -943,9 +1107,11 @@ close_revision(void *baton)
 
 
 svn_error_t *
-svn_repos_get_fs_build_parser3(const svn_repos_parse_fns2_t **callbacks,
+svn_repos_get_fs_build_parser4(const svn_repos_parse_fns3_t **callbacks,
                                void **parse_baton,
                                svn_repos_t *repos,
+                               svn_revnum_t start_rev,
+                               svn_revnum_t end_rev,
                                svn_boolean_t use_history,
                                svn_boolean_t validate_props,
                                enum svn_repos_load_uuid uuid_action,
@@ -954,15 +1120,23 @@ svn_repos_get_fs_build_parser3(const svn_repos_parse_fns2_t **callbacks,
                                void *notify_baton,
                                apr_pool_t *pool)
 {
-  svn_repos_parse_fns2_t *parser = apr_pcalloc(pool, sizeof(*parser));
+  svn_repos_parse_fns3_t *parser = apr_pcalloc(pool, sizeof(*parser));
   struct parse_baton *pb = apr_pcalloc(pool, sizeof(*pb));
 
   if (parent_dir)
     parent_dir = svn_relpath_canonicalize(parent_dir, pool);
 
+  SVN_ERR_ASSERT((SVN_IS_VALID_REVNUM(start_rev) &&
+                  SVN_IS_VALID_REVNUM(end_rev))
+                 || ((! SVN_IS_VALID_REVNUM(start_rev)) &&
+                     (! SVN_IS_VALID_REVNUM(end_rev))));
+  if (SVN_IS_VALID_REVNUM(start_rev))
+    SVN_ERR_ASSERT(start_rev <= end_rev);
+
+  parser->magic_header_record = magic_header_record;
+  parser->uuid_record = uuid_record;
   parser->new_revision_record = new_revision_record;
   parser->new_node_record = new_node_record;
-  parser->uuid_record = uuid_record;
   parser->set_revision_property = set_revision_property;
   parser->set_node_property = set_node_property;
   parser->remove_node_props = remove_node_props;
@@ -978,13 +1152,15 @@ svn_repos_get_fs_build_parser3(const svn_repos_parse_fns2_t **callbacks,
   pb->validate_props = validate_props;
   pb->notify_func = notify_func;
   pb->notify_baton = notify_baton;
-  pb->notify = svn_repos_notify_create(svn_repos_notify_load_txn_start, pool);
   pb->uuid_action = uuid_action;
   pb->parent_dir = parent_dir;
   pb->pool = pool;
+  pb->notify_pool = svn_pool_create(pool);
   pb->rev_map = apr_hash_make(pool);
   pb->oldest_old_rev = SVN_INVALID_REVNUM;
   pb->last_rev_mapped = SVN_INVALID_REVNUM;
+  pb->start_rev = start_rev;
+  pb->end_rev = end_rev;
 
   *callbacks = parser;
   *parse_baton = pb;
@@ -994,8 +1170,10 @@ svn_repos_get_fs_build_parser3(const svn_repos_parse_fns2_t **callbacks,
 
 
 svn_error_t *
-svn_repos_load_fs3(svn_repos_t *repos,
+svn_repos_load_fs4(svn_repos_t *repos,
                    svn_stream_t *dumpstream,
+                   svn_revnum_t start_rev,
+                   svn_revnum_t end_rev,
                    enum svn_repos_load_uuid uuid_action,
                    const char *parent_dir,
                    svn_boolean_t use_pre_commit_hook,
@@ -1007,14 +1185,15 @@ svn_repos_load_fs3(svn_repos_t *repos,
                    void *cancel_baton,
                    apr_pool_t *pool)
 {
-  const svn_repos_parse_fns2_t *parser;
+  const svn_repos_parse_fns3_t *parser;
   void *parse_baton;
   struct parse_baton *pb;
 
   /* This is really simple. */
 
-  SVN_ERR(svn_repos_get_fs_build_parser3(&parser, &parse_baton,
+  SVN_ERR(svn_repos_get_fs_build_parser4(&parser, &parse_baton,
                                          repos,
+                                         start_rev, end_rev,
                                          TRUE, /* look for copyfrom revs */
                                          validate_props,
                                          uuid_action,
@@ -1029,6 +1208,6 @@ svn_repos_load_fs3(svn_repos_t *repos,
   pb->use_pre_commit_hook = use_pre_commit_hook;
   pb->use_post_commit_hook = use_post_commit_hook;
 
-  return svn_repos_parse_dumpstream2(dumpstream, parser, parse_baton,
+  return svn_repos_parse_dumpstream3(dumpstream, parser, parse_baton, FALSE,
                                      cancel_func, cancel_baton, pool);
 }

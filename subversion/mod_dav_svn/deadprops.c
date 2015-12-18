@@ -1,5 +1,7 @@
 /*
- * deadprops.c: mod_dav_svn dead property provider functions for Subversion
+ * deadprops.c: mod_dav_svn provider functions for "dead properties"
+ *              (properties implemented by Subversion or its users,
+ *              not as part of the WebDAV specification).
  *
  * ====================================================================
  *    Licensed to the Apache Software Foundation (ASF) under one
@@ -26,6 +28,7 @@
 #include <httpd.h>
 #include <mod_dav.h>
 
+#include "svn_hash.h"
 #include "svn_xml.h"
 #include "svn_pools.h"
 #include "svn_dav.h"
@@ -134,7 +137,7 @@ get_value(dav_db *db, const dav_prop_name *name, svn_string_t **pvalue)
                                propname, db->p);
       else
         serr = svn_repos_fs_revision_prop(pvalue,
-                                          db->resource->info-> repos->repos,
+                                          db->resource->info->repos->repos,
                                           db->resource->info->root.rev,
                                           propname, db->authz_read_func,
                                           db->authz_read_baton, db->p);
@@ -160,6 +163,23 @@ get_value(dav_db *db, const dav_prop_name *name, svn_string_t **pvalue)
 }
 
 
+static svn_error_t *
+change_txn_prop(svn_fs_txn_t *txn,
+                const char *propname,
+                const svn_string_t *value,
+                apr_pool_t *scratch_pool)
+{
+  if (strcmp(propname, SVN_PROP_REVISION_AUTHOR) == 0)
+    return svn_error_create(SVN_ERR_RA_DAV_REQUEST_FAILED, NULL,
+                            "Attempted to modify 'svn:author' property "
+                            "on a transaction");
+
+  SVN_ERR(svn_repos_fs_change_txn_prop(txn, propname, value, scratch_pool));
+
+  return SVN_NO_ERROR;
+}
+
+
 static dav_error *
 save_value(dav_db *db, const dav_prop_name *name,
            const svn_string_t *const *old_value_p,
@@ -175,7 +195,7 @@ save_value(dav_db *db, const dav_prop_name *name,
 
   if (propname == NULL)
     {
-      if (db->resource->info->repos->autoversioning)
+      if (resource->info->repos->autoversioning)
         /* ignore the unknown namespace of the incoming prop. */
         propname = name->name;
       else
@@ -205,14 +225,13 @@ save_value(dav_db *db, const dav_prop_name *name,
 
   /* A subpool to cope with mod_dav making multiple calls, e.g. during
      PROPPATCH with multiple values. */
-  subpool = svn_pool_create(db->resource->pool);
-  if (db->resource->baselined)
+  subpool = svn_pool_create(resource->pool);
+  if (resource->baselined)
     {
-      if (db->resource->working)
+      if (resource->working)
         {
-          serr = svn_repos_fs_change_txn_prop(resource->info->root.txn,
-                                              propname, value,
-                                              subpool);
+          serr = change_txn_prop(resource->info->root.txn, propname,
+                                 value, subpool);
         }
       else
         {
@@ -251,8 +270,8 @@ save_value(dav_db *db, const dav_prop_name *name,
     }
   else if (resource->info->restype == DAV_SVN_RESTYPE_TXN_COLLECTION)
     {
-      serr = svn_repos_fs_change_txn_prop(resource->info->root.txn,
-                                          propname, value, subpool);
+      serr = change_txn_prop(resource->info->root.txn, propname,
+                             value, subpool);
     }
   else
     {
@@ -517,10 +536,6 @@ db_store(dav_db *db,
   /* ### namespace check? */
   if (elem->first_child && !strcmp(elem->first_child->name, SVN_DAV__OLD_VALUE))
     {
-      const char *propname;
-
-      get_repos_propname(db, name, &propname);
-
       /* Parse OLD_PROPVAL. */
       old_propval = svn_string_create(dav_xml_get_cdata(elem->first_child, pool,
                                                         0 /* strip_white */),
@@ -561,8 +576,8 @@ db_remove(dav_db *db, const dav_prop_name *name)
   /* Working Baseline or Working (Version) Resource */
   if (db->resource->baselined)
     if (db->resource->working)
-      serr = svn_repos_fs_change_txn_prop(db->resource->info->root.txn,
-                                          propname, NULL, subpool);
+      serr = change_txn_prop(db->resource->info->root.txn, propname,
+                             NULL, subpool);
     else
       /* ### VIOLATING deltaV: you can't proppatch a baseline, it's
          not a working resource!  But this is how we currently
