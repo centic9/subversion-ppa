@@ -5,8 +5,10 @@ This is related to splitting mod_authz_svn out of dav_svn.load into its
 own authz_svn.load.  Since a2enmod does not reorder modules based on
 dependencies, mod_authz_svn is loaded first.
 
---- a/subversion/include/mod_dav_svn.h
-+++ b/subversion/include/mod_dav_svn.h
+Index: git/subversion/include/mod_dav_svn.h
+===================================================================
+--- git.orig/subversion/include/mod_dav_svn.h	2015-08-16 00:14:08.479478942 +0200
++++ git/subversion/include/mod_dav_svn.h	2015-08-16 00:14:08.475478890 +0200
 @@ -30,6 +30,7 @@
  
  #include <httpd.h>
@@ -42,8 +44,10 @@ dependencies, mod_authz_svn is loaded first.
  
  #ifdef __cplusplus
  }
---- a/subversion/mod_authz_svn/mod_authz_svn.c
-+++ b/subversion/mod_authz_svn/mod_authz_svn.c
+Index: git/subversion/mod_authz_svn/mod_authz_svn.c
+===================================================================
+--- git.orig/subversion/mod_authz_svn/mod_authz_svn.c	2015-08-16 00:14:08.479478942 +0200
++++ git/subversion/mod_authz_svn/mod_authz_svn.c	2015-08-16 00:14:08.475478890 +0200
 @@ -22,7 +22,7 @@
   * ====================================================================
   */
@@ -53,9 +57,9 @@ dependencies, mod_authz_svn is loaded first.
  
  #include <httpd.h>
  #include <http_config.h>
-@@ -67,6 +67,13 @@
-   const char *force_username_case;
- } authz_svn_config_rec;
+@@ -108,6 +108,13 @@
+ #  define USE_FORCE_AUTHN 0
+ #endif
  
 +#if DAV_SVN_LOAD_OPTIONAL
 +static APR_OPTIONAL_FN_TYPE(dav_svn_get_repos_path) *get_repos_path;
@@ -67,9 +71,9 @@ dependencies, mod_authz_svn is loaded first.
  /*
   * Configuration
   */
-@@ -937,6 +944,16 @@
-   return OK;
+@@ -1052,6 +1059,16 @@
  }
+ #endif
  
 +#if DAV_SVN_LOAD_OPTIONAL
 +#undef dav_svn_get_repos_path
@@ -84,7 +88,7 @@ dependencies, mod_authz_svn is loaded first.
  /*
   * Module flesh
   */
-@@ -958,6 +975,9 @@
+@@ -1076,6 +1093,9 @@
                         AUTHZ_SVN__SUBREQ_BYPASS_PROV_NAME,
                         AUTHZ_SVN__SUBREQ_BYPASS_PROV_VER,
                         (void*)subreq_bypass);
@@ -94,8 +98,10 @@ dependencies, mod_authz_svn is loaded first.
  }
  
  module AP_MODULE_DECLARE_DATA authz_svn_module =
---- a/subversion/mod_dav_svn/mod_dav_svn.c
-+++ b/subversion/mod_dav_svn/mod_dav_svn.c
+Index: git/subversion/mod_dav_svn/mod_dav_svn.c
+===================================================================
+--- git.orig/subversion/mod_dav_svn/mod_dav_svn.c	2015-08-16 00:14:08.479478942 +0200
++++ git/subversion/mod_dav_svn/mod_dav_svn.c	2015-08-16 00:14:08.479478942 +0200
 @@ -1330,6 +1330,9 @@
  static void
  register_hooks(apr_pool_t *pconf)

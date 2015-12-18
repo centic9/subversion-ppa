@@ -5,8 +5,10 @@ on various arm and m68k builds.
 Thanks to Roman Zippel, Kobayashi Noritada, Wouter Verhelst and Martin
 Michlmayr.
 
---- a/subversion/bindings/swig/ruby/test/util.rb
-+++ b/subversion/bindings/swig/ruby/test/util.rb
+Index: git/subversion/bindings/swig/ruby/test/util.rb
+===================================================================
+--- git.orig/subversion/bindings/swig/ruby/test/util.rb	2015-08-16 00:14:03.667422869 +0200
++++ git/subversion/bindings/swig/ruby/test/util.rb	2015-08-16 00:14:03.663422821 +0200
 @@ -19,6 +19,7 @@
  
  require "fileutils"
@@ -15,7 +17,7 @@ Michlmayr.
  
  # Tale of a hack...
  #
-@@ -287,11 +288,7 @@
+@@ -288,11 +289,7 @@
                 "-d", "--foreground")
          }
          pid, status = Process.waitpid2(@svnserve_pid, Process::WNOHANG)
@@ -28,7 +30,7 @@ Michlmayr.
            # svnserve started successfully.  Note port number and cease
            # startup attempts.
            @svnserve_port = port
-@@ -357,4 +354,25 @@
+@@ -358,4 +355,25 @@
      include Svnserve
      extend SetupEnvironment
    end
