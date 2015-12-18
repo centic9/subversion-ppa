@@ -745,7 +745,7 @@ request_body_to_string(svn_string_t **request_str,
   int seen_eos;
   apr_status_t status;
   apr_off_t total_read = 0;
-  apr_off_t limit_req_body = ap_get_limit_req_body(r);
+  apr_off_t limit_req_body = ap_get_limit_xml_body(r);
   int result = HTTP_BAD_REQUEST;
   const char *content_length_str;
   char *endp;
@@ -778,7 +778,12 @@ request_body_to_string(svn_string_t **request_str,
 
   if (content_length)
     {
-      buf = svn_stringbuf_create_ensure(content_length, pool);
+      /* Do not allocate more than 1 MB until we receive request body. */
+      apr_size_t alloc_len = 1 * 1024 *1024;
+      if (content_length < alloc_len)
+        alloc_len = (apr_size_t) content_length;
+
+      buf = svn_stringbuf_create_ensure(alloc_len, pool);
     }
   else
     {
