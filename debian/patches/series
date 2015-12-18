@@ -16,7 +16,7 @@ examples-compile-instructions
 apache_module_dependency
 workaround_EINVAL_on_kfreebsd
 # applied upstream: ruby2.0-build-fixes
-test-failure-with-optimizations
+# applied upstream: test-failure-with-optimizations
 libtoolize
 # applied upstream: CVE-2014-3580
 # applied upstream: CVE-2014-8108

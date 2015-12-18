@@ -1,3 +1,9 @@
+subversion (1.8.15-0ubuntu0~trusty~ppa1) trusty; urgency=medium
+
+  * New upstream release
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Fri, 18 Dec 2015 22:08:05 +0100
+
 subversion (1.8.14-0ubuntu1~trusty~ppa2) trusty; urgency=medium
 
   * Disable httpd version check for now.
