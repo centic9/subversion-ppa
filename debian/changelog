@@ -1,3 +1,22 @@
+subversion (1.8.15-0ubuntu0~trusty~ppa1) trusty; urgency=medium
+
+  * New upstream release
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Fri, 18 Dec 2015 22:08:05 +0100
+
+subversion (1.8.14-0ubuntu1~trusty~ppa2) trusty; urgency=medium
+
+  * Disable httpd version check for now.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Sun, 16 Aug 2015 11:10:26 +0200
+
+subversion (1.8.14-0ubuntu1~trusty~ppa1) trusty; urgency=medium
+
+  * New upstream release
+  * Rebase to latest Ubuntu package 1.8.13-1ubuntu1
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Sun, 16 Aug 2015 00:15:13 +0200
+
 subversion (1.8.13-1ubuntu1) wily; urgency=medium
 
   * Resynchronise with Debian.  Remaining changes:
@@ -32,6 +51,40 @@ subversion (1.8.10-6) unstable; urgency=high
     values for new revisions
 
  -- James McCoy <jamessan@debian.org>  Tue, 31 Mar 2015 22:51:18 -0400
+
+subversion (1.8.13-0ubuntu0~trusty~ppa5) trusty; urgency=medium
+
+  * Use new version-scheme to override incorrect precise-version that 
+    I pushed unintenionally.
+  * Increase replaces-version for subversion-tools to also replace 
+    newer versions that I published in the PPA.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Fri, 03 Apr 2015 16:03:24 +0200
+
+subversion (1.8.13-0ubuntu0~ppa4) trusty; urgency=medium
+
+  * Some more change necessary for ruby-svn to avoid build breakage.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Thu, 02 Apr 2015 22:33:06 +0200
+
+subversion (1.8.13-0ubuntu0~ppa3) trusty; urgency=medium
+
+  * Fix patches once again
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Tue, 31 Mar 2015 22:41:00 +0200
+
+subversion (1.8.13-0ubuntu0~ppa2) trusty; urgency=medium
+
+  * Disable patches which were merged upstream.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Tue, 31 Mar 2015 21:52:41 +0200
+
+subversion (1.8.13-0ubuntu0~ppa1) trusty; urgency=medium
+
+  * New upstream release
+  * Merge with latest changes from Ubuntu 1.8.10-5ubuntu1
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Tue, 31 Mar 2015 21:25:35 +0200
 
 subversion (1.8.10-5ubuntu1) vivid; urgency=medium
 
@@ -135,6 +188,12 @@ subversion (1.8.10-1) unstable; urgency=medium
 
  -- James McCoy <jamessan@debian.org>  Tue, 12 Aug 2014 21:57:23 -0400
 
+subversion (1.8.10-0ubuntu0~ppa1) trusty; urgency=medium
+
+  * New upstream release.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Mon, 11 Aug 2014 23:02:57 +0200
+
 subversion (1.8.9-2ubuntu2) utopic; urgency=medium
 
   * Build using -O2 on ppc64el. Test failures with -O3.
@@ -178,6 +237,25 @@ subversion (1.8.9-1) unstable; urgency=medium
 
  -- James McCoy <jamessan@debian.org>  Tue, 20 May 2014 22:45:32 -0400
 
+subversion (1.8.9-0ubuntu0~ppa3) trusty; urgency=medium
+
+  * Revert some changes to successfully compile the package.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Sat, 28 Jun 2014 13:59:08 +0200
+
+subversion (1.8.9-0ubuntu0~ppa2) trusty; urgency=medium
+
+  * Rebase to 1.8.8-2ubuntu1, only few changes remain
+  * Rebuild for trusty
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Thu, 26 Jun 2014 21:53:02 +0200
+
+subversion (1.8.9-0ubuntu0~ppa1) precise; urgency=low
+
+  * Update to latest upstream release.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Thu, 15 May 2014 21:17:08 +0200
+
 subversion (1.8.8-2ubuntu1) utopic; urgency=medium
 
   * Merge with Debian; remaining changes:
@@ -196,6 +274,7 @@ subversion (1.8.8-2ubuntu1) utopic; urgency=medium
     - debian/control: added ruby-test-unit to Build-Depends
     - Check for libtoolize instead of libtool, which is not used for
       the build.
+    - Temporarily disable running the tests on powerpc.
 
  -- Matthias Klose <doko@ubuntu.com>  Mon, 28 Apr 2014 16:37:04 +0200
 
@@ -261,6 +340,24 @@ subversion (1.8.5-2ubuntu3) trusty; urgency=medium
 
  -- Matthias Klose <doko@ubuntu.com>  Sat, 22 Feb 2014 14:39:49 +0100
 
+subversion (1.8.8-0ubuntu0~ppa3) precise; urgency=low
+
+  * Try to fix dependencies of libapaches-mod-svn for precise.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Mon, 28 Apr 2014 22:28:57 +0200
+
+subversion (1.8.8-0ubuntu0~ppa2) precise; urgency=low
+
+  * Remove patch for sqlite3 which is now applied upstream.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Sun, 23 Feb 2014 20:20:03 +0100
+
+subversion (1.8.8-0ubuntu0~ppa1) precise; urgency=low
+
+  * Update to latest upstream version.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Thu, 20 Feb 2014 20:07:50 +0100
+
 subversion (1.8.5-2ubuntu2) trusty; urgency=medium
 
   * Make the python and ruby tests verbose.
@@ -299,6 +396,18 @@ subversion (1.8.5-2) unstable; urgency=medium
     configure is run with --enable-sqlite-compatibility.
 
  -- James McCoy <jamessan@debian.org>  Fri, 17 Jan 2014 20:05:25 -0500
+
+subversion (1.8.5-1ubuntu0~ppa2) precise; urgency=low
+
+  * Fix building on precise, remove call to dh-apache2 and use -r for rm.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Fri, 17 Jan 2014 20:32:19 +0100
+
+subversion (1.8.5-1ubuntu0~ppa1) precise; urgency=low
+
+  * Backport to Precise.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Fri, 17 Jan 2014 19:13:37 +0100
 
 subversion (1.8.5-1) unstable; urgency=low
 
@@ -340,6 +449,24 @@ subversion (1.8.5-1) unstable; urgency=low
   * Build against the default ruby version.  (Closes: #722393)
 
  -- James McCoy <jamessan@debian.org>  Sun, 12 Jan 2014 19:48:33 -0500
+
+subversion (1.8.5-0ubuntu0~ppa1) precise; urgency=low
+
+  * New upstream release.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Mon, 25 Nov 2013 20:51:25 +0100
+
+subversion (1.8.4-0ubuntu0~ppa1) precise; urgency=low
+
+  * Backport to precise.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Mon, 11 Nov 2013 20:44:43 +0100
+
+subversion (1.8.4) unstable; urgency=low
+
+  * Non-maintainer upload
+
+ -- Vitaliy Filippov <vitalif@mail.ru>  Thu, 07 Nov 2013 18:24:00 +0400
 
 subversion (1.7.14-1ubuntu2) trusty; urgency=medium
 
