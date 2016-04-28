@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: dev@subversion.apache.org\n"
-"POT-Creation-Date: 2015-12-07 14:45+0000\n"
+"POT-Creation-Date: 2016-04-21 14:42+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2511,19 +2511,19 @@ msgstr ""
 msgid "deleting changes"
 msgstr ""
 
-#: ../libsvn_fs_base/bdb/changes-table.c:150 ../libsvn_fs_fs/fs_fs.c:5966
+#: ../libsvn_fs_base/bdb/changes-table.c:150 ../libsvn_fs_fs/fs_fs.c:5997
 msgid "Missing required node revision ID"
 msgstr ""
 
-#: ../libsvn_fs_base/bdb/changes-table.c:161 ../libsvn_fs_fs/fs_fs.c:5976
+#: ../libsvn_fs_base/bdb/changes-table.c:161 ../libsvn_fs_fs/fs_fs.c:6007
 msgid "Invalid change ordering: new node revision ID without delete"
 msgstr ""
 
-#: ../libsvn_fs_base/bdb/changes-table.c:171 ../libsvn_fs_fs/fs_fs.c:5987
+#: ../libsvn_fs_base/bdb/changes-table.c:171 ../libsvn_fs_fs/fs_fs.c:6018
 msgid "Invalid change ordering: non-add change on deleted path"
 msgstr ""
 
-#: ../libsvn_fs_base/bdb/changes-table.c:180 ../libsvn_fs_fs/fs_fs.c:5996
+#: ../libsvn_fs_base/bdb/changes-table.c:180 ../libsvn_fs_fs/fs_fs.c:6027
 msgid "Invalid change ordering: add change on preexisting path"
 msgstr ""
 
@@ -2993,7 +2993,7 @@ msgstr ""
 msgid "Corrupt filesystem revision %ld in filesystem '%s'"
 msgstr ""
 
-#: ../libsvn_fs_base/err.c:57 ../libsvn_fs_fs/fs_fs.c:2268
+#: ../libsvn_fs_base/err.c:57 ../libsvn_fs_fs/fs_fs.c:2269
 #, c-format
 msgid "Reference to non-existent node '%s' in filesystem '%s'"
 msgstr ""
@@ -3331,7 +3331,7 @@ msgstr ""
 msgid "Transaction is dead: '%s'"
 msgstr ""
 
-#: ../libsvn_fs_base/revs-txns.c:272 ../libsvn_fs_fs/fs_fs.c:9830
+#: ../libsvn_fs_base/revs-txns.c:272 ../libsvn_fs_fs/fs_fs.c:9872
 #, c-format
 msgid "revprop '%s' has unexpected value in filesystem"
 msgstr ""
@@ -3475,397 +3475,397 @@ msgstr ""
 msgid "Unsupported FS loader version (%d) for fsfs"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:727
+#: ../libsvn_fs_fs/fs_fs.c:728
 #, c-format
 msgid "Can't unlock unknown transaction '%s'"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:731
+#: ../libsvn_fs_fs/fs_fs.c:732
 #, c-format
 msgid "Can't unlock nonlocked transaction '%s'"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:738
+#: ../libsvn_fs_fs/fs_fs.c:739
 #, c-format
 msgid "Can't unlock prototype revision lockfile for transaction '%s'"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:744
+#: ../libsvn_fs_fs/fs_fs.c:745
 #, c-format
 msgid "Can't close prototype revision lockfile for transaction '%s'"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:806
+#: ../libsvn_fs_fs/fs_fs.c:807
 #, c-format
 msgid ""
 "Cannot write to the prototype revision file of transaction '%s' because a "
 "previous representation is currently being written by this process"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:842
+#: ../libsvn_fs_fs/fs_fs.c:843
 #, c-format
 msgid ""
 "Cannot write to the prototype revision file of transaction '%s' because a "
 "previous representation is currently being written by another process"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:849 ../libsvn_subr/io.c:2014
+#: ../libsvn_fs_fs/fs_fs.c:850 ../libsvn_subr/io.c:2014
 #, c-format
 msgid "Can't get exclusive lock on file '%s'"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:968
+#: ../libsvn_fs_fs/fs_fs.c:969
 #, c-format
 msgid "%s file '%s' contains unexpected non-digit '%c' within '%s'"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:995
+#: ../libsvn_fs_fs/fs_fs.c:996
 #, c-format
 msgid ""
 "Found format '%d', only created by unreleased dev builds; see http://"
 "subversion.apache.org/docs/release-notes/1.7#revprop-packing"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:1006
+#: ../libsvn_fs_fs/fs_fs.c:1007
 #, c-format
 msgid "Expected FS format between '1' and '%d'; found format '%d'"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:1052
+#: ../libsvn_fs_fs/fs_fs.c:1053
 #, c-format
 msgid "Can't read first line of format file '%s'"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:1092
+#: ../libsvn_fs_fs/fs_fs.c:1093
 #, c-format
 msgid "'%s' contains invalid filesystem format option '%s'"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:1582
+#: ../libsvn_fs_fs/fs_fs.c:1583
 #, c-format
 msgid "'%s' is not a regular file. Please move it out of the way and try again"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:1753
+#: ../libsvn_fs_fs/fs_fs.c:1754
 #, c-format
 msgid "Can't read '%s'"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:1816 ../libsvn_fs_fs/fs_fs.c:1835
+#: ../libsvn_fs_fs/fs_fs.c:1817 ../libsvn_fs_fs/fs_fs.c:1836
 #, c-format
 msgid "Found malformed header '%s' in revision file"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:1871
+#: ../libsvn_fs_fs/fs_fs.c:1872
 #, c-format
 msgid "Invalid revision number '%ld'"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:1886 ../libsvn_fs_fs/fs_fs.c:1941
-#: ../libsvn_fs_fs/fs_fs.c:1952 ../libsvn_repos/log.c:2268
+#: ../libsvn_fs_fs/fs_fs.c:1887 ../libsvn_fs_fs/fs_fs.c:1942
+#: ../libsvn_fs_fs/fs_fs.c:1953 ../libsvn_repos/log.c:2268
 #: ../libsvn_repos/log.c:2272
 #, c-format
 msgid "No such revision %ld"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:1986
+#: ../libsvn_fs_fs/fs_fs.c:1987
 msgid "Unexpected EOF"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:1993
+#: ../libsvn_fs_fs/fs_fs.c:1994
 #, c-format
 msgid "Number '%s' invalid or too large"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:2160 ../libsvn_fs_fs/fs_fs.c:2174
-#: ../libsvn_fs_fs/fs_fs.c:2182 ../libsvn_fs_fs/fs_fs.c:2190
-#: ../libsvn_fs_fs/fs_fs.c:2199 ../libsvn_fs_fs/fs_fs.c:2212
-#: ../libsvn_fs_fs/fs_fs.c:2221
+#: ../libsvn_fs_fs/fs_fs.c:2161 ../libsvn_fs_fs/fs_fs.c:2175
+#: ../libsvn_fs_fs/fs_fs.c:2183 ../libsvn_fs_fs/fs_fs.c:2191
+#: ../libsvn_fs_fs/fs_fs.c:2200 ../libsvn_fs_fs/fs_fs.c:2213
+#: ../libsvn_fs_fs/fs_fs.c:2222
 msgid "Malformed text representation offset line in node-rev"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:2252
+#: ../libsvn_fs_fs/fs_fs.c:2253
 #, c-format
 msgid "While reading representation offsets for node-revision '%s':"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:2407
+#: ../libsvn_fs_fs/fs_fs.c:2408
 msgid "Missing id field in node-rev"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:2421
+#: ../libsvn_fs_fs/fs_fs.c:2422
 #, c-format
 msgid "Missing kind field in node-rev '%s'"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:2456
+#: ../libsvn_fs_fs/fs_fs.c:2457
 #, c-format
 msgid "Missing cpath field in node-rev '%s'"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:2484 ../libsvn_fs_fs/fs_fs.c:2491
+#: ../libsvn_fs_fs/fs_fs.c:2485 ../libsvn_fs_fs/fs_fs.c:2492
 #, c-format
 msgid "Malformed copyroot line in node-rev '%s'"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:2508 ../libsvn_fs_fs/fs_fs.c:2515
+#: ../libsvn_fs_fs/fs_fs.c:2509 ../libsvn_fs_fs/fs_fs.c:2516
 #, c-format
 msgid "Malformed copyfrom line in node-rev '%s'"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:2684 ../libsvn_fs_fs/fs_fs.c:7697
+#: ../libsvn_fs_fs/fs_fs.c:2685 ../libsvn_fs_fs/fs_fs.c:7739
 #, c-format
 msgid "Attempted to write to non-transaction '%s'"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:2821
+#: ../libsvn_fs_fs/fs_fs.c:2822
 #, c-format
 msgid "Malformed representation header at %s"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:2853
+#: ../libsvn_fs_fs/fs_fs.c:2854
 #, c-format
 msgid "Missing node-id in node-rev at r%ld (offset %s)"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:2862
+#: ../libsvn_fs_fs/fs_fs.c:2863
 #, c-format
 msgid "Corrupt node-id '%s' in node-rev at r%ld (offset %s)"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:2953
+#: ../libsvn_fs_fs/fs_fs.c:2954
 #, c-format
 msgid "Revision file (r%ld) lacks trailing newline"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:2967
+#: ../libsvn_fs_fs/fs_fs.c:2968
 #, c-format
 msgid "Final line in revision file (r%ld) longer than 64 characters"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:2982
+#: ../libsvn_fs_fs/fs_fs.c:2983
 #, c-format
 msgid "Final line in revision file r%ld missing space"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:3686
+#: ../libsvn_fs_fs/fs_fs.c:3687
 #, c-format
 msgid "Packed revprop manifest for r%ld too small"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:3743
+#: ../libsvn_fs_fs/fs_fs.c:3744
 #, c-format
 msgid "Revprop pack for revision r%ld contains revprops for r%ld .. r%ld"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:3754
+#: ../libsvn_fs_fs/fs_fs.c:3755
 #, c-format
 msgid "Revprop pack for revision r%ld starts at non-packed revisions r%ld"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:3763
+#: ../libsvn_fs_fs/fs_fs.c:3764
 msgid "Header end not found"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:3791
+#: ../libsvn_fs_fs/fs_fs.c:3792
 msgid "Packed revprop size exceeds pack file size"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:3850
+#: ../libsvn_fs_fs/fs_fs.c:3851
 #, c-format
 msgid "No such packed revision %ld"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:3890
+#: ../libsvn_fs_fs/fs_fs.c:3891
 #, c-format
 msgid "Failed to read revprop pack file for r%ld"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:3897
+#: ../libsvn_fs_fs/fs_fs.c:3898
 #, c-format
 msgid "Revprop pack file for r%ld is corrupt"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:3970
+#: ../libsvn_fs_fs/fs_fs.c:3971
 #, c-format
 msgid "Could not read revprops for revision %ld"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:4206
+#: ../libsvn_fs_fs/fs_fs.c:4207
 #, c-format
 msgid "Packed file '%s' misses a tag"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:4547
+#: ../libsvn_fs_fs/fs_fs.c:4548
 msgid "Malformed svndiff data in representation"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:5026 ../libsvn_fs_fs/fs_fs.c:5045
+#: ../libsvn_fs_fs/fs_fs.c:5027 ../libsvn_fs_fs/fs_fs.c:5046
 msgid "Reading one svndiff window read beyond the end of the representation"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:5135
+#: ../libsvn_fs_fs/fs_fs.c:5136
 msgid "svndiff window length is corrupt"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:5303
+#: ../libsvn_fs_fs/fs_fs.c:5304
 msgid "Checksum mismatch while reading representation"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:5668 ../libsvn_fs_fs/fs_fs.c:5682
-#: ../libsvn_fs_fs/fs_fs.c:5689
+#: ../libsvn_fs_fs/fs_fs.c:5669 ../libsvn_fs_fs/fs_fs.c:5683
+#: ../libsvn_fs_fs/fs_fs.c:5690
 #, c-format
 msgid "Directory entry corrupt in '%s'"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:6167 ../libsvn_fs_fs/fs_fs.c:6172
-#: ../libsvn_fs_fs/fs_fs.c:6178 ../libsvn_fs_fs/fs_fs.c:6195
-#: ../libsvn_fs_fs/fs_fs.c:6228 ../libsvn_fs_fs/fs_fs.c:6248
-#: ../libsvn_fs_fs/fs_fs.c:6283 ../libsvn_fs_fs/fs_fs.c:6288
+#: ../libsvn_fs_fs/fs_fs.c:6198 ../libsvn_fs_fs/fs_fs.c:6203
+#: ../libsvn_fs_fs/fs_fs.c:6209 ../libsvn_fs_fs/fs_fs.c:6226
+#: ../libsvn_fs_fs/fs_fs.c:6259 ../libsvn_fs_fs/fs_fs.c:6279
+#: ../libsvn_fs_fs/fs_fs.c:6314 ../libsvn_fs_fs/fs_fs.c:6319
 msgid "Invalid changes line in rev-file"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:6221
+#: ../libsvn_fs_fs/fs_fs.c:6252
 msgid "Invalid change kind in rev file"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:6241
+#: ../libsvn_fs_fs/fs_fs.c:6272
 msgid "Invalid text-mod flag in rev-file"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:6261
+#: ../libsvn_fs_fs/fs_fs.c:6292
 msgid "Invalid prop-mod flag in rev-file"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:6519
+#: ../libsvn_fs_fs/fs_fs.c:6550
 msgid "Copying from transactions not allowed"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:6652
+#: ../libsvn_fs_fs/fs_fs.c:6683
 #, c-format
 msgid "Unable to create transaction directory in '%s' for revision %ld"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:6717
+#: ../libsvn_fs_fs/fs_fs.c:6748
 msgid "Internal error: a null transaction id was passed to get_txn_proplist()"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:6876 ../libsvn_fs_fs/fs_fs.c:6883
+#: ../libsvn_fs_fs/fs_fs.c:6907 ../libsvn_fs_fs/fs_fs.c:6914
 msgid "next-id file corrupt"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:6979
+#: ../libsvn_fs_fs/fs_fs.c:7010
 #, c-format
 msgid "Transaction '%s' cleanup failed"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:7124
+#: ../libsvn_fs_fs/fs_fs.c:7155
 #, c-format
 msgid "Invalid change type %d"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:7717
+#: ../libsvn_fs_fs/fs_fs.c:7759
 msgid "Can't set text contents of a directory"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:7803 ../libsvn_fs_fs/fs_fs.c:7808
-#: ../libsvn_fs_fs/fs_fs.c:7815
+#: ../libsvn_fs_fs/fs_fs.c:7845 ../libsvn_fs_fs/fs_fs.c:7850
+#: ../libsvn_fs_fs/fs_fs.c:7857
 msgid "Corrupt 'current' file"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:8075
+#: ../libsvn_fs_fs/fs_fs.c:8117
 #, c-format
 msgid ""
 "predecessor count for the root node-revision is wrong: found (%d+%ld != %d), "
 "committing r%ld"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:8210
+#: ../libsvn_fs_fs/fs_fs.c:8252
 msgid "Truncated protorev file detected"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:8610
+#: ../libsvn_fs_fs/fs_fs.c:8652
 msgid "Transaction out of date"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:9109
+#: ../libsvn_fs_fs/fs_fs.c:9151
 msgid "Recovery encountered a non-directory node"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:9131
+#: ../libsvn_fs_fs/fs_fs.c:9173
 msgid "Recovery encountered a deltified directory representation"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:9169 ../libsvn_fs_fs/fs_fs.c:9178
-#: ../libsvn_fs_fs/fs_fs.c:9184
+#: ../libsvn_fs_fs/fs_fs.c:9211 ../libsvn_fs_fs/fs_fs.c:9220
+#: ../libsvn_fs_fs/fs_fs.c:9226
 msgid "Directory entry corrupt"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:9357
+#: ../libsvn_fs_fs/fs_fs.c:9399
 #, c-format
 msgid "Expected current rev to be <= %ld but found %ld"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:9414
+#: ../libsvn_fs_fs/fs_fs.c:9456
 #, c-format
 msgid "Revision %ld has a revs file but no revprops file"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:9421
+#: ../libsvn_fs_fs/fs_fs.c:9463
 #, c-format
 msgid "Revision %ld has a revs file but the revprops file is inaccessible"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:9430
+#: ../libsvn_fs_fs/fs_fs.c:9472
 #, c-format
 msgid "Revision %ld has a non-file where its revprops file should be"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:9608
+#: ../libsvn_fs_fs/fs_fs.c:9650
 #, c-format
 msgid ""
 "Node origin for '%s' exists with a different value (%s) than what we were "
 "about to store (%s)"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:9714
+#: ../libsvn_fs_fs/fs_fs.c:9756
 #, c-format
 msgid "No such transaction '%s'"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:10431
+#: ../libsvn_fs_fs/fs_fs.c:10473
 #, c-format
 msgid "FSFS format (%d) too old to pack; please upgrade the filesystem."
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:10710 ../libsvn_subr/io.c:248
+#: ../libsvn_fs_fs/fs_fs.c:10752 ../libsvn_subr/io.c:248
 #, c-format
 msgid "Error converting entry in directory '%s' to UTF-8"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:10747 ../libsvn_subr/io.c:1021
+#: ../libsvn_fs_fs/fs_fs.c:10789 ../libsvn_subr/io.c:1021
 #, c-format
 msgid "Source '%s' is not a directory"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:10753 ../libsvn_subr/io.c:1027
+#: ../libsvn_fs_fs/fs_fs.c:10795 ../libsvn_subr/io.c:1027
 #, c-format
 msgid "Destination '%s' is not a directory"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:10825 ../libsvn_subr/io.c:1104
+#: ../libsvn_fs_fs/fs_fs.c:10867 ../libsvn_subr/io.c:1104
 #: ../libsvn_subr/io.c:2492
 #, c-format
 msgid "Can't read directory '%s'"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:10830 ../libsvn_subr/io.c:1109
+#: ../libsvn_fs_fs/fs_fs.c:10872 ../libsvn_subr/io.c:1109
 #: ../libsvn_subr/io.c:2497 ../libsvn_subr/io.c:4002
 #, c-format
 msgid "Error closing directory '%s'"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:11122
+#: ../libsvn_fs_fs/fs_fs.c:11164
 #, c-format
 msgid ""
 "The FSFS format (%d) of the hotcopy source does not match the FSFS format "
@@ -3873,19 +3873,19 @@ msgid ""
 "same format"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:11131
+#: ../libsvn_fs_fs/fs_fs.c:11173
 msgid ""
 "The UUID of the hotcopy source does not match the UUID of the hotcopy "
 "destination"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:11138
+#: ../libsvn_fs_fs/fs_fs.c:11180
 msgid ""
 "The sharding layout configuration of the hotcopy source does not match the "
 "sharding layout configuration of the hotcopy destination"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:11264
+#: ../libsvn_fs_fs/fs_fs.c:11306
 #, c-format
 msgid ""
 "Failed to create hotcopy at '%s'. The file '%s' is missing from the source "
@@ -3893,28 +3893,28 @@ msgid ""
 "upgrade %s'"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:11290
+#: ../libsvn_fs_fs/fs_fs.c:11332
 #, c-format
 msgid ""
 "The hotcopy destination already contains more revisions (%lu) than the "
 "hotcopy source contains (%lu); are source and destination swapped?"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:11326
+#: ../libsvn_fs_fs/fs_fs.c:11368
 #, c-format
 msgid ""
 "The hotcopy destination already contains more packed revisions (%lu) than "
 "the hotcopy source contains (%lu)"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:11441
+#: ../libsvn_fs_fs/fs_fs.c:11483
 #, c-format
 msgid ""
 "The assumed HEAD revision (%lu) of the hotcopy source has been packed while "
 "the hotcopy was in progress; please restart the hotcopy operation"
 msgstr ""
 
-#: ../libsvn_fs_fs/fs_fs.c:11456
+#: ../libsvn_fs_fs/fs_fs.c:11498
 #, c-format
 msgid ""
 "Revision %lu disappeared from the hotcopy source while hotcopy was in "
@@ -6845,7 +6845,7 @@ msgstr ""
 
 #: ../libsvn_subr/version.c:139
 msgid ""
-"Copyright (C) 2015 The Apache Software Foundation.\n"
+"Copyright (C) 2016 The Apache Software Foundation.\n"
 "This software consists of contributions made by many people;\n"
 "see the NOTICE file for more information.\n"
 "Subversion is open source software, see http://subversion.apache.org/\n"
@@ -13328,20 +13328,20 @@ msgid ""
 "Type 'svnrdump help %s' for usage.\n"
 msgstr ""
 
-#: ../svnserve/cyrus_auth.c:119
+#: ../svnserve/cyrus_auth.c:121
 msgid "Could not initialize the SASL library"
 msgstr ""
 
-#: ../svnserve/cyrus_auth.c:260
+#: ../svnserve/cyrus_auth.c:262
 #, c-format
 msgid "Can't get hostname"
 msgstr ""
 
-#: ../svnserve/cyrus_auth.c:325
+#: ../svnserve/cyrus_auth.c:327
 msgid "Could not obtain the list of SASL mechanisms"
 msgstr ""
 
-#: ../svnserve/cyrus_auth.c:367
+#: ../svnserve/cyrus_auth.c:369
 msgid "Couldn't obtain the authenticated username"
 msgstr ""
 
