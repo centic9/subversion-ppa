@@ -1,3 +1,9 @@
+subversion (1.8.17-0ubuntu0~trusty~ppa1) trusty; urgency=medium
+
+  * New upstream release.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Sat, 03 Dec 2016 20:57:58 +0100
+
 subversion (1.8.16-0ubuntu0~trusty~ppa2) trusty; urgency=medium
 
   * Disable test-suite as there are lots of failing tests and I am not able to look at these.
