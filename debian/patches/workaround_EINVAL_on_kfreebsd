@@ -1,6 +1,8 @@
---- a/subversion/bindings/swig/ruby/test/util.rb
-+++ b/subversion/bindings/swig/ruby/test/util.rb
-@@ -369,6 +369,8 @@
+Index: git/subversion/bindings/swig/ruby/test/util.rb
+===================================================================
+--- git.orig/subversion/bindings/swig/ruby/test/util.rb	2015-08-16 00:14:08.995484950 +0200
++++ git/subversion/bindings/swig/ruby/test/util.rb	2015-08-16 00:14:08.995484950 +0200
+@@ -370,6 +370,8 @@
  	TCPSocket.new(@svnserve_host, port).close
        rescue Errno::ECONNREFUSED
  	sleep(n < 10 ? 0.2 : 0.5)
