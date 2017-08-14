@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: dev@subversion.apache.org\n"
-"POT-Creation-Date: 2017-07-03 10:39+0000\n"
+"POT-Creation-Date: 2017-08-06 22:01+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -730,7 +730,7 @@ msgstr ""
 msgid "Session URL does not match expected session URL"
 msgstr ""
 
-#: ../include/svn_error_codes.h:911 ../libsvn_ra_svn/client.c:492
+#: ../include/svn_error_codes.h:911 ../libsvn_ra_svn/client.c:493
 #, c-format
 msgid "Can't create tunnel"
 msgstr ""
@@ -1587,7 +1587,7 @@ msgstr ""
 
 #: ../libsvn_client/copy_foreign.c:372 ../libsvn_client/export.c:814
 #: ../libsvn_client/repos_diff.c:998 ../libsvn_fs_fs/dag.c:1051
-#: ../libsvn_ra_svn/client.c:1203 ../libsvn_wc/diff_editor.c:1984
+#: ../libsvn_ra_svn/client.c:1239 ../libsvn_wc/diff_editor.c:1984
 #: ../libsvn_wc/diff_editor.c:2070 ../libsvn_wc/externals.c:653
 #: ../libsvn_wc/update_editor.c:4300
 #, c-format
@@ -4057,7 +4057,7 @@ msgstr ""
 msgid "'%s' isn't a child of session URL '%s'"
 msgstr ""
 
-#: ../libsvn_ra/ra_loader.c:580 ../libsvn_ra_svn/client.c:2460
+#: ../libsvn_ra/ra_loader.c:580 ../libsvn_ra_svn/client.c:2496
 #, c-format
 msgid "'%s' isn't a child of repository root URL '%s'"
 msgstr ""
@@ -4134,7 +4134,7 @@ msgid "'%s' path not found"
 msgstr ""
 
 #: ../libsvn_ra_local/ra_plugin.c:1539 ../libsvn_ra_serf/options.c:678
-#: ../libsvn_ra_svn/client.c:2661
+#: ../libsvn_ra_svn/client.c:2697
 #, c-format
 msgid "Don't know anything about capability '%s'"
 msgstr ""
@@ -4283,7 +4283,7 @@ msgstr ""
 msgid "Unsupported encoding '%s'"
 msgstr ""
 
-#: ../libsvn_ra_serf/log.c:568 ../libsvn_ra_svn/client.c:1572
+#: ../libsvn_ra_serf/log.c:568 ../libsvn_ra_svn/client.c:1608
 msgid "Server does not support custom revprops via log"
 msgstr ""
 
@@ -4644,221 +4644,226 @@ msgstr ""
 msgid "The response contains invalid XML"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:142
+#: ../libsvn_ra_svn/client.c:143
 #, c-format
 msgid "Unknown hostname '%s'"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:167
+#: ../libsvn_ra_svn/client.c:168
 #, c-format
 msgid "Can't connect to host '%s'"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:205
+#: ../libsvn_ra_svn/client.c:206
 msgid "Prop diffs element not a list"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:403
+#: ../libsvn_ra_svn/client.c:404
 #, c-format
 msgid "Undefined tunnel scheme '%s'"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:420
+#: ../libsvn_ra_svn/client.c:421
 #, c-format
 msgid "Tunnel scheme %s requires environment variable %s to be defined"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:431
+#: ../libsvn_ra_svn/client.c:432
 #, c-format
 msgid "Can't tokenize command '%s'"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:464
+#: ../libsvn_ra_svn/client.c:465
 #, c-format
 msgid "Error in child process: %s"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:539
+#: ../libsvn_ra_svn/client.c:540
 msgid ""
 "To better debug SSH connection problems, remove the -q option from 'ssh' in "
 "the [tunnels] section of your Subversion configuration file."
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:557
+#: ../libsvn_ra_svn/client.c:558
 #, c-format
 msgid "Illegal svn repository URL '%s'"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:637
+#: ../libsvn_ra_svn/client.c:638
 #, c-format
 msgid "Server requires minimum version %d"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:641
+#: ../libsvn_ra_svn/client.c:642
 #, c-format
 msgid "Server only supports versions up to %d"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:649
+#: ../libsvn_ra_svn/client.c:650
 msgid "Server does not support edit pipelining"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:686
+#: ../libsvn_ra_svn/client.c:687
 msgid "Impossibly long repository root from server"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:698
+#: ../libsvn_ra_svn/client.c:699
 msgid ""
 "Module for accessing a repository using the svn network protocol.\n"
 "  - with Cyrus SASL authentication"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:702
+#: ../libsvn_ra_svn/client.c:703
 msgid "Module for accessing a repository using the svn network protocol."
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:912
+#: ../libsvn_ra_svn/client.c:775
+#, c-format
+msgid "Invalid host '%s'"
+msgstr ""
+
+#: ../libsvn_ra_svn/client.c:948
 msgid "Server did not send repository root"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:985
+#: ../libsvn_ra_svn/client.c:1021
 #, c-format
 msgid ""
 "ra_svn does not support not specifying a log message with pre-1.5 servers; "
 "consider passing an empty one, or upgrading the server"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:1008
+#: ../libsvn_ra_svn/client.c:1044
 msgid ""
 "Server doesn't support setting arbitrary revision properties during commit"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:1108
+#: ../libsvn_ra_svn/client.c:1144
 msgid "Inherited proplist element not a list"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:1181
+#: ../libsvn_ra_svn/client.c:1217
 msgid "Non-string as part of file contents"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:1267
+#: ../libsvn_ra_svn/client.c:1303
 msgid "Dirlist element not a list"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:1352
+#: ../libsvn_ra_svn/client.c:1388
 msgid "Mergeinfo element is not a list"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:1560
+#: ../libsvn_ra_svn/client.c:1596
 msgid "Log entry not a list"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:1607
+#: ../libsvn_ra_svn/client.c:1643
 msgid "Changed-path entry not a list"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:1773
+#: ../libsvn_ra_svn/client.c:1809
 msgid "'stat' not implemented"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:1832
+#: ../libsvn_ra_svn/client.c:1868
 msgid "'get-locations' not implemented"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:1847
+#: ../libsvn_ra_svn/client.c:1883
 msgid "Location entry not a list"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:1886
+#: ../libsvn_ra_svn/client.c:1922
 msgid "'get-location-segments' not implemented"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:1903
+#: ../libsvn_ra_svn/client.c:1939
 msgid "Location segment entry not a list"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:1913
+#: ../libsvn_ra_svn/client.c:1949
 msgid "Expected valid revision range"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:1954
+#: ../libsvn_ra_svn/client.c:1990
 msgid "'get-file-revs' not implemented"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:1978
+#: ../libsvn_ra_svn/client.c:2014
 msgid "Revision entry not a list"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:1995 ../libsvn_ra_svn/client.c:2025
+#: ../libsvn_ra_svn/client.c:2031 ../libsvn_ra_svn/client.c:2061
 msgid "Text delta chunk not a string"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:2037
+#: ../libsvn_ra_svn/client.c:2073
 msgid "The get-file-revs command didn't return any revisions"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:2084
+#: ../libsvn_ra_svn/client.c:2120
 msgid "Server doesn't support the lock command"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:2148
+#: ../libsvn_ra_svn/client.c:2184
 msgid "Server doesn't support the unlock command"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:2246
+#: ../libsvn_ra_svn/client.c:2282
 msgid "Lock response not a list"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:2260
+#: ../libsvn_ra_svn/client.c:2296
 msgid "Unknown status for lock command"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:2284
+#: ../libsvn_ra_svn/client.c:2320
 msgid "Didn't receive end marker for lock responses"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:2374
+#: ../libsvn_ra_svn/client.c:2410
 msgid "Unlock response not a list"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:2388
+#: ../libsvn_ra_svn/client.c:2424
 msgid "Unknown status for unlock command"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:2411
+#: ../libsvn_ra_svn/client.c:2447
 msgid "Didn't receive end marker for unlock responses"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:2435 ../libsvn_ra_svn/client.c:2487
+#: ../libsvn_ra_svn/client.c:2471 ../libsvn_ra_svn/client.c:2523
 msgid "Server doesn't support the get-lock command"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:2501
+#: ../libsvn_ra_svn/client.c:2537
 msgid "Lock element not a list"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:2544
+#: ../libsvn_ra_svn/client.c:2580
 msgid "Server doesn't support the replay command"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:2575
+#: ../libsvn_ra_svn/client.c:2611
 msgid "Server doesn't support the replay-range command"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:2593
+#: ../libsvn_ra_svn/client.c:2629
 #, c-format
 msgid "Expected 'revprops', found '%s'"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:2610
+#: ../libsvn_ra_svn/client.c:2646
 msgid "Error while replaying commit"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:2683
+#: ../libsvn_ra_svn/client.c:2719
 msgid "'get-deleted-rev' not implemented"
 msgstr ""
 
-#: ../libsvn_ra_svn/client.c:2782
+#: ../libsvn_ra_svn/client.c:2818
 #, c-format
 msgid "Unsupported RA loader version (%d) for ra_svn"
 msgstr ""
