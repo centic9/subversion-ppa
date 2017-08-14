@@ -1,3 +1,9 @@
+subversion (1.8.19-0ubuntu0~trusty~ppa2) trusty; urgency=medium
+
+  * Refresh patch that did not apply cleanly any more.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Mon, 14 Aug 2017 20:15:31 +0200
+
 subversion (1.8.19-0ubuntu0~trusty~ppa1) trusty; urgency=medium
 
   * New upstream release

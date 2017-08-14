@@ -16,27 +16,27 @@ connection sharing, but only if a ControlMaster is already present.
 
 Index: git/subversion/libsvn_subr/config_file.c
 ===================================================================
---- git.orig/subversion/libsvn_subr/config_file.c	2015-08-16 00:14:05.203440765 +0200
-+++ git/subversion/libsvn_subr/config_file.c	2015-08-16 00:14:05.199440718 +0200
+--- git.orig/subversion/libsvn_subr/config_file.c	2017-08-14 20:14:30.925524184 +0200
++++ git/subversion/libsvn_subr/config_file.c	2017-08-14 20:15:03.309684769 +0200
 @@ -1134,7 +1134,7 @@
          "### passed to the tunnel agent as <user>@<hostname>.)  If the"      NL
          "### built-in ssh scheme were not predefined, it could be defined"   NL
          "### as:"                                                            NL
--        "# ssh = $SVN_SSH ssh -q"                                            NL
-+        "# ssh = $SVN_SSH ssh -q -o ControlMaster=no"                        NL
+-        "# ssh = $SVN_SSH ssh -q --"                                         NL
++        "# ssh = $SVN_SSH ssh -q -o ControlMaster=no --"                     NL
          "### If you wanted to define a new 'rsh' scheme, to be used with"    NL
          "### 'svn+rsh:' URLs, you could do so as follows:"                   NL
-         "# rsh = rsh"                                                        NL
+         "# rsh = rsh --"                                                     NL
 Index: git/subversion/libsvn_ra_svn/client.c
 ===================================================================
---- git.orig/subversion/libsvn_ra_svn/client.c	2015-08-16 00:14:05.203440765 +0200
-+++ git/subversion/libsvn_ra_svn/client.c	2015-08-16 00:14:05.199440718 +0200
-@@ -395,7 +395,7 @@
+--- git.orig/subversion/libsvn_ra_svn/client.c	2017-08-14 20:14:30.925524184 +0200
++++ git/subversion/libsvn_ra_svn/client.c	2017-08-14 20:15:22.069777795 +0200
+@@ -396,7 +396,7 @@
         * versions have it too. If the user is using some other ssh
         * implementation that doesn't accept it, they can override it
         * in the [tunnels] section of the config. */
--      val = "$SVN_SSH ssh -q";
-+      val = "$SVN_SSH ssh -q -o ControlMaster=no";
+-      val = "$SVN_SSH ssh -q --";
++      val = "$SVN_SSH ssh -q -o ControlMaster=no --";
      }
  
    if (!val || !*val)
